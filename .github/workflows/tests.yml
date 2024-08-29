@@ -1,0 +1,58 @@
+name: Lint and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' # pre-commit-ci/lite-action only runs here
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - uses: pre-commit/action@v3.0.1
+      - uses: pre-commit-ci/lite-action@v1.0.2
+        if: always()
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+      - name: Install Python dependencies
+        run: |-
+          pip install uv
+          uv pip install -e . -e packages/gsm8k -e packages/hotpotqa
+      - run: refurb src packages
+      - run: pylint src packages
+  test:
+    runs-on: large-runner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ts-graphviz/setup-graphviz@v2
+        with:
+          ubuntu-skip-apt-update: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: pip
+      - name: Install Python dependencies
+        run: |-
+          pip install uv
+          uv pip install -e . -e packages/gsm8k -e packages/hotpotqa
+      - name: Cache datasets
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/datasets
+          key: ${{ runner.os }}-datasets-${{ hashFiles('packages/gsm8k')-${{ hashFiles('packages/hotpotqa') }}
+          restore-keys: ${{ runner.os }}-datasets-
+      - run: pytest -n 16 --dist=loadfile # auto only launches 8 workers in CI, despite runners have 16 cores
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
