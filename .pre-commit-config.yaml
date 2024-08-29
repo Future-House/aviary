@@ -61,3 +61,19 @@ repos:
       - id: validate-pyproject
         additional_dependencies:
           - "validate-pyproject-schema-store[all]>=2024.08.19" # For Ruff renaming RUF025 to C420
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - boto3-stubs[s3]
+          - datasets
+          - docstring_parser
+          - fastapi>=0.109 # Match aviary pyproject.toml
+          - httpx
+          - numpy
+          - pydantic~=2.0 # Match aviary pyproject.toml
+          - SQLAlchemy[aiosqlite]~=2.0 # Match aviary pyproject.toml and dev-requirements.txt
+          - tenacity
+          - types-Pillow
+          - pandas-stubs

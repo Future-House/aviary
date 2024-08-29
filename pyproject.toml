@@ -1,3 +1,53 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+
+[project]
+authors = [
+    {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
+]
+# Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python",
+]
+dependencies = [
+    "SQLAlchemy~=2.0",  # End users should specify DB backends themselves
+    "docstring_parser",
+    "httpx",
+    "pydantic~=2.0",
+]
+description = "Gymnasium framework for training language model agents on constructive tasks"
+dynamic = ["version"]
+name = "aviary"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+cloud = [
+    "boto3",
+]
+image = [
+    "Pillow",
+]
+server = [
+    "fastapi>=0.109",  # For Python 3.12 support
+]
+typing = [
+    "boto3-stubs[s3]",
+    "numpy",
+    "types-Pillow",
+]
+xml = [
+    "dicttoxml",
+]
+
+[project.urls]
+issues = "https://github.com/Future-House/aviary/issues"
+repository = "https://github.com/Future-House/aviary"
+
 [tool.black]
 preview = true
 
@@ -61,6 +111,15 @@ warn_unreachable = true
 warn_unused_configs = true
 # Warns about unneeded `# type: ignore` comments.
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# Suppresses error messages about imports that cannot be resolved.
+ignore_missing_imports = true
+# Per-module configuration options
+module = [
+    "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
+    "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
+]
 
 [tool.pylint]
 
@@ -300,9 +359,41 @@ max-line-length = 120
 # defaults when analyzing docstring sections.
 convention = "google"
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+version_file = "src/aviary/version.py"
+
 [tool.tomlsort]
 all = true
 in_place = true
 spaces_before_inline_comment = 2  # Match Python PEP 8
 spaces_indent_inline_array = 4  # Match Python PEP 8
 trailing_comma_inline_array = true
+
+[tool.uv]
+dev-dependencies = [
+    "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
+    "aviary[image,server,typing,xml]",
+    "ipython>=8",  # Pin to keep recent
+    "mypy>=1.8",  # Pin for mutable-override
+    "pre-commit~=3.4",
+    "pylint-pydantic",
+    "pylint>=3.2",
+    "pytest-asyncio",
+    "pytest-subtests",
+    "pytest-sugar",
+    "pytest-timer[colorama]",
+    "pytest-xdist",
+    "pytest>=8",  # Pin to keep recent
+    "refurb>=2",  # Pin to keep recent
+]
+
+[tool.uv.sources]
+aviary = {workspace = true}
+"aviary.gsm8k" = {workspace = true}
+"aviary.hotpotqa" = {workspace = true}
+
+[tool.uv.workspace]
+members = ["packages/*"]
