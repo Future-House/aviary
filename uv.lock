@@ -8,9 +8,9 @@ resolution-markers = [
 
 [manifest]
 members = [
-    "aviary",
     "aviary-gsm8k",
     "aviary-hotpotqa",
+    "fhaviary",
 ]
 
 [[package]]
@@ -160,98 +160,12 @@ wheels = [
 ]
 
 [[package]]
-name = "aviary"
-version = "0.1.dev9+g4ddab6f.d20240829"
-source = { editable = "." }
-dependencies = [
-    { name = "docstring-parser" },
-    { name = "httpx" },
-    { name = "pydantic" },
-    { name = "sqlalchemy" },
-]
-
-[package.optional-dependencies]
-cloud = [
-    { name = "boto3" },
-]
-image = [
-    { name = "pillow" },
-]
-server = [
-    { name = "fastapi" },
-]
-typing = [
-    { name = "boto3-stubs", extra = ["s3"] },
-    { name = "numpy" },
-    { name = "types-pillow" },
-]
-xml = [
-    { name = "dicttoxml" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "boto3-stubs", extra = ["s3"] },
-    { name = "dicttoxml" },
-    { name = "fastapi" },
-    { name = "ipython" },
-    { name = "mypy" },
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "pre-commit" },
-    { name = "pylint" },
-    { name = "pylint-pydantic" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-subtests" },
-    { name = "pytest-sugar" },
-    { name = "pytest-timer", extra = ["colorama"] },
-    { name = "pytest-xdist" },
-    { name = "refurb" },
-    { name = "sqlalchemy", extra = ["aiosqlite"] },
-    { name = "types-pillow" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "boto3", marker = "extra == 'cloud'" },
-    { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
-    { name = "dicttoxml", marker = "extra == 'xml'" },
-    { name = "docstring-parser" },
-    { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.109" },
-    { name = "httpx" },
-    { name = "numpy", marker = "extra == 'typing'" },
-    { name = "pillow", marker = "extra == 'image'" },
-    { name = "pydantic", specifier = "~=2.0" },
-    { name = "sqlalchemy", specifier = "~=2.0" },
-    { name = "types-pillow", marker = "extra == 'typing'" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "aviary", extras = ["image", "server", "typing", "xml"], editable = "." },
-    { name = "ipython", specifier = ">=8" },
-    { name = "mypy", specifier = ">=1.8" },
-    { name = "pre-commit", specifier = "~=3.4" },
-    { name = "pylint", specifier = ">=3.2" },
-    { name = "pylint-pydantic" },
-    { name = "pytest", specifier = ">=8" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-subtests" },
-    { name = "pytest-sugar" },
-    { name = "pytest-timer", extras = ["colorama"] },
-    { name = "pytest-xdist" },
-    { name = "refurb", specifier = ">=2" },
-    { name = "sqlalchemy", extras = ["aiosqlite"], specifier = "~=2.0" },
-]
-
-[[package]]
 name = "aviary-gsm8k"
-version = "0.1.dev9+g4ddab6f.d20240829"
+version = "0.1.dev3+g3c94951.d20240829"
 source = { editable = "packages/gsm8k" }
 dependencies = [
-    { name = "aviary" },
     { name = "datasets" },
+    { name = "fhaviary" },
     { name = "pydantic" },
 ]
 
@@ -262,20 +176,20 @@ typing = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aviary", editable = "." },
     { name = "datasets" },
+    { name = "fhaviary", editable = "." },
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.1.dev9+g4ddab6f.d20240829"
+version = "0.1.dev3+g3c94951.d20240829"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
-    { name = "aviary" },
     { name = "beautifulsoup4" },
     { name = "datasets" },
+    { name = "fhaviary" },
     { name = "httpx" },
     { name = "pydantic" },
     { name = "tenacity" },
@@ -283,9 +197,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aviary", editable = "." },
     { name = "beautifulsoup4" },
     { name = "datasets" },
+    { name = "fhaviary", editable = "." },
     { name = "httpx" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
@@ -528,6 +442,92 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9c/11/4874d165e7ef97aa803a567a4be8f9c8b0bd7cced6d536d44033ef7d4bfa/fastapi-0.112.2.tar.gz", hash = "sha256:3d4729c038414d5193840706907a41839d839523da6ed0c2811f1168cac1798c", size = 291967 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5c/ae/6570ae1b67007735229f10f2e1174d6e33c056ee9c0c1754d432acbede94/fastapi-0.112.2-py3-none-any.whl", hash = "sha256:db84b470bd0e2b1075942231e90e3577e12a903c4dc8696f0d206a7904a7af1c", size = 93471 },
+]
+
+[[package]]
+name = "fhaviary"
+version = "0.1.dev3+g3c94951.d20240829"
+source = { editable = "." }
+dependencies = [
+    { name = "docstring-parser" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+]
+
+[package.optional-dependencies]
+cloud = [
+    { name = "boto3" },
+]
+image = [
+    { name = "pillow" },
+]
+server = [
+    { name = "fastapi" },
+]
+typing = [
+    { name = "boto3-stubs", extra = ["s3"] },
+    { name = "numpy" },
+    { name = "types-pillow" },
+]
+xml = [
+    { name = "dicttoxml" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "boto3-stubs", extra = ["s3"] },
+    { name = "dicttoxml" },
+    { name = "fastapi" },
+    { name = "ipython" },
+    { name = "mypy" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pre-commit" },
+    { name = "pylint" },
+    { name = "pylint-pydantic" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-subtests" },
+    { name = "pytest-sugar" },
+    { name = "pytest-timer", extra = ["colorama"] },
+    { name = "pytest-xdist" },
+    { name = "refurb" },
+    { name = "sqlalchemy", extra = ["aiosqlite"] },
+    { name = "types-pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "boto3", marker = "extra == 'cloud'" },
+    { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
+    { name = "dicttoxml", marker = "extra == 'xml'" },
+    { name = "docstring-parser" },
+    { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.109" },
+    { name = "httpx" },
+    { name = "numpy", marker = "extra == 'typing'" },
+    { name = "pillow", marker = "extra == 'image'" },
+    { name = "pydantic", specifier = "~=2.0" },
+    { name = "sqlalchemy", specifier = "~=2.0" },
+    { name = "types-pillow", marker = "extra == 'typing'" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "fhaviary", extras = ["image", "server", "typing", "xml"], editable = "." },
+    { name = "ipython", specifier = ">=8" },
+    { name = "mypy", specifier = ">=1.8" },
+    { name = "pre-commit", specifier = "~=3.4" },
+    { name = "pylint", specifier = ">=3.2" },
+    { name = "pylint-pydantic" },
+    { name = "pytest", specifier = ">=8" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-subtests" },
+    { name = "pytest-sugar" },
+    { name = "pytest-timer", extras = ["colorama"] },
+    { name = "pytest-xdist" },
+    { name = "refurb", specifier = ">=2" },
+    { name = "sqlalchemy", extras = ["aiosqlite"], specifier = "~=2.0" },
 ]
 
 [[package]]

@@ -22,7 +22,7 @@ dependencies = [
 ]
 description = "Gymnasium framework for training language model agents on constructive tasks"
 dynamic = ["version"]
-name = "aviary"
+name = "fhaviary"
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
@@ -375,7 +375,7 @@ trailing_comma_inline_array = true
 [tool.uv]
 dev-dependencies = [
     "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
-    "aviary[image,server,typing,xml]",
+    "fhaviary[image,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
     "pre-commit~=3.4",
@@ -391,9 +391,9 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
-aviary = {workspace = true}
 "aviary.gsm8k" = {workspace = true}
 "aviary.hotpotqa" = {workspace = true}
+fhaviary = {workspace = true}
 
 [tool.uv.workspace]
 members = ["packages/*"]
