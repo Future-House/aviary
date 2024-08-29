@@ -13,9 +13,7 @@ def test_env_construction() -> None:
 
 def test_dataset_from_name() -> None:
     dataset = TaskDataset.from_name("hotpotqa", split="dev")
-
-    env = dataset.get_new_env_by_idx(0)
-    assert isinstance(env, HotPotQAEnv)
+    assert isinstance(dataset.get_new_env_by_idx(0), HotPotQAEnv)
 
     # double-check we can load by difficulty level
     dataset = TaskDataset.from_name(

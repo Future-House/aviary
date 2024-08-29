@@ -115,7 +115,7 @@ def clean_str(p: str) -> str:
         )
     except (UnicodeEncodeError, UnicodeDecodeError):
         logger.debug(f"Replacing bad characters in input string {p!r}.")
-        return p.encode("utf-8", errors="replace").decode("utf-8", errors="replace")
+        return p.encode(errors="replace").decode("utf-8", errors="replace")
 
 
 def normalize_answer(s: str | float) -> str:
@@ -357,7 +357,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
         # In case the searched entity is e.g. a year
         search_entity = (
-            str(entity) if isinstance(entity, int) else entity.replace(" ", "+")  # type: ignore[redundant-expr,unreachable]
+            str(entity) if isinstance(entity, int) else entity.replace(" ", "+")  # type: ignore[redundant-expr,unreachable]  # noqa: FURB123
         )
         try:
             # Access from cache if we previously searched for search_entity
