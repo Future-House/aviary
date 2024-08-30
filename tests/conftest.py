@@ -8,11 +8,8 @@ from aviary.env import DummyEnv
 
 TEST_OUTPUT_DIR = Path(__file__).parent / "test_outputs"
 
-IN_MEMORY_CTX_SQLITE_BACKEND = "sqlite+aiosqlite:///:memory:"
-PERSISTED_CTX_SQLITE_BACKEND = f"sqlite+aiosqlite:///{TEST_OUTPUT_DIR}/ctx.sqlite3"
-CTX_BACKENDS = IN_MEMORY_CTX_SQLITE_BACKEND, PERSISTED_CTX_SQLITE_BACKEND
 ENV_BACKENDS = (
-    IN_MEMORY_CTX_SQLITE_BACKEND,
+    "sqlite+aiosqlite:///:memory:",
     f"sqlite+aiosqlite:///{TEST_OUTPUT_DIR}/envruns.sqlite3",
 )
 
