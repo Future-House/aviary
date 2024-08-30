@@ -161,7 +161,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.1.dev3+g3c94951.d20240829"
+version = "0.1.dev4+gfd5242a"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -184,7 +184,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.1.dev3+g3c94951.d20240829"
+version = "0.1.dev4+gfd5242a"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -274,6 +274,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f4/e5/316885d0713380536c77bf51070dd0398e7e7a6d6c475c78dd7a23764ed6/botocore_stubs-1.35.9.tar.gz", hash = "sha256:59ffbfcac1833990e6c586bff4fcf481ef01b4b88e6d65073d842f6aff84b92e", size = 40581 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b0/ca/067e506e7a33287703cc5a0b2acc201bd87bfa22a30cc8c8662859beaee5/botocore_stubs-1.35.9-py3-none-any.whl", hash = "sha256:98c1d7ca0147cd88cc09f08425a2d58bd004232d211c4a4ca9febda6f3b20a85", size = 60120 },
+]
+
+[[package]]
+name = "build"
+version = "1.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "os_name == 'nt'" },
+    { name = "packaging" },
+    { name = "pyproject-hooks" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ce/9e/2d725d2f7729c6e79ca62aeb926492abbc06e25910dd30139d60a68bcb19/build-1.2.1.tar.gz", hash = "sha256:526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d", size = 44781 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e2/03/f3c8ba0a6b6e30d7d18c40faab90807c9bb5e9a1e3b2fe2008af624a9c97/build-1.2.1-py3-none-any.whl", hash = "sha256:75e10f767a433d9a86e50d83f418e83efc18ede923ee5ff7df93b6cb0306c5d4", size = 21911 },
 ]
 
 [[package]]
@@ -446,7 +460,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.1.dev3+g3c94951.d20240829"
+version = "0.1.dev6+gf243ec2.d20240829"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -476,7 +490,9 @@ xml = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "boto3-stubs", extra = ["s3"] },
+    { name = "build" },
     { name = "dicttoxml" },
     { name = "fastapi" },
     { name = "ipython" },
@@ -514,6 +530,8 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "aviary-gsm8k", extras = ["typing"], editable = "packages/gsm8k" },
+    { name = "build" },
     { name = "fhaviary", extras = ["image", "server", "typing", "xml"], editable = "." },
     { name = "ipython", specifier = ">=8" },
     { name = "mypy", specifier = ">=1.8" },
@@ -1235,6 +1253,15 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/11/80/34b429c6534be99ef3d6d20bd794b26fda0682d38e2d57f85df258beaac2/pylint_pydantic-0.3.2-py3-none-any.whl", hash = "sha256:e5cec02370aa68ac8eff138e5d573b0ac049bab864e9a6c3a9057cf043440aa1", size = 15951 },
+]
+
+[[package]]
+name = "pyproject-hooks"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/07/6f63dda440d4abb191b91dc383b472dae3dd9f37e4c1e4a5c3db150531c6/pyproject_hooks-1.1.0.tar.gz", hash = "sha256:4b37730834edbd6bd37f26ece6b44802fb1c1ee2ece0e54ddff8bfc06db86965", size = 7838 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ae/f3/431b9d5fe7d14af7a32340792ef43b8a714e7726f1d7b69cc4e8e7a3f1d7/pyproject_hooks-1.1.0-py3-none-any.whl", hash = "sha256:7ceeefe9aec63a1064c18d939bdc3adf2d8aa1988a510afec15151578b232aa2", size = 9184 },
 ]
 
 [[package]]
