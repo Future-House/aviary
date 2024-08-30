@@ -243,11 +243,11 @@ class Environment(ABC, Generic[TEnvState]):
 
     @classmethod
     def from_name(cls, name: str, **env_kwargs) -> Self:
-        return _construct_obj_from_name(_ENV_REGISTRY, name, **env_kwargs)
+        return _construct_obj_from_name(ENV_REGISTRY, name, **env_kwargs)
 
 
 # Maps baseline environment names to their module and class names
-_ENV_REGISTRY: dict[str, tuple[str, str]] = {
+ENV_REGISTRY: dict[str, tuple[str, str]] = {
     "dummy": ("aviary.env", "DummyEnv"),
     "calculator": ("aviary.gsm8k.env", "CalculatorEnv"),
     "hotpotqa": ("aviary.hotpotqa.env", "HotPotQAEnv"),
