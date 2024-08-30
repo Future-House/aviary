@@ -17,6 +17,7 @@ dependencies = [
 description = "HotPotQA environment implemented with aviary"
 dynamic = ["version"]
 name = "aviary.hotpotqa"
+readme = "README.md"
 requires-python = ">=3.11"
 
 [tool.ruff]

@@ -23,6 +23,7 @@ dependencies = [
 description = "Gymnasium framework for training language model agents on constructive tasks"
 dynamic = ["version"]
 name = "fhaviary"
+readme = "README.md"
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
