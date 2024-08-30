@@ -161,7 +161,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.1.dev4+gfd5242a"
+version = "0.1.0"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -184,7 +184,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.1.dev4+gfd5242a"
+version = "0.1.1.dev1+g6ecbcb5"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -460,7 +460,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.1.dev6+gf243ec2.d20240829"
+version = "0.1.1.dev0+geb9764c.d20240830"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -491,6 +491,7 @@ xml = [
 [package.dev-dependencies]
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
+    { name = "aviary-hotpotqa" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "build" },
     { name = "dicttoxml" },
@@ -531,6 +532,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "aviary-gsm8k", extras = ["typing"], editable = "packages/gsm8k" },
+    { name = "aviary-hotpotqa", editable = "packages/hotpotqa" },
     { name = "build" },
     { name = "fhaviary", extras = ["image", "server", "typing", "xml"], editable = "." },
     { name = "ipython", specifier = ">=8" },

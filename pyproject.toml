@@ -376,7 +376,8 @@ trailing_comma_inline_array = true
 [tool.uv]
 dev-dependencies = [
     "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
-    "aviary.gsm8k[typing]",
+    "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
+    "aviary.hotpotqa",  # So `uv sync` pulls this in
     "build",  # TODO: remove after https://github.com/astral-sh/uv/issues/6278
     "fhaviary[image,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
