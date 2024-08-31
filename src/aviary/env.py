@@ -234,7 +234,7 @@ class Environment(ABC, Generic[TEnvState]):
         Read Field descriptions in Frame for more information.
         """
 
-    def close(self) -> None:
+    async def close(self) -> None:
         """
         Shutdown the environment.
 
