@@ -2,7 +2,7 @@ import contextlib
 import json
 from enum import StrEnum
 from logging import getLogger
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 import datasets
 from pydantic import BaseModel, ConfigDict
@@ -167,49 +167,17 @@ class CalculatorEnv(Environment[None]):
 GSM8K_PUBLIC_SOURCE = "openai/gsm8k"
 
 
-class GSM8kDataset(TaskDataset):
-    class Split(StrEnum):
-        train_full = "train_full"  #  full training set from OpenAI
-        train = "train"  # 80% of train_full (idx%5 != 0)
-        val = "val"  # 20% of train_full (idx%5 == 0)
-        test = "test"
+class GSM8kDatasetSplit(StrEnum):
+    train_full = "train_full"  # full training set from OpenAI
+    train = "train"  # 80% of train_full (idx%5 != 0)
+    val = "val"  # 20% of train_full (idx%5 == 0)
+    test = "test"
 
-    def __init__(
-        self,
-        split: Split | str,
-        config: CalculatorEnvConfig | dict | None = None,
-        hf_source: str = GSM8K_PUBLIC_SOURCE,
-    ):
-        if isinstance(config, dict):  # Serialized config
-            config = CalculatorEnvConfig(**config)
-        elif config is None:
-            config = CalculatorEnvConfig()
-        self.config = config
-
-        if isinstance(split, str):
-            split = self.Split(split)
-
-        src_df = self._get_df_from_hf(hf_source, split)
-
-        # Assign problem ID for the env
-        src_df["problem_id"] = split.value + "_" + src_df.index.astype(str)
-
-        # attempt to extract a numerical answer
-        try:
-            src_df["answer_num"] = src_df["answer"].apply(
-                # answer is formatted as: <some text>\n#### <answer_num>
-                lambda a: float(a.split("#### ")[1].replace(",", ""))
-            )
-        except Exception as e:
-            raise RuntimeError(
-                "Failed to extract numerical answer from 'answer' column"
-            ) from e
-
-        self.src_df = src_df
-
-    def _get_df_from_hf(self, hf_source: str, split: Split) -> "pd.DataFrame":
+    def get_df_from_hf(
+        self, hf_source: str, add_metadata: bool = True
+    ) -> "pd.DataFrame":
         # All non-test splits are derived from train
-        hf_split = "test" if split == self.Split.test else "train"
+        hf_split = "test" if self == self.test else "train"
 
         kw = {}
         if hf_source == GSM8K_PUBLIC_SOURCE:
@@ -220,11 +188,42 @@ class GSM8kDataset(TaskDataset):
             .to_pandas()
             .reset_index(drop=True)
         )
-        if split == self.Split.train:
+        if self == self.train:
             src_df = src_df[src_df.index % 5 != 0]
-        elif split == self.Split.val:
+        elif self == self.val:
             src_df = src_df[src_df.index % 5 == 0]
+        if add_metadata:
+            # Assign problem ID for the env
+            src_df["problem_id"] = self.value + "_" + src_df.index.astype(str)
+
+            # Attempt to extract a numerical answer
+            try:
+                src_df["answer_num"] = src_df["answer"].apply(
+                    # answer is formatted as: <some text>\n#### <answer_num>
+                    lambda a: float(a.split("#### ")[1].replace(",", ""))
+                )
+            except Exception as e:
+                raise RuntimeError(
+                    "Failed to extract numerical answer from 'answer' column"
+                ) from e
         return src_df
+
+
+class GSM8kDataset(TaskDataset):
+    Split: ClassVar = GSM8kDatasetSplit
+
+    def __init__(
+        self,
+        split: GSM8kDatasetSplit | str,
+        config: CalculatorEnvConfig | dict | None = None,
+        hf_source: str = GSM8K_PUBLIC_SOURCE,
+    ):
+        if isinstance(config, dict):  # Serialized config
+            config = CalculatorEnvConfig(**config)
+        elif config is None:
+            config = CalculatorEnvConfig()
+        self.config = config
+        self.src_df = GSM8kDatasetSplit(split).get_df_from_hf(hf_source)
 
     def get_new_env_by_idx(self, idx: int) -> CalculatorEnv:
         row = self.src_df.iloc[idx]
