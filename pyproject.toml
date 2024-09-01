@@ -161,6 +161,7 @@ disable = [
     "logging-fstring-interpolation",  # f-strings are convenient
     "logging-too-many-args",  # Rely on ruff PLE1205 for this
     "missing-docstring",  # Let docformatter and ruff take care of docstrings
+    "missing-final-newline",  # Rely on ruff W292 for this
     "no-else-return",  # Rely on ruff RET506 for this
     "no-member",  # Buggy, SEE: https://github.com/pylint-dev/pylint/issues/8138
     "not-callable",  # Don't care to enforce this
