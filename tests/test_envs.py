@@ -411,9 +411,9 @@ class TestEnvDBServerClient:
                 )
 
                 assert len(frames) == 2, "There should be 2 frames present"
-                assert (
-                    frames[0].id == frame_id_1
+                assert frames[0].id == str(
+                    frame_id_1
                 ), "Frame ID was not assigned as expected"
-                assert (
-                    frames[1].id == frame_id_2
+                assert frames[1].id == str(
+                    frame_id_2
                 ), "Frame ID was not assigned as expected"

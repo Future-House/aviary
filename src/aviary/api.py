@@ -43,12 +43,10 @@ class EnvDBClient:
                 timeout=self._request_timeout,
             )
             response.raise_for_status()
-            return response.json()
+            return uuid.UUID(response.json())
 
     async def write_environment_frame(
-        self,
-        environment_id: uuid.UUID,
-        frame: Frame,
+        self, environment_id: str | uuid.UUID, frame: Frame
     ) -> uuid.UUID:
         async with httpx.AsyncClient() as client:
             frame_data = frame.model_dump()
@@ -63,12 +61,12 @@ class EnvDBClient:
                 timeout=self._request_timeout,
             )
             response.raise_for_status()
-            return response.json()
+            return uuid.UUID(response.json())
 
     async def get_environment_instances(
         self,
         name: str | None = None,
-        environment_id: uuid.UUID | None = None,
+        environment_id: str | uuid.UUID | None = None,
     ) -> list[EnvironmentDB]:
         async with httpx.AsyncClient() as client:
             params = (
@@ -85,8 +83,8 @@ class EnvDBClient:
 
     async def get_environment_frames(
         self,
-        environment_id: uuid.UUID | None = None,
-        frame_id: uuid.UUID | None = None,
+        environment_id: str | uuid.UUID | None = None,
+        frame_id: str | uuid.UUID | None = None,
     ) -> list[FrameDB]:
         async with httpx.AsyncClient() as client:
             params = (
