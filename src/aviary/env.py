@@ -326,7 +326,7 @@ TASK_DATASET_REGISTRY: dict[str, tuple[str, str]] = {
 class TaskConfig(BaseModel):
     """Convenience for making a config file entry for a TaskDataset."""
 
-    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+    model_config = ConfigDict(extra="forbid")
 
     name: str
     task_kwargs: dict[str, BaseModel | JsonValue] = Field(

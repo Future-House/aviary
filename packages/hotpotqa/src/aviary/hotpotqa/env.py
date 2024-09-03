@@ -467,7 +467,7 @@ class HotPotQAEnvConfig(BaseModel):
     including the path to the data repository and the specific path to the prompt file.
     """
 
-    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+    model_config = ConfigDict(extra="forbid")
 
     shuffle_data: bool = Field(
         default=False, description="Set True to shuffle the dataset after loading."

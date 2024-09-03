@@ -18,7 +18,7 @@ logger = getLogger(__name__)
 
 
 class CalculatorEnvConfig(BaseModel):
-    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+    model_config = ConfigDict(extra="forbid")
 
     correct_reward: float = 1.0
     incorrect_reward: float = 0.0
