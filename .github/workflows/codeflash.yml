@@ -1,0 +1,48 @@
+name: CodeFlash
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "packages/**"
+  workflow_dispatch:
+
+concurrency: # Cancel prior if new push, SEE: https://stackoverflow.com/a/72408109
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  optimize: # SEE: https://docs.codeflash.ai/getting-started/codeflash-github-actions
+    runs-on: ubuntu-latest
+    env:
+      CODEFLASH_API_KEY: ${{ secrets.CODEFLASH_API_KEY }}
+      CODEFLASH_PR_NUMBER: ${{ github.event.number }}
+    steps:
+      - name: Check if PR is from CodeFlash bot
+        id: bot_check
+        working-directory: .
+        run: |
+          echo "Checking if this PR is created by CodeFlash bot..."
+          if [ "${{ github.event.pull_request.user.login }}" == "codeflash-ai[bot]" ]; then
+            echo "PR created by Codeflash bot. Skipping optimization."
+            echo "skip_remaining_steps=yes" >> $GITHUB_OUTPUT
+          else
+            echo "skip_remaining_steps=no" >> $GITHUB_OUTPUT
+            echo "It's not. Proceeding with the optimization."
+          fi
+      - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up uv
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Run CodeFlash on fhaviary
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        run: codeflash
+      - name: Run CodeFlash on aviary.gsm8k
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        run: codeflash --module-root=packages/gsm8k/src/aviary --tests-root=packages/gsm8k/tests
+      - name: Run CodeFlash on aviary.hotpotqa
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        run: codeflash --module-root=packages/hotpotqa/src/aviary --tests-root=packages/hotpotqa/tests
