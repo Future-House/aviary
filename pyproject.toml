@@ -380,6 +380,7 @@ dev-dependencies = [
     "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
     "aviary.hotpotqa",  # So `uv sync` pulls this in
     "build",  # TODO: remove after https://github.com/astral-sh/uv/issues/6278
+    "codeflash",
     "fhaviary[image,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
