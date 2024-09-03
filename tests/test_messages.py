@@ -119,18 +119,19 @@ class TestMessage:
         assert "image_url" in specialized_content[image_idx]
 
 
-def test_from_request() -> None:
-    trm = ToolRequestMessage(
-        content="stub",
-        tool_calls=[
-            ToolCall(
-                id="1",
-                function=ToolCallFunction(name="name1", arguments={"hi": 5}),
-            ),
-            ToolCall(id="2", function=ToolCallFunction(name="name2", arguments={})),
-        ],
-    )
-    assert ToolResponseMessage.from_request(trm, ("stub1", "stub2")) == [
-        ToolResponseMessage(content="stub1", name="name1", tool_call_id="1"),
-        ToolResponseMessage(content="stub2", name="name2", tool_call_id="2"),
-    ]
+class TestToolRequestMessage:
+    def test_from_request(self) -> None:
+        trm = ToolRequestMessage(
+            content="stub",
+            tool_calls=[
+                ToolCall(
+                    id="1",
+                    function=ToolCallFunction(name="name1", arguments={"hi": 5}),
+                ),
+                ToolCall(id="2", function=ToolCallFunction(name="name2", arguments={})),
+            ],
+        )
+        assert ToolResponseMessage.from_request(trm, ("stub1", "stub2")) == [
+            ToolResponseMessage(content="stub1", name="name1", tool_call_id="1"),
+            ToolResponseMessage(content="stub2", name="name2", tool_call_id="2"),
+        ]
