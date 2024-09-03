@@ -73,7 +73,7 @@ repos:
           - httpx
           - numpy
           - pydantic~=2.0 # Match aviary pyproject.toml
-          - SQLAlchemy[aiosqlite]~=2.0 # Match aviary pyproject.toml and dev-requirements.txt
+          - SQLAlchemy[aiosqlite]~=2.0 # Match aviary pyproject.toml
           - tenacity
           - types-Pillow
           - pandas-stubs
