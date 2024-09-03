@@ -52,6 +52,14 @@ repository = "https://github.com/Future-House/aviary"
 [tool.black]
 preview = true
 
+[tool.codeflash]
+disable-imports-sorting = true
+disable-telemetry = true
+formatter-cmds = ["ruff check --exit-zero --fix $file", "ruff format $file"]
+module-root = "src/aviary"
+test-framework = "pytest"
+tests-root = "tests"
+
 [tool.codespell]
 check-filenames = true
 check-hidden = true
