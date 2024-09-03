@@ -37,12 +37,14 @@ jobs:
       - name: Set up uv
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        run: uv sync
       - name: Run CodeFlash on fhaviary
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        run: codeflash
+        run: uv run codeflash
       - name: Run CodeFlash on aviary.gsm8k
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        run: codeflash --module-root=packages/gsm8k/src/aviary --tests-root=packages/gsm8k/tests
+        run: uv run codeflash --module-root=packages/gsm8k/src/aviary --tests-root=packages/gsm8k/tests
       - name: Run CodeFlash on aviary.hotpotqa
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        run: codeflash --module-root=packages/hotpotqa/src/aviary --tests-root=packages/hotpotqa/tests
+        run: uv run codeflash --module-root=packages/hotpotqa/src/aviary --tests-root=packages/hotpotqa/tests
