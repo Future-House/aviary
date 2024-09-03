@@ -32,6 +32,8 @@ jobs:
           uv run refurb .
           cd ../../hotpotqa/src
           uv run refurb .
+          cd ../../..
+          uv run refurb tests packages/gsm8k/tests packages/hotpotqa/tests
       - run: uv run pylint src packages
   test:
     runs-on: large-runner
