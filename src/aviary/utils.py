@@ -65,21 +65,12 @@ class DBBackend:
     @classmethod
     async def populate_session(
         cls,
-        uri: str | None = None,
+        uri: str,
         base: type[DeclarativeBase] = Base,
         engine_kwargs: dict[str, Any] | None = None,
         sessionmaker_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        if uri is not None:
-            if cls.uri is not None:
-                raise RuntimeError(
-                    "Attempting to initialize DB backend connection, but one is already"
-                    " established."
-                )
-            cls.uri = uri
-        assert (
-            cls.uri is not None
-        ), "Cannot initialize DB backend without specifying a URI."
+        cls.uri = uri
         cls.engine = engine = create_async_engine(cls.uri, **(engine_kwargs or {}))
         async with engine.begin() as conn:
             await conn.run_sync(base.metadata.create_all)
