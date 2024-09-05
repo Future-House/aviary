@@ -170,7 +170,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.1.0"
+version = "0.2.1.dev7+gb20b09e"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -193,7 +193,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.1.1.dev1+g6ecbcb5"
+version = "0.2.1.dev7+gb20b09e"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -574,7 +574,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.2.1.dev1+gcb61378.d20240903"
+version = "0.2.1.dev6+g918a61c.d20240905"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -586,6 +586,12 @@ dependencies = [
 [package.optional-dependencies]
 cloud = [
     { name = "boto3" },
+]
+gsm8k = [
+    { name = "aviary-gsm8k" },
+]
+hotpotqa = [
+    { name = "aviary-hotpotqa" },
 ]
 image = [
     { name = "pillow" },
@@ -632,6 +638,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aviary-gsm8k", marker = "extra == 'gsm8k'", editable = "packages/gsm8k" },
+    { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "dicttoxml", marker = "extra == 'xml'" },

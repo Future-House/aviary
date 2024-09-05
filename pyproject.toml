@@ -30,6 +30,8 @@ requires-python = ">=3.11"
 cloud = [
     "boto3",
 ]
+gsm8k = ["aviary.gsm8k"]
+hotpotqa = ["aviary.hotpotqa"]
 image = [
     "Pillow",
 ]
