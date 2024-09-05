@@ -1,16 +1,12 @@
 import asyncio
 import json
-import os
 import pathlib
 import tempfile
 from typing import ClassVar
-from unittest.mock import patch
 
 import pytest
-from httpx import AsyncClient
 from pydantic import BaseModel
 
-from aviary.api import EnvDBClient, make_environment_db_server
 from aviary.env import DummyEnv, DummyEnvState, Environment, Frame, TaskDataset
 from aviary.message import Message
 from aviary.render import Renderer
@@ -22,7 +18,6 @@ from aviary.tools import (
     ToolsAdapter,
 )
 from tests import CILLMModelNames
-from tests.conftest import ENV_BACKENDS
 
 
 class TestDummyEnv:
@@ -328,92 +323,3 @@ class TestParallelism:
         (failure_tool_response,) = obs
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
-
-
-class TestEnvDBServerClient:
-    @pytest.mark.parametrize("clean_db_backend", ENV_BACKENDS, indirect=True)
-    @pytest.mark.asyncio
-    async def test_env_write_and_read(self, clean_db_backend: str) -> None:
-        base_server_url = "http://testserver"
-        test_env_name = "test_env"
-        with patch.dict(
-            os.environ, {"AUTH_TOKEN": "stub", "ENV_DB_URI": clean_db_backend}
-        ):
-            async with AsyncClient(
-                app=make_environment_db_server(),
-                base_url=base_server_url,
-            ) as async_client:
-                response = await async_client.post(
-                    "/environment_instance",
-                    headers={"Authorization": "Bearer stub"},
-                    params={"env_name": test_env_name},
-                )
-                response.raise_for_status()
-
-            custom_client = AsyncClient(
-                app=make_environment_db_server(),
-                base_url=base_server_url,
-            )
-
-            env_db_client = EnvDBClient(
-                server_url="",
-                request_headers={"Authorization": "Bearer stub"},
-            )
-
-            with patch("httpx.AsyncClient.get", custom_client.get):
-                all_results = await env_db_client.get_environment_instances(
-                    name=test_env_name
-                )
-                assert response.json() == all_results[0].id
-
-    @pytest.mark.parametrize("clean_db_backend", ENV_BACKENDS, indirect=True)
-    @pytest.mark.asyncio
-    async def test_env_frame_write_and_read(self, clean_db_backend: str) -> None:
-        base_server_url = "http://testserver"
-        test_env_name = "test_env"
-        with patch.dict(
-            os.environ, {"AUTH_TOKEN": "stub", "ENV_DB_URI": clean_db_backend}
-        ):
-            custom_client = AsyncClient(
-                app=make_environment_db_server(),
-                base_url=base_server_url,
-            )
-
-            env_db_client = EnvDBClient(
-                server_url="",
-                request_headers={"Authorization": "Bearer stub"},
-                # custom_client_func=custom_client_func,
-            )
-            with (
-                patch("httpx.AsyncClient.post", custom_client.post),
-                patch("httpx.AsyncClient.get", custom_client.get),
-            ):
-                environment_id = await env_db_client.write_environment_instance(
-                    name=test_env_name
-                )
-                environment_ids = await env_db_client.get_environment_instances(
-                    name=test_env_name
-                )
-
-                assert (
-                    len(environment_ids) == 1
-                ), "There should only be 1 instance present"
-
-                frame = Frame(state={"messages": ["Hello, world!"]})
-                frame_id_1 = await env_db_client.write_environment_frame(
-                    environment_id=environment_id, frame=frame
-                )
-                frame_id_2 = await env_db_client.write_environment_frame(
-                    environment_id=environment_id, frame=frame
-                )
-                frames = await env_db_client.get_environment_frames(
-                    environment_id=environment_id
-                )
-
-                assert len(frames) == 2, "There should be 2 frames present"
-                assert frames[0].id == str(
-                    frame_id_1
-                ), "Frame ID was not assigned as expected"
-                assert frames[1].id == str(
-                    frame_id_2
-                ), "Frame ID was not assigned as expected"

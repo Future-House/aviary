@@ -2,16 +2,7 @@ import base64
 import contextlib
 import inspect
 import io
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, ClassVar
-
-from pydantic import JsonValue
-from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
-from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm.decl_api import _TypeAnnotationMapType
-from sqlalchemy.types import JSON
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import numpy as np
@@ -50,40 +41,3 @@ def is_coroutine_callable(obj) -> bool:
     if callable(obj):
         return inspect.iscoroutinefunction(obj.__call__)
     return False
-
-
-class Base(DeclarativeBase):
-    # Allowing dict to correspond with arbitrary JSON
-    type_annotation_map: ClassVar[_TypeAnnotationMapType] = {JsonValue: JSON}
-
-
-class DBBackend:
-    engine: ClassVar[AsyncEngine | None] = None
-    Session: ClassVar[async_sessionmaker[_AsyncSession] | None] = None
-    uri: ClassVar[str | None] = None
-
-    @classmethod
-    async def populate_session(
-        cls,
-        uri: str,
-        base: type[DeclarativeBase] = Base,
-        engine_kwargs: dict[str, Any] | None = None,
-        sessionmaker_kwargs: dict[str, Any] | None = None,
-    ) -> None:
-        cls.uri = uri
-        cls.engine = engine = create_async_engine(cls.uri, **(engine_kwargs or {}))
-        async with engine.begin() as conn:
-            await conn.run_sync(base.metadata.create_all)
-        cls.Session = async_sessionmaker(bind=engine, **(sessionmaker_kwargs or {}))
-
-    @classmethod
-    @asynccontextmanager
-    async def begin_session(cls) -> AsyncIterator[_AsyncSession]:
-        if cls.Session is None:
-            raise RuntimeError(
-                "No database connection established. Please call `await"
-                " DBBackend.init_connection(...)` or manually populate `cls.Session`"
-                " before attempting to persist or rehydrate contexts."
-            )
-        async with cls.Session.begin() as session:
-            yield session
