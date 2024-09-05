@@ -559,28 +559,13 @@ wheels = [
 ]
 
 [[package]]
-name = "fastapi"
-version = "0.112.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pydantic" },
-    { name = "starlette" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/11/4874d165e7ef97aa803a567a4be8f9c8b0bd7cced6d536d44033ef7d4bfa/fastapi-0.112.2.tar.gz", hash = "sha256:3d4729c038414d5193840706907a41839d839523da6ed0c2811f1168cac1798c", size = 291967 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/ae/6570ae1b67007735229f10f2e1174d6e33c056ee9c0c1754d432acbede94/fastapi-0.112.2-py3-none-any.whl", hash = "sha256:db84b470bd0e2b1075942231e90e3577e12a903c4dc8696f0d206a7904a7af1c", size = 93471 },
-]
-
-[[package]]
 name = "fhaviary"
-version = "0.2.1.dev6+g918a61c.d20240905"
+version = "0.3.1.dev0+g7016db4.d20240905"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
     { name = "httpx" },
     { name = "pydantic" },
-    { name = "sqlalchemy" },
 ]
 
 [package.optional-dependencies]
@@ -595,9 +580,6 @@ hotpotqa = [
 ]
 image = [
     { name = "pillow" },
-]
-server = [
-    { name = "fastapi" },
 ]
 typing = [
     { name = "boto3-stubs", extra = ["s3"] },
@@ -616,7 +598,6 @@ dev = [
     { name = "build" },
     { name = "codeflash" },
     { name = "dicttoxml" },
-    { name = "fastapi" },
     { name = "ipython" },
     { name = "mypy" },
     { name = "numpy" },
@@ -644,12 +625,10 @@ requires-dist = [
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "dicttoxml", marker = "extra == 'xml'" },
     { name = "docstring-parser" },
-    { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.109" },
     { name = "httpx" },
     { name = "numpy", marker = "extra == 'typing'" },
     { name = "pillow", marker = "extra == 'image'" },
     { name = "pydantic", specifier = "~=2.0" },
-    { name = "sqlalchemy", specifier = "~=2.0" },
     { name = "types-pillow", marker = "extra == 'typing'" },
 ]
 
@@ -1944,18 +1923,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/28/e3/55dcc2cfbc3ca9c29519eb6884dd1415ecb53b0e934862d3559ddcb7e20b/stack_data-0.6.3.tar.gz", hash = "sha256:836a778de4fec4dcd1dcd89ed8abff8a221f58308462e1c4aa2a3cf30148f0b9", size = 44707 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl", hash = "sha256:d5558e0c25a4cb0853cddad3d77da9891a08cb85dd9f9f91b9f8cd66e511e695", size = 24521 },
-]
-
-[[package]]
-name = "starlette"
-version = "0.38.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/43/e2/d49a94ecb665b3a1c34b40c78165a737abc384fcabc843ccb14a3bd3dc37/starlette-0.38.2.tar.gz", hash = "sha256:c7c0441065252160993a1a37cf2a73bb64d271b17303e0b0c1eb7191cfb12d75", size = 2844770 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c1/60/d976da9998e4f4a99e297cda09d61ce305919ea94cbeeb476dba4fece098/starlette-0.38.2-py3-none-any.whl", hash = "sha256:4ec6a59df6bbafdab5f567754481657f7ed90dc9d69b0c9ff017907dd54faeff", size = 72020 },
 ]
 
 [[package]]

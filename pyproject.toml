@@ -15,7 +15,6 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dependencies = [
-    "SQLAlchemy~=2.0",  # End users should specify DB backends themselves
     "docstring_parser",
     "httpx",
     "pydantic~=2.0",
@@ -34,9 +33,6 @@ gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]
 image = [
     "Pillow",
-]
-server = [
-    "fastapi>=0.109",  # For Python 3.12 support
 ]
 typing = [
     "boto3-stubs[s3]",
