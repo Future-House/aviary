@@ -71,6 +71,7 @@ check_untyped_defs = true
 # override disabled error codes from the disable_error_code option.
 enable_error_code = [
     "ignore-without-code",
+    "mutable-override",
     "redundant-cast",
     "redundant-expr",
     "redundant-self",
