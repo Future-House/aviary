@@ -74,6 +74,7 @@ repos:
           - datasets
           - docstring_parser
           - httpx
+          - litellm
           - numpy
           - pydantic~=2.0 # Match aviary pyproject.toml
           - tenacity

@@ -35,6 +35,9 @@ hotpotqa = ["aviary.hotpotqa"]
 image = [
     "Pillow",
 ]
+llm = [
+    "litellm",
+]
 typing = [
     "boto3-stubs[s3]",
     "numpy",
@@ -128,6 +131,7 @@ ignore_missing_imports = true
 module = [
     "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
     "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
+    "litellm",  # SEE: https://github.com/BerriAI/litellm/issues/825
 ]
 
 [tool.pylint]
@@ -386,7 +390,7 @@ dev-dependencies = [
     "aviary.hotpotqa",  # So `uv sync` pulls this in
     "build",  # TODO: remove after https://github.com/astral-sh/uv/issues/6278
     "codeflash",
-    "fhaviary[image,server,typing,xml]",
+    "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
     "pre-commit~=3.4",
