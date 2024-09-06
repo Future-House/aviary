@@ -98,7 +98,7 @@ class TestDummyEnv:
         assert isinstance(batch[0], DummyEnv)
 
     @pytest.mark.parametrize(
-        "model_name", ["gpt-3.5-turbo", CILLMModelNames.ANTHROPIC.value]
+        "model_name", [CILLMModelNames.OPENAI.value, CILLMModelNames.ANTHROPIC.value]
     )
     @pytest.mark.asyncio
     async def test_tool_calling(self, dummy_env: DummyEnv, model_name: str) -> None:
