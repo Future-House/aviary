@@ -16,6 +16,7 @@ from aviary.tools import (
     ToolRequestMessage,
     ToolResponseMessage,
     ToolsAdapter,
+    ToolSelector,
 )
 from tests import CILLMModelNames
 
@@ -323,3 +324,14 @@ class TestParallelism:
         (failure_tool_response,) = obs
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
+
+    @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
+    @pytest.mark.asyncio
+    async def test_with_tool_selector(self, model_name: str) -> None:
+        env = ParallelizedDummyEnv()
+        obs_tools = await env.reset()
+
+        selector = ToolSelector(model_name)
+        tool_request_message = await selector(*obs_tools)
+        assert isinstance(tool_request_message, ToolRequestMessage)
+        assert tool_request_message.tool_calls, "Expected at least one tool call"

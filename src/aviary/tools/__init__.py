@@ -14,6 +14,7 @@ from .base import (
     ToolsAdapter,
     wraps_doc_only,
 )
+from .utils import ToolSelector
 
 __all__ = [
     "INVALID_TOOL_NAME",
@@ -26,6 +27,7 @@ __all__ = [
     "ToolCallFunction",
     "ToolRequestMessage",
     "ToolResponseMessage",
+    "ToolSelector",
     "Tools",
     "ToolsAdapter",
     "argref_by_name",
