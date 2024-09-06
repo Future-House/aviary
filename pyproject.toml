@@ -388,6 +388,7 @@ dev-dependencies = [
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
     "pre-commit~=3.4",
+    "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
     "pylint>=3.2",
     "pytest-asyncio",
