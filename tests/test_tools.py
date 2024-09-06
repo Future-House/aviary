@@ -176,7 +176,7 @@ class TestTool:
                                     "title": "Union",
                                 },
                                 "pydantic_model": {
-                                    "allOf": [{"$ref": "#/$defs/StubState"}],
+                                    "$ref": "#/$defs/StubState",
                                     "description": "I am a Pydantic model.",
                                 },
                                 "basic_dict": {
@@ -204,7 +204,7 @@ class TestTool:
                                     "type": "object",
                                 },
                                 "enum": {
-                                    "allOf": [{"$ref": "#/$defs/StubEnum"}],
+                                    "$ref": "#/$defs/StubEnum",
                                     "description": "I am an enum.",
                                 },
                                 "defaulted_str": {
