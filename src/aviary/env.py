@@ -9,7 +9,7 @@ import random
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from copy import deepcopy
-from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
+from typing import Annotated, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
 
 from pydantic import (
     BaseModel,
@@ -82,8 +82,13 @@ class Environment(ABC, Generic[TEnvState]):
     Environments (and their contained tools) are not trainable.
     """
 
+    # These two are populated by reset
     tools: list[Tool]
     state: TEnvState
+
+    # This is a placeholder reward to notate that reward is back calculated by
+    # some reward model or grader after completing a full rollout
+    REWARD_COMPUTED_AFTER_ROLLOUT: ClassVar[float] = 0.0
 
     @abstractmethod
     async def step(
