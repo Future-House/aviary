@@ -1,8 +1,16 @@
 from functools import partial
 
+from pydantic import BaseModel, Field
+
 from aviary.message import Message
 
-from .base import MessagesAdapter, Tool, ToolRequestMessage, ToolsAdapter
+from .base import (
+    MessagesAdapter,
+    Tool,
+    ToolRequestMessage,
+    ToolResponseMessage,
+    ToolsAdapter,
+)
 
 
 class ToolSelector:
@@ -36,3 +44,12 @@ class ToolSelector:
                 f"Unexpected shape of LiteLLM model response {model_response}."
             )
         return ToolRequestMessage(**model_response.choices[0].message.model_dump())
+
+
+class ToolSelectorLedger(BaseModel):
+    """Simple ledger to record tools and messages."""
+
+    tools: list[Tool] = Field(default_factory=list)
+    messages: list[ToolRequestMessage | ToolResponseMessage | Message] = Field(
+        default_factory=list
+    )

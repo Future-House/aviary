@@ -17,6 +17,7 @@ from aviary.tools import (
     ToolResponseMessage,
     ToolsAdapter,
     ToolSelector,
+    ToolSelectorLedger,
 )
 from tests import CILLMModelNames
 
@@ -329,9 +330,12 @@ class TestParallelism:
     @pytest.mark.asyncio
     async def test_with_tool_selector(self, model_name: str) -> None:
         env = ParallelizedDummyEnv()
-        obs_tools = await env.reset()
+        obs, tools = await env.reset()
+        ledger = ToolSelectorLedger(tools=tools)
 
         selector = ToolSelector(model_name)
-        tool_request_message = await selector(*obs_tools)
+        tool_request_message = await selector(obs, tools)
+        ledger.messages.append(tool_request_message)
+        ledger.model_dump()  # Proving we can serialize the ledger
         assert isinstance(tool_request_message, ToolRequestMessage)
         assert tool_request_message.tool_calls, "Expected at least one tool call"

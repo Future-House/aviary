@@ -14,7 +14,7 @@ from .base import (
     ToolsAdapter,
     wraps_doc_only,
 )
-from .utils import ToolSelector
+from .utils import ToolSelector, ToolSelectorLedger
 
 __all__ = [
     "INVALID_TOOL_NAME",
@@ -28,6 +28,7 @@ __all__ = [
     "ToolRequestMessage",
     "ToolResponseMessage",
     "ToolSelector",
+    "ToolSelectorLedger",
     "Tools",
     "ToolsAdapter",
     "argref_by_name",
