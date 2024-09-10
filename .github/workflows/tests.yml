@@ -30,7 +30,7 @@ jobs:
       - name: Set up uv
         run: |-
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv python install ${{ matrix.python-version }}
+          uv python pin ${{ matrix.python-version }}
       - run: uv sync --python-preference=only-managed
       - name: Run refurb
         run: | # Go with this until https://github.com/astral-sh/uv/issues/6459
