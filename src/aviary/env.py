@@ -176,7 +176,8 @@ class Environment(ABC, Generic[TEnvState]):
                 )
             except StopIteration as exc:
                 raise ValueError(
-                    f"{tool_call.function.name} not a valid function."
+                    f"{tool_call.function.name!r} not a valid name in"
+                    f" { {t.info.name for t in self.tools} }."
                 ) from exc
             # we do a special convenience to make
             # state be optional in the function signature
