@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, cast
 
 from pydantic import BaseModel, Field
 
-from aviary.message import Message
+from aviary.message import MalformedMessageError, Message
 
 from .base import (
     MessagesAdapter,
@@ -61,7 +61,7 @@ class ToolSelector:
             len(model_response.choices) != 1
             or model_response.choices[0].finish_reason != "tool_calls"
         ):
-            raise NotImplementedError(
+            raise MalformedMessageError(
                 f"Unexpected shape of LiteLLM model response {model_response}."
             )
         return ToolRequestMessage(**model_response.choices[0].message.model_dump())
