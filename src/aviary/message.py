@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from aviary.utils import encode_image_to_base64
 
 if TYPE_CHECKING:
+    from logging import LogRecord
+
     import numpy as np
 
 
@@ -132,3 +134,22 @@ def join(
     return delimiter.join(
         f"{f'{m.role}: ' if include_roles else ''}{m.content or ''}" for m in msgs
     )
+
+
+class MalformedMessageError(ValueError):
+    """Error to throw if some aspect of a Message variant is malformed."""
+
+    @classmethod
+    def common_retryable_errors_log_filter(cls, record: LogRecord) -> bool:
+        """
+        Filter out common parsing failures not worth looking into from logs.
+
+        Returns:
+            False if the LogRecord should be filtered out, otherwise True to keep it.
+        """
+        # NOTE: match both this Exception type's name and its content, to be robust
+        return not all(x in record.msg for x in (cls.__name__, EMPTY_CONTENT_BASE_MSG))
+
+
+# Define separately so we can filter out this message type
+EMPTY_CONTENT_BASE_MSG = "No content in message"
