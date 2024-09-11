@@ -44,7 +44,7 @@ class ToolSelector:
                     f"{type(self).__name__} requires the 'llm' extra for 'litellm'. Please:"
                     " `pip install aviary[llm]`."
                 ) from e
-
+        self._model_name = model_name
         self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
 
     async def __call__(
@@ -67,7 +67,10 @@ class ToolSelector:
         usage = model_response.usage
         return ToolRequestMessage(
             **model_response.choices[0].message.model_dump(),
-            info={"usage": (usage.prompt_tokens, usage.completion_tokens)},)
+            info={
+                "usage": (usage.prompt_tokens, usage.completion_tokens),
+                "model": self._model_name,
+                },)
 
 
 class ToolSelectorLedger(BaseModel):

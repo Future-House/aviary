@@ -363,3 +363,4 @@ class TestParallelism:
 
         assert tool_request_message.info, "Expected message info"
         assert tool_request_message.info["usage"][0] > 0, "Expected prompt tokens"
+        assert tool_request_message.info["model"], "Expected model name"
