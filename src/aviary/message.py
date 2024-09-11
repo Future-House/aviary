@@ -44,6 +44,13 @@ class Message(BaseModel):
         repr=False,
     )
 
+    info: dict | None = Field(
+        default=None,
+        description="Optional metadata about the message.",
+        exclude=True,
+        repr=False,
+    )
+
     @field_validator("role")
     @classmethod
     def check_role(cls, v: str) -> str:
