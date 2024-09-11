@@ -2,7 +2,6 @@ import asyncio
 import json
 import pathlib
 import tempfile
-from functools import partial
 from typing import ClassVar
 
 import litellm
@@ -357,7 +356,7 @@ class TestParallelism:
                 )
             ]
         )
-        selector = ToolSelector(partial(router.acompletion, "openai"))
+        selector = ToolSelector("openai", router.acompletion)
         tool_request_message = await selector(*obs_tools)
         assert isinstance(tool_request_message, ToolRequestMessage)
         assert tool_request_message.tool_calls, "Expected at least one tool call"
