@@ -64,7 +64,10 @@ class ToolSelector:
             raise NotImplementedError(
                 f"Unexpected shape of LiteLLM model response {model_response}."
             )
-        return ToolRequestMessage(**model_response.choices[0].message.model_dump())
+        usage = model_response.usage
+        return ToolRequestMessage(
+            **model_response.choices[0].message.model_dump(),
+            info={"usage": (usage.prompt_tokens, usage.completion_tokens)},)
 
 
 class ToolSelectorLedger(BaseModel):

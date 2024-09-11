@@ -360,3 +360,6 @@ class TestParallelism:
         tool_request_message = await selector(*obs_tools)
         assert isinstance(tool_request_message, ToolRequestMessage)
         assert tool_request_message.tool_calls, "Expected at least one tool call"
+
+        assert tool_request_message.info, "Expected message info"
+        assert tool_request_message.info["usage"][0] > 0, "Expected prompt tokens"
