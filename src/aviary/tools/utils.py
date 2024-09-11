@@ -70,7 +70,8 @@ class ToolSelector:
             info={
                 "usage": (usage.prompt_tokens, usage.completion_tokens),
                 "model": self._model_name,
-                },)
+            },
+        )
 
 
 class ToolSelectorLedger(BaseModel):

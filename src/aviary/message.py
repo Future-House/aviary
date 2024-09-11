@@ -49,7 +49,6 @@ class Message(BaseModel):
         repr=False,
     )
 
-
     @field_validator("role")
     @classmethod
     def check_role(cls, v: str) -> str:
