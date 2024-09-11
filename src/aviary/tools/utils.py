@@ -1,4 +1,5 @@
 from functools import partial
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field
 
@@ -12,19 +13,30 @@ from .base import (
     ToolsAdapter,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from litellm import ModelResponse
+
 
 class ToolSelector:
     """Simple entity to select a tool based on messages."""
 
-    def __init__(self, model: str = "gpt-4o"):
-        try:
-            from litellm import acompletion
-        except ImportError as e:
-            raise ImportError(
-                f"{type(self).__name__} requires the 'llm' extra for 'litellm'. Please:"
-                " `pip install aviary[llm]`."
-            ) from e
-        self._acompletion = partial(acompletion, model)
+    def __init__(
+        self,
+        model_or_acompletion: "str | Callable[..., Awaitable[ModelResponse]]" = "gpt-4o",
+    ):
+        if not isinstance(model_or_acompletion, str):
+            self._acompletion = model_or_acompletion
+        else:
+            try:
+                from litellm import acompletion
+            except ImportError as e:
+                raise ImportError(
+                    f"{type(self).__name__} requires the 'llm' extra for 'litellm'. Please:"
+                    " `pip install aviary[llm]`."
+                ) from e
+            self._acompletion = partial(acompletion, model_or_acompletion)
 
     async def __call__(
         self, messages: list[Message], tools: list[Tool]
@@ -43,7 +55,7 @@ class ToolSelector:
             raise NotImplementedError(
                 f"Unexpected shape of LiteLLM model response {model_response}."
             )
-        return ToolRequestMessage(**model_response.choices[0].message.model_dump())
+        return ToolRequestMessage(**model_response.choices[0].message.model_dump())  # type: ignore[union-attr]
 
 
 class ToolSelectorLedger(BaseModel):
