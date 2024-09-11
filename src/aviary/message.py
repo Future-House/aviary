@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -111,7 +111,7 @@ class Message(BaseModel):
         role: str = DEFAULT_ROLE,
         text: str | None = None,
         image: np.ndarray | None = None,
-    ) -> Message:
+    ) -> Self:
         # Assume no image, and update to image if present
         content: str | list[dict] | None = text
         if image is not None:
@@ -123,7 +123,7 @@ class Message(BaseModel):
             ]
             if text is not None:
                 content.append({"type": "text", "text": text})
-        return Message(role=role, content=content)
+        return cls(role=role, content=content)
 
 
 def join(
