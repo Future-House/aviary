@@ -72,7 +72,7 @@ repos:
         additional_dependencies:
           - boto3-stubs[s3]
           - datasets
-          - docstring_parser
+          - docstring_parser>=0.16 # Match aviary pyproject.toml
           - httpx
           - litellm
           - numpy
