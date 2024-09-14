@@ -21,3 +21,11 @@ The citation for GSM8k is given below:
 [1] Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., Plappert, M., Tworek, J., Hilton, J., Nakano,
 R. and Hesse, C., 2021.
 [Training verifiers to solve math word problems](https://arxiv.org/abs/2110.14168). arXiv preprint arXiv:2110.14168.
+
+## Installation
+
+To install the GSM8k environment, run the following command:
+
+```bash
+pip install fhaviary[gsm8k]
+```

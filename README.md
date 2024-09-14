@@ -216,3 +216,43 @@ def export_frame(self) -> Frame:
         info={"tool_names": [t.info.name for t in self.tools]},
     )
 ```
+
+## Environments
+
+### GSM8k Environment
+
+#### What it does
+
+The GSM8k environment allows agents to solve math word problems from the GSM8k dataset.
+
+#### Installation
+
+To install the GSM8k environment, run the following command:
+
+```bash
+pip install fhaviary[gsm8k]
+```
+
+### HotPotQA Environment
+
+#### What it does
+
+The HotPotQA environment allows agents to perform multi-hop question answering on the HotPotQA dataset.
+
+#### Installation
+
+To install the HotPotQA environment, run the following command:
+
+```bash
+pip install fhaviary[hotpotqa]
+```
+
+### PaperQA Environment
+
+#### What it does
+
+The PaperQA environment allows agents to perform question answering on the PaperQA dataset.
+
+#### Installation
+
+To install the PaperQA environment, follow the instructions in the [PaperQA repository](https://github.com/Future-House/paper-qa).
