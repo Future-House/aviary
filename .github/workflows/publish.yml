@@ -15,9 +15,9 @@ jobs:
       - run: uv sync
       - name: Build a binary wheel and a source tarball
         run: |
-          uv run python -m build --sdist --wheel --outdir dist/ .
-          uv run python -m build --sdist --wheel --outdir dist/ packages/gsm8k
-          uv run python -m build --sdist --wheel --outdir dist/ packages/hotpotqa
+          uv build --sdist --wheel --out-dir dist/ .
+          uv build --sdist --wheel --out-dir dist/ packages/gsm8k
+          uv build --sdist --wheel --out-dir dist/ packages/hotpotqa
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
