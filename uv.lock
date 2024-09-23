@@ -170,7 +170,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.6.2.dev5+g1c65f00.d20240923"
+version = "0.6.2.dev6+g348e17a"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -193,7 +193,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.6.2.dev5+g1c65f00.d20240923"
+version = "0.6.2.dev6+g348e17a"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -555,7 +555,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.6.2.dev5+g1c65f00.d20240923"
+version = "0.6.2.dev6+g348e17a"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
