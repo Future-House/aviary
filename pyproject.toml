@@ -406,6 +406,7 @@ dev-dependencies = [
     "pylint-pydantic",
     "pylint>=3.2",
     "pytest-asyncio",
+    "pytest-recording",
     "pytest-subtests",
     "pytest-sugar",
     "pytest-timer[colorama]",
