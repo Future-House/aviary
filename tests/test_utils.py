@@ -3,6 +3,7 @@ import pytest
 from aviary.tools import eval_answer
 
 
+@pytest.mark.vcr
 @pytest.mark.parametrize(
     ("proposed", "correct", "question", "eval_mode", "expected"),
     [
@@ -32,6 +33,7 @@ async def test_eval_answer(proposed, correct, question, eval_mode, expected):
     assert await eval_answer(proposed, correct, question, eval_mode) == expected
 
 
+@pytest.mark.vcr
 @pytest.mark.asyncio
 async def test_eval_llm_config():
     config = {"temperature": 0.5}

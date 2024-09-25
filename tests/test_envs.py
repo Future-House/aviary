@@ -327,6 +327,7 @@ class TestParallelism:
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
 
+    @pytest.mark.vcr
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
     async def test_tool_selector_from_model_name(self, model_name: str) -> None:
@@ -341,6 +342,7 @@ class TestParallelism:
         assert isinstance(tool_request_message, ToolRequestMessage)
         assert tool_request_message.tool_calls, "Expected at least one tool call"
 
+    @pytest.mark.vcr
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
     async def test_tool_selector_with_external_acompletion(
