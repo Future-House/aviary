@@ -65,6 +65,10 @@ repos:
     rev: 0.4.15
     hooks:
       - id: uv-lock
+  - repo: https://github.com/renovatebot/pre-commit-hooks
+    rev: 38.94.3
+    hooks:
+      - id: renovate-config-validator
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.11.2
     hooks:
