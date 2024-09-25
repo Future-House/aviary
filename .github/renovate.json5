@@ -5,8 +5,10 @@
   prHourlyLimit: 4,
   timezone: "America/Los_Angeles",
   rangeStrategy: "widen",
-  lockFileMaintenance: {
-    enabled: true,
-    automerge: true,
-  },
+  packageRules: [
+    {
+      matchUpdateTypes: ["lockFileMaintenance"],
+      automerge: true,
+    },
+  ],
 }
