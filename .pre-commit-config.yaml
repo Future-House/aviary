@@ -36,6 +36,7 @@ repos:
         args:
           - --word-list=.secrets.allowlist
           - --exclude-files=.secrets.baseline$
+        exclude: tests/cassettes
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
     hooks:
