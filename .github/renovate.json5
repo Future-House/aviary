@@ -7,5 +7,6 @@
   rangeStrategy: "widen",
   lockFileMaintenance: {
     enabled: true,
+    automerge: true,
   },
 }
