@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from enum import StrEnum
 from functools import partial
 from typing import TYPE_CHECKING, cast
 
@@ -18,6 +19,72 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable
 
     from litellm import ModelResponse
+
+
+class EvalAnswerMode(StrEnum):
+    EXACT = "exact"  # strings must match exactly
+    CONTAINS = "contains"  # the correct answer is contained in the supplied answer
+    LLM = "llm"  # Ask an LLM (default: GPT-4o-mini) to evaluate
+
+
+LLM_EVAL_CONFIG = {
+    "prompt": (
+        "Here is a question, the correct answer to the question, and a proposed answer to the question. "
+        "Please tell me if the proposed answer is correct, given the correct answer. "
+        "ONLY SAY 'YES' OR 'NO'. No other output is permitted.\n\n"
+        "Question: {question} \n\n"
+        "Correct answer: {correct_answer} \n\n"
+        "Proposed answer: {proposed_answer}"
+    ),
+    "model": "gpt-4o-mini",
+    "temperature": 0,
+}
+
+
+async def eval_answer(
+    proposed: str,
+    correct: str,
+    question: str | None = None,
+    eval_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS,
+    llm_eval_config: dict | None = None,
+) -> bool:
+    if eval_mode == EvalAnswerMode.LLM:
+        try:
+            from litellm import acompletion
+        except ImportError as e:
+            raise ImportError(
+                "eval_answer requires the 'llm' extra for 'litellm'. Please:"
+                " `pip install aviary[llm]`."
+            ) from e
+        if question is None:
+            raise ValueError("Question must be provided for LLM evaluation mode.")
+        config = llm_eval_config or LLM_EVAL_CONFIG
+        prompt = cast(str, config.get("prompt", LLM_EVAL_CONFIG["prompt"])).format(
+            question=question,
+            correct_answer=correct,
+            proposed_answer=proposed,
+        )
+        response = await acompletion(
+            model=config.get("model", LLM_EVAL_CONFIG["model"]),
+            temperature=config.get("temperature", LLM_EVAL_CONFIG["temperature"]),
+            messages=[{"content": prompt, "role": "user"}],
+        )
+        return await eval_answer(
+            response.choices[0].message.content.strip().casefold(),
+            "yes",
+            eval_mode=EvalAnswerMode.EXACT,
+        )
+
+    gt = correct.strip().casefold()
+    pred = proposed.strip().casefold()
+
+    if eval_mode == EvalAnswerMode.EXACT:
+        return pred == gt
+
+    if eval_mode == EvalAnswerMode.CONTAINS:
+        return gt in pred
+
+    raise RuntimeError(f"Invalid evaluation mode: {eval_mode}")
 
 
 class ToolSelector:
