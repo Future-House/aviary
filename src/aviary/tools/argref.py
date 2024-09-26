@@ -47,23 +47,22 @@ def argref_wraps(wrapped):
     return partial(argref_wrapper, wrapped=wrapped)
 
 
-def argref_by_name(  # noqa: C901
+def argref_by_name(  # noqa: C901,PLR0915
     fxn_requires_state: bool = False,
     prefix: str = "",
     return_direct: bool = False,
-    skip_deref: set[str] | None = None,
 ):
     """Decorator to allow args to be a string key into a refs dict instead of the full object.
 
     This can prevent LLM-powered tool selections from getting confused by full objects,
-    instead it enables them to work using named references.
+    instead it enables them to work using named references. If a reference is not found, it
+    will fallback on passing the original argument unless it is the first argument. If the
+    first argument str is not found in the state object, it will raise an error.
 
     Args:
         fxn_requires_state: Whether to pass the state object to the decorated function.
         prefix: A prefix to add to the generated reference ID.
         return_direct: Whether to return the result directly or update the state object.
-        skip_deref: A set of argument names for which to skip dereferencing. Must call with kwarg style
-            to skip dereferencing and the value must be a string.
 
     Example 1:
         >>> @argref_by_name()  # doctest: +SKIP
@@ -93,21 +92,6 @@ def argref_by_name(  # noqa: C901
         >>> # Returns a multiline string with the new references
         >>> # Equivalent to my_func(state.refs["a"], state.refs["b"])
         >>> wrapped_fxn("a", "b", state=state)  # doctest: +SKIP
-
-    Skipping dereferencing. In this example, we mark bar to not have input strings try
-    to be dereferenced to something from the state. Instead, the value ``"a specific value"``
-    will be passed directly to the function. Note though in Example 2 below, if I
-    pass as kwargs then it will still be dereferenced. This is undesired behavior and will be fixed.
-    TODO: do not do this.
-
-    Example 1:
-        >>> @argref_by_name(skip_deref={"bar"})  # doctest: +SKIP
-        >>> def my_func(foo: float, bar: str) -> float:  # doctest: +SKIP
-        ...     return bar  # doctest: +SKIP
-        >>> # Equivalent to my_func(state.refs["foo"], "a specific value")
-        >>> wrapped_fxn("foo", bar="a specific value", state=state)  # doctest: +SKIP
-        >>> # Equivalent to my_func(state.refs["foo"], state.refs["bar"])
-        >>> wrapped_fxn("foo", "bar", state=state)  # doctest: +SKIP
     """
 
     def decorator(func):  # noqa: C901
@@ -123,8 +107,8 @@ def argref_by_name(  # noqa: C901
 
             # now convert the keynames to actual references (if they are a string)
             # tuple is (arg, if was dereferenced)
-            def maybe_deref_arg(arg, name=None):
-                if isinstance(arg, str) and (not skip_deref or name not in skip_deref):
+            def maybe_deref_arg(arg):
+                if isinstance(arg, str):
                     try:
                         if arg in state.refs:
                             return [state.refs[arg]], True
@@ -132,9 +116,7 @@ def argref_by_name(  # noqa: C901
                         # so as an attempt to be helpful...
                         if all(a.strip() in state.refs for a in arg.split(",")):
                             return [state.refs[a.strip()] for a in arg.split(",")], True
-                        raise KeyError(
-                            f"Key '{arg}' not found in state. Available keys: {list(state.refs.keys())}"
-                        )
+                        # fall through
                     except AttributeError as e:
                         raise AttributeError(
                             "The state object must have a 'refs' attribute to use argref_by_name decorator."
@@ -143,24 +125,31 @@ def argref_by_name(  # noqa: C901
 
             # the split thing makes it complicated and we cannot use comprehension
             deref_args = []
-            for arg in args:
+            atleast_one_deref = False
+            for i, arg in enumerate(args):
                 a, dr = maybe_deref_arg(arg)
                 if dr:
                     deref_args.extend(a)
+                    atleast_one_deref = True
                 else:
+                    if i == 0 and isinstance(arg, str):
+                        # This is a bit of a heuristic, but if the first arg is a string and not found
+                        # likely the user intended to use a reference
+                        raise KeyError(f"The key {arg} is not found in state.")
                     deref_args.append(a)
             deref_kwargs = {}
-            for k, v in kwargs.items():
-                a, dr = maybe_deref_arg(v, k)
+            for i, (k, v) in enumerate(kwargs.items()):
+                a, dr = maybe_deref_arg(v)
                 if dr:
                     if len(a) > 1:
                         raise ValueError(
                             f"Multiple values for argument '{k}' found in state. "
                             " cannot use split notation for kwargs."
                         )
-
                     deref_kwargs[k] = a[0]
                 else:
+                    if i == 0 and isinstance(a, str) and not atleast_one_deref:
+                        raise KeyError(f"The key {a} is not found in state.")
                     deref_kwargs[k] = a
 
             return deref_args, deref_kwargs, state

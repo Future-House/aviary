@@ -646,8 +646,8 @@ async def test_argref_by_name_advanced_features() -> None:
 
     s = MyState()
 
-    # Define and test skip_deref with return_direct
-    @argref_by_name(skip_deref={"a"}, return_direct=True)
+    # Define and test dereference via no state value found with return_direct
+    @argref_by_name(return_direct=True)
     def skip_deref_test(foo: float, a: str) -> str:
         """Some docstring."""
         return f"{foo} {a}"
