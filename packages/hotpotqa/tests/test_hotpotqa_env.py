@@ -1,5 +1,5 @@
 from aviary.env import Environment, TaskDataset
-from aviary.hotpotqa import HotPotQAEnv
+from aviary.envs.hotpotqa import HotPotQAEnv
 
 
 def test_env_construction() -> None:

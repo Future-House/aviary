@@ -1,7 +1,7 @@
 import pytest
 
 from aviary.env import Environment, TaskDataset
-from aviary.gsm8k.env import CalculatorEnv, CalculatorEnvConfig
+from aviary.envs.gsm8k import CalculatorEnv, CalculatorEnvConfig
 from aviary.tools import ToolCall, ToolRequestMessage
 
 

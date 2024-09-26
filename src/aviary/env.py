@@ -250,8 +250,8 @@ class Environment(ABC, Generic[TEnvState]):
 # Maps baseline environment names to their module and class names
 ENV_REGISTRY: dict[str, tuple[str, str]] = {
     "dummy": ("aviary.env", "DummyEnv"),
-    "calculator": ("aviary.gsm8k.env", "CalculatorEnv"),
-    "hotpotqa": ("aviary.hotpotqa.env", "HotPotQAEnv"),
+    "calculator": ("aviary.envs.gsm8k.env", "CalculatorEnv"),
+    "hotpotqa": ("aviary.envs.hotpotqa.env", "HotPotQAEnv"),
 }
 
 TEnvironment = TypeVar("TEnvironment", bound=Environment)
@@ -319,8 +319,8 @@ class TaskDataset(ABC, Generic[TEnvironment]):
 # Maps baseline task dataset names to their module and class names
 TASK_DATASET_REGISTRY: dict[str, tuple[str, str]] = {
     "dummy": ("aviary.env", "DummyTaskDataset"),
-    "gsm8k": ("aviary.gsm8k.env", "GSM8kDataset"),
-    "hotpotqa": ("aviary.hotpotqa.env", "HotPotQADataset"),
+    "gsm8k": ("aviary.envs.gsm8k.env", "GSM8kDataset"),
+    "hotpotqa": ("aviary.envs.hotpotqa.env", "HotPotQADataset"),
 }
 
 

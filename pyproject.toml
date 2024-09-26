@@ -27,11 +27,33 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
+dev = [
+    "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
+    "aviary.envs.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
+    "aviary.envs.hotpotqa",  # So `uv sync` pulls this in
+    "codeflash",
+    "fhaviary[image,llm,server,typing,xml]",
+    "ipython>=8",  # Pin to keep recent
+    "mypy>=1.8",  # Pin for mutable-override
+    "pre-commit~=3.4",
+    "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
+    "pylint-pydantic",
+    "pylint>=3.2",
+    "pytest-asyncio",
+    "pytest-recording",
+    "pytest-subtests",
+    "pytest-sugar",
+    "pytest-timer[colorama]",
+    "pytest-xdist",
+    "pytest>=8",  # Pin to keep recent
+    "refurb>=2",  # Pin to keep recent
+    "typeguard",
+]
 cloud = [
     "boto3",
 ]
-gsm8k = ["aviary.gsm8k"]
-hotpotqa = ["aviary.hotpotqa"]
+gsm8k = ["aviary.envs.gsm8k"]
+hotpotqa = ["aviary.envs.hotpotqa"]
 image = [
     "Pillow",
 ]
@@ -394,31 +416,12 @@ trailing_comma_inline_array = true
 
 [tool.uv]
 dev-dependencies = [
-    "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
-    "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
-    "aviary.hotpotqa",  # So `uv sync` pulls this in
-    "codeflash",
-    "fhaviary[image,llm,server,typing,xml]",
-    "ipython>=8",  # Pin to keep recent
-    "mypy>=1.8",  # Pin for mutable-override
-    "pre-commit~=3.4",
-    "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
-    "pylint-pydantic",
-    "pylint>=3.2",
-    "pytest-asyncio",
-    "pytest-recording",
-    "pytest-subtests",
-    "pytest-sugar",
-    "pytest-timer[colorama]",
-    "pytest-xdist",
-    "pytest>=8",  # Pin to keep recent
-    "refurb>=2",  # Pin to keep recent
-    "typeguard",
+    "fhaviary[dev]",
 ]
 
 [tool.uv.sources]
-"aviary.gsm8k" = {workspace = true}
-"aviary.hotpotqa" = {workspace = true}
+"aviary.envs.gsm8k" = {workspace = true}
+"aviary.envs.hotpotqa" = {workspace = true}
 fhaviary = {workspace = true}
 
 [tool.uv.workspace]
