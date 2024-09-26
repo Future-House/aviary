@@ -555,7 +555,7 @@ PARAMETERS:
 
 
 @pytest.mark.asyncio
-async def test_argref_by_name() -> None:
+async def test_argref_by_name_basic_usage() -> None:
     class MyState:
         def __init__(self):
             self.refs = {"foo": 1}
@@ -572,6 +572,16 @@ async def test_argref_by_name() -> None:
     result = wrapped_add(6, 2, state=s)
     assert s.refs[result.split()[0]] == 6 + 2
 
+
+@pytest.mark.asyncio
+async def test_argref_by_name_error_handling() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1}
+
+    wrapped_add = argref_by_name()(add)
+    s = MyState()
+
     # Check if we use a key name that doesn't exist, we blow up
     with pytest.raises(KeyError, match="not found in state"):
         wrapped_add("bar", 2, state=MyState())
@@ -580,26 +590,35 @@ async def test_argref_by_name() -> None:
     with pytest.raises(AttributeError, match="must have a 'refs' attribute"):
         wrapped_add("foo", 2, state="not a state")
 
-    # now try with async and decorator
+
+@pytest.mark.asyncio
+async def test_argref_by_name_async_functions() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1, "bar": 7}
+
+    # Define the async_add function with the decorator
     @argref_by_name()
     async def async_add(a: int, b: int) -> int:
         """Some docstring."""
         return a + b
 
+    s = MyState()
     result = await async_add("foo", 2, state=s)
     assert s.refs[result.split()[0]] == 1 + 2
+
     result = await async_add(6, 2, state=s)
     assert s.refs[result.split()[0]] == 6 + 2
 
-    # now try with lists
-    s.refs["bar"] = 7
+    # Now try with lists
     result = await async_add("foo", "bar", state=s)
     assert s.refs[result.split()[0]] == 1 + 7
 
-    # try the convenience of comma splitting on key
+    # Try the convenience of comma splitting on key
     result = await async_add("foo,bar", state=s)
     assert s.refs[result.split()[0]] == 1 + 7
 
+    # Define and test async_list
     @argref_by_name()
     async def async_list(a: int, b: int) -> list[int]:
         """Some docstring."""
@@ -610,6 +629,7 @@ async def test_argref_by_name() -> None:
     assert s.refs[name1] == 1
     assert s.refs[name2] == 2
 
+    # Define and test async_list_direct
     @argref_by_name(return_direct=True)
     async def async_list_direct(a: int, b: int) -> list[int]:
         """Some docstring."""
@@ -617,8 +637,27 @@ async def test_argref_by_name() -> None:
 
     assert await async_list_direct("foo", 2, state=s) == [1, 2]
 
-    # call in context
-    tool = Tool.from_function(argref_by_name()(add))
+
+@pytest.mark.asyncio
+async def test_argref_by_name_advanced_features() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1}
+
+    s = MyState()
+
+    # Define and test skip_deref with return_direct
+    @argref_by_name(skip_deref={"a"}, return_direct=True)
+    def skip_deref_test(foo: float, a: str) -> str:
+        """Some docstring."""
+        return f"{foo} {a}"
+
+    assert skip_deref_test("foo", a="not in state", state=s) == "1 not in state"
+    assert skip_deref_test("foo", "foo", state=s) == "1 1"
+
+    # Call in context using Tool and related classes
+    wrapped_add = argref_by_name()(add)
+    tool = Tool.from_function(wrapped_add)
 
     tool_call = ToolCall.from_tool(tool, "foo", 2)
     action = ToolRequestMessage(tool_calls=[tool_call])
@@ -627,13 +666,13 @@ async def test_argref_by_name() -> None:
     new_messages = await my_env.exec_tool_calls(action, state=MyState())
     assert new_messages[0].content.endswith("3")
 
-    # assert that we can describe the tool
+    # Assert that we can describe the tool
     assert tool.info.describe_str()
     assert (
         "(set via a string key instead of the full object)" in tool.info.describe_str()
     )
 
-    # now try state passing
+    # Test state passing with fxn_requires_state
     @argref_by_name(fxn_requires_state=True)
     async def want_state(a: int, state: MyState) -> int:  # noqa: ARG001
         """Some docstring.

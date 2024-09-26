@@ -48,7 +48,10 @@ def argref_wraps(wrapped):
 
 
 def argref_by_name(  # noqa: C901
-    fxn_requires_state: bool = False, prefix: str = "", return_direct: bool = False
+    fxn_requires_state: bool = False,
+    prefix: str = "",
+    return_direct: bool = False,
+    skip_deref: set[str] | None = None,
 ):
     """Decorator to allow args to be a string key into a refs dict instead of the full object.
 
@@ -59,6 +62,8 @@ def argref_by_name(  # noqa: C901
         fxn_requires_state: Whether to pass the state object to the decorated function.
         prefix: A prefix to add to the generated reference ID.
         return_direct: Whether to return the result directly or update the state object.
+        skip_deref: A set of argument names for which to skip dereferencing. Must call with kwarg style
+            to skip dereferencing and the value must be a string.
 
     Example 1:
         >>> @argref_by_name()  # doctest: +SKIP
@@ -88,10 +93,25 @@ def argref_by_name(  # noqa: C901
         >>> # Returns a multiline string with the new references
         >>> # Equivalent to my_func(state.refs["a"], state.refs["b"])
         >>> wrapped_fxn("a", "b", state=state)  # doctest: +SKIP
+
+    Skipping dereferencing. In this example, we mark bar to not have input strings try
+    to be dereferenced to something from the state. Instead, the value ``"a specific value"``
+    will be passed directly to the function. Note though in Example 2 below, if I
+    pass as kwargs then it will still be dereferenced. This is undesired behavior and will be fixed.
+    TODO: do not do this.
+
+    Example 1:
+        >>> @argref_by_name(skip_deref={"bar"})  # doctest: +SKIP
+        >>> def my_func(foo: float, bar: str) -> float:  # doctest: +SKIP
+        ...     return bar  # doctest: +SKIP
+        >>> # Equivalent to my_func(state.refs["foo"], "a specific value")
+        >>> wrapped_fxn("foo", bar="a specific value", state=state)  # doctest: +SKIP
+        >>> # Equivalent to my_func(state.refs["foo"], state.refs["bar"])
+        >>> wrapped_fxn("foo", "bar", state=state)  # doctest: +SKIP
     """
 
     def decorator(func):  # noqa: C901
-        def get_call_args(*args, **kwargs):
+        def get_call_args(*args, **kwargs):  # noqa: C901
             if "state" not in kwargs:
                 raise ValueError(
                     "argref_by_name decorated function must have a 'state' argument. "
@@ -101,39 +121,49 @@ def argref_by_name(  # noqa: C901
             # pop the state argument
             state = kwargs["state"] if fxn_requires_state else kwargs.pop("state")
 
-            # pop all string arguments
-            other_args = []
-            keyname_args = []
-            deref_args = []
-            largs = list(args)
-            while largs and isinstance(largs[0], str):
-                keyname_args.append(largs.pop(0))
-            if largs:
-                other_args.extend(largs)
-            if not keyname_args and kwargs:
-                name = next(iter(kwargs))
-                keyname_args = [kwargs.pop(name)]
-
-            # now convert the keynames to actual references
-            for arg in keyname_args:
-                try:
-                    if arg in state.refs:
-                        deref_args.append(state.refs[arg])
-                    # sometimes it is not correctly converted to a tuple
-                    # so as an attempt to be helpful...
-                    elif all(a.strip() in state.refs for a in arg.split(",")):
-                        deref_args.extend([
-                            state.refs[a.strip()] for a in arg.split(",")
-                        ])
-                    else:
+            # now convert the keynames to actual references (if they are a string)
+            # tuple is (arg, if was dereferenced)
+            def maybe_deref_arg(arg, name=None):
+                if isinstance(arg, str) and (not skip_deref or name not in skip_deref):
+                    try:
+                        if arg in state.refs:
+                            return [state.refs[arg]], True
+                        # sometimes it is not correctly converted to a tuple
+                        # so as an attempt to be helpful...
+                        if all(a.strip() in state.refs for a in arg.split(",")):
+                            return [state.refs[a.strip()] for a in arg.split(",")], True
                         raise KeyError(
                             f"Key '{arg}' not found in state. Available keys: {list(state.refs.keys())}"
                         )
-                except AttributeError as e:
-                    raise AttributeError(
-                        "The state object must have a 'refs' attribute to use argref_by_name decorator."
-                    ) from e
-            return deref_args, other_args, kwargs, state
+                    except AttributeError as e:
+                        raise AttributeError(
+                            "The state object must have a 'refs' attribute to use argref_by_name decorator."
+                        ) from e
+                return arg, False
+
+            # the split thing makes it complicated and we cannot use comprehension
+            deref_args = []
+            for arg in args:
+                a, dr = maybe_deref_arg(arg)
+                if dr:
+                    deref_args.extend(a)
+                else:
+                    deref_args.append(a)
+            deref_kwargs = {}
+            for k, v in kwargs.items():
+                a, dr = maybe_deref_arg(v, k)
+                if dr:
+                    if len(a) > 1:
+                        raise ValueError(
+                            f"Multiple values for argument '{k}' found in state. "
+                            " cannot use split notation for kwargs."
+                        )
+
+                    deref_kwargs[k] = a[0]
+                else:
+                    deref_kwargs[k] = a
+
+            return deref_args, deref_kwargs, state
 
         def update_state(state, result):
             if return_direct:
@@ -153,14 +183,14 @@ def argref_by_name(  # noqa: C901
 
         @argref_wraps(func)
         def wrapper(*args, **kwargs):
-            args, other_args, kwargs, state = get_call_args(*args, **kwargs)
-            result = func(*args, *other_args, **kwargs)
+            args, kwargs, state = get_call_args(*args, **kwargs)
+            result = func(*args, **kwargs)
             return update_state(state, result)
 
         @argref_wraps(func)
         async def awrapper(*args, **kwargs):
-            args, other_args, kwargs, state = get_call_args(*args, **kwargs)
-            result = await func(*args, *other_args, **kwargs)
+            args, kwargs, state = get_call_args(*args, **kwargs)
+            result = await func(*args, **kwargs)
             return update_state(state, result)
 
         wrapper.requires_state = True
