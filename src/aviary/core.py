@@ -30,6 +30,8 @@ from aviary.tools import (
     wraps_doc_only,
 )
 
+from .utils import encode_image_to_base64, is_coroutine_callable, partial_format
+
 __all__ = [
     "INVALID_TOOL_NAME",
     "DummyEnv",
@@ -57,7 +59,10 @@ __all__ = [
     "Tools",
     "ToolsAdapter",
     "argref_by_name",
+    "encode_image_to_base64",
     "eval_answer",
+    "is_coroutine_callable",
     "join",
+    "partial_format",
     "wraps_doc_only",
 ]
