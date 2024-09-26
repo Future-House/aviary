@@ -30,8 +30,7 @@ from aviary.tools import (
     eval_answer,
     wraps_doc_only,
 )
-
-from .utils import encode_image_to_base64, is_coroutine_callable, partial_format
+from aviary.utils import encode_image_to_base64, is_coroutine_callable, partial_format
 
 __all__ = [
     "INVALID_TOOL_NAME",
