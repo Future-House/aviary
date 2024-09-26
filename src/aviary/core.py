@@ -1,4 +1,4 @@
-from .env import (
+from aviary.env import (
     DummyEnv,
     DummyEnvState,
     DummyTaskDataset,
@@ -7,10 +7,10 @@ from .env import (
     TaskConfig,
     TaskDataset,
 )
-from .env_client import EnvironmentClient
-from .message import MalformedMessageError, Message, join
-from .render import Renderer
-from .tools import (
+from aviary.env_client import EnvironmentClient
+from aviary.message import MalformedMessageError, Message, join
+from aviary.render import Renderer
+from aviary.tools import (
     INVALID_TOOL_NAME,
     FunctionInfo,
     Messages,
