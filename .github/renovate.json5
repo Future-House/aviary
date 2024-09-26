@@ -5,6 +5,9 @@
   prHourlyLimit: 4,
   timezone: "America/Los_Angeles",
   rangeStrategy: "widen",
+  lockFileMaintenance: {
+    enabled: true,
+  },
   packageRules: [
     {
       matchUpdateTypes: ["lockFileMaintenance"],
