@@ -1,6 +1,6 @@
 import pytest
 
-from aviary.tools import eval_answer
+from aviary.core import eval_answer
 
 
 @pytest.mark.vcr

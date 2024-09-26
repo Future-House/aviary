@@ -1,4 +1,4 @@
-from aviary.env import Environment, TaskDataset
+from aviary.core import Environment, TaskDataset
 from aviary.envs.hotpotqa import HotPotQAEnv
 
 

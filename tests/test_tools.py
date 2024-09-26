@@ -8,9 +8,9 @@ import pytest
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
 
-from aviary.env import DummyEnv
-from aviary.tools import (
+from aviary.core import (
     INVALID_TOOL_NAME,
+    DummyEnv,
     FunctionInfo,
     Tool,
     ToolCall,

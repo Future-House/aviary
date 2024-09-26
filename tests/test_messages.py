@@ -3,8 +3,8 @@ import json
 import numpy as np
 import pytest
 
-from aviary.message import Message
-from aviary.tools import (
+from aviary.core import (
+    Message,
     ToolCall,
     ToolCallFunction,
     ToolRequestMessage,

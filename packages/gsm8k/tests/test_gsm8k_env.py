@@ -1,8 +1,7 @@
 import pytest
 
-from aviary.env import Environment, TaskDataset
+from aviary.core import Environment, TaskDataset, ToolCall, ToolRequestMessage
 from aviary.envs.gsm8k import CalculatorEnv, CalculatorEnvConfig
-from aviary.tools import ToolCall, ToolRequestMessage
 
 
 @pytest.mark.asyncio
