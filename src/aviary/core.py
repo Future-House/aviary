@@ -1,4 +1,5 @@
 from aviary.env import (
+    TASK_DATASET_REGISTRY,
     DummyEnv,
     DummyEnvState,
     DummyTaskDataset,
@@ -34,6 +35,7 @@ from .utils import encode_image_to_base64, is_coroutine_callable, partial_format
 
 __all__ = [
     "INVALID_TOOL_NAME",
+    "TASK_DATASET_REGISTRY",
     "DummyEnv",
     "DummyEnvState",
     "DummyTaskDataset",

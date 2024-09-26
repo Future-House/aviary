@@ -38,7 +38,9 @@ jobs:
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        run: uv sync
+        run: |-
+          uv sync
+          uv pip install codeflash
       - name: Run CodeFlash on fhaviary
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
         run: uv run codeflash

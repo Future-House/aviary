@@ -32,9 +32,8 @@ cloud = [
 ]
 dev = [
     "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
-    "aviary.envs.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
-    "aviary.envs.hotpotqa",  # So `uv sync` pulls this in
-    "codeflash",
+    "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
+    "aviary.hotpotqa",  # So `uv sync` pulls this in
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
@@ -52,8 +51,8 @@ dev = [
     "refurb>=2",  # Pin to keep recent
     "typeguard",
 ]
-gsm8k = ["aviary.envs.gsm8k"]
-hotpotqa = ["aviary.envs.hotpotqa"]
+gsm8k = ["aviary.gsm8k"]
+hotpotqa = ["aviary.hotpotqa"]
 image = [
     "Pillow",
 ]
@@ -420,8 +419,8 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
-"aviary.envs.gsm8k" = {workspace = true}
-"aviary.envs.hotpotqa" = {workspace = true}
+"aviary.gsm8k" = {workspace = true}
+"aviary.hotpotqa" = {workspace = true}
 fhaviary = {workspace = true}
 
 [tool.uv.workspace]

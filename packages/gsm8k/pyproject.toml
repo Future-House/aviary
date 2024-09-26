@@ -13,7 +13,7 @@ dependencies = [
 ]
 description = "GSM8k environment implemented with aviary"
 dynamic = ["version"]
-name = "aviary.envs.gsm8k"
+name = "aviary.gsm8k"
 readme = "README.md"
 requires-python = ">=3.11"
 
