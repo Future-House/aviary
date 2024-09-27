@@ -177,7 +177,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
     ):
         super().__init__()
         self.question = question
-        self.correct_answer = correct_answer
+        # Normalize the correct answer once here as a minor performance optimization
+        self.normalized_correct_answer = normalize_answer(correct_answer)
         self.correct_reward = correct_reward
         self.incorrect_reward = incorrect_reward
         self.tool_failure_reward = tool_failure_reward
@@ -199,8 +200,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         """
         if answer is None:
             return self.incorrect_reward
-        gt = normalize_answer(self.correct_answer)
-        pred = normalize_answer(answer)
+        pred, gt = normalize_answer(answer), self.normalized_correct_answer
         return self.correct_reward if pred == gt else self.incorrect_reward
 
     async def reset(self) -> tuple[list[Message], list[Tool]]:
