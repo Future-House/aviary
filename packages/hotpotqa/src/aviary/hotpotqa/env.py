@@ -169,7 +169,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
     def __init__(
         self,
         question: str,
-        correct_answer: str,
+        correct_answer: str | float,
         correct_reward: float = 1.0,
         incorrect_reward: float = 0.0,
         tool_failure_reward: float = 0.0,
@@ -515,6 +515,14 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
                 f" please specify a split from {set(all_datasets.keys())}."
             ) from exc
 
+        if not all(  # Making up for datasets not being typed: https://github.com/huggingface/datasets/issues/3841
+            isinstance(d["question"], str) and isinstance(d["answer"], str | float)
+            for d in data
+        ):
+            raise ValueError(
+                f"Dataset {hf_dataset!r} and split {split!r} contains invalid"
+                " question(s) or answer(s)."
+            )
         return [(d["question"], d["answer"]) for d in data if self._filter_task(d)]
 
     def __init__(

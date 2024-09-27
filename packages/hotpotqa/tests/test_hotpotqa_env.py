@@ -1,3 +1,5 @@
+import pytest
+
 from aviary.env import Environment, TaskDataset
 from aviary.hotpotqa import HotPotQAEnv
 
@@ -20,3 +22,6 @@ def test_dataset_from_name() -> None:
         "hotpotqa", split="train", difficulty_level={"easy", "hard"}
     )
     assert len(dataset) == 33633
+
+    with pytest.raises(ValueError, match="answer"):
+        TaskDataset.from_name("hotpotqa", split="test")
