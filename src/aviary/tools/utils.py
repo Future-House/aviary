@@ -25,6 +25,7 @@ class EvalAnswerMode(StrEnum):
     EXACT = "exact"  # strings must match exactly
     CONTAINS = "contains"  # the correct answer is contained in the supplied answer
     LLM = "llm"  # Ask an LLM (default: GPT-4o-mini) to evaluate
+    LLM_SCORE = "llm-score"  # Ask an LLM (default: GPT-4o-mini) to evaluate and return the score (normalized)
 
 
 LLM_EVAL_CONFIG = {
@@ -40,6 +41,20 @@ LLM_EVAL_CONFIG = {
     "temperature": 0,
 }
 
+LLM_SCORE_EVAL_CONFIG = {
+    "prompt": (
+        "Here is a question, the correct answer to the question, and a rubric for evaluating the question. "
+        "Judge the proposed answer based on the given rubric. "
+        "Give a score from 0 to 10. No other output is permitted.\n\n"
+        "Question: {question} \n\n"
+        "Rubric: {correct_answer} \n\n"
+        "Proposed answer: {proposed_answer}"
+    ),
+    "model": "gpt-4o-mini",
+    "temperature": 0,
+    "max_score": 10,
+}
+
 
 async def eval_answer(
     proposed: str,
@@ -47,8 +62,12 @@ async def eval_answer(
     question: str | None = None,
     eval_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS,
     llm_eval_config: dict | None = None,
-) -> bool:
-    if eval_mode == EvalAnswerMode.LLM:
+) -> float:
+    """Evaluate a proposed answer against a correct answer.
+
+    Will return 0 or 1, except for llm-score which should be between 0 and 1
+    """
+    if eval_mode in {EvalAnswerMode.LLM, EvalAnswerMode.LLM_SCORE}:
         try:
             from litellm import acompletion
         except ImportError as e:
@@ -58,31 +77,43 @@ async def eval_answer(
             ) from e
         if question is None:
             raise ValueError("Question must be provided for LLM evaluation mode.")
-        config = llm_eval_config or LLM_EVAL_CONFIG
-        prompt = cast(str, config.get("prompt", LLM_EVAL_CONFIG["prompt"])).format(
+        default_config = (
+            LLM_EVAL_CONFIG
+            if eval_mode == EvalAnswerMode.LLM
+            else LLM_SCORE_EVAL_CONFIG
+        )
+        config = llm_eval_config or default_config
+        prompt = cast(str, config.get("prompt", default_config["prompt"])).format(
             question=question,
             correct_answer=correct,
             proposed_answer=proposed,
         )
         response = await acompletion(
-            model=config.get("model", LLM_EVAL_CONFIG["model"]),
-            temperature=config.get("temperature", LLM_EVAL_CONFIG["temperature"]),
+            model=config.get("model", default_config["model"]),
+            temperature=config.get("temperature", default_config["temperature"]),
             messages=[{"content": prompt, "role": "user"}],
         )
-        return await eval_answer(
-            response.choices[0].message.content.strip().casefold(),
-            "yes",
-            eval_mode=EvalAnswerMode.EXACT,
-        )
+        if eval_mode == EvalAnswerMode.LLM:
+            return await eval_answer(
+                response.choices[0].message.content.strip().casefold(),
+                "yes",
+                eval_mode=EvalAnswerMode.EXACT,
+            )
+        try:
+            return float(response.choices[0].content.strip()) / float(
+                config.get("max_score", default_config["max_score"])  # type: ignore[arg-type]
+            )
+        except ValueError:
+            return 0
 
     gt = correct.strip().casefold()
     pred = proposed.strip().casefold()
 
     if eval_mode == EvalAnswerMode.EXACT:
-        return pred == gt
+        return float(pred == gt)
 
     if eval_mode == EvalAnswerMode.CONTAINS:
-        return gt in pred
+        return float(gt in pred)
 
     raise RuntimeError(f"Invalid evaluation mode: {eval_mode}")
 

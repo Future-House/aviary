@@ -47,7 +47,7 @@ def argref_wraps(wrapped):
     return partial(argref_wrapper, wrapped=wrapped)
 
 
-def argref_by_name(  # noqa: C901,PLR0915
+def argref_by_name(  # noqa: C901
     fxn_requires_state: bool = False,
     prefix: str = "",
     return_direct: bool = False,
@@ -125,12 +125,10 @@ def argref_by_name(  # noqa: C901,PLR0915
 
             # the split thing makes it complicated and we cannot use comprehension
             deref_args = []
-            atleast_one_deref = False
             for i, arg in enumerate(args):
                 a, dr = maybe_deref_arg(arg)
                 if dr:
                     deref_args.extend(a)
-                    atleast_one_deref = True
                 else:
                     if i == 0 and isinstance(arg, str):
                         # This is a bit of a heuristic, but if the first arg is a string and not found
@@ -138,7 +136,7 @@ def argref_by_name(  # noqa: C901,PLR0915
                         raise KeyError(f"The key {arg} is not found in state.")
                     deref_args.append(a)
             deref_kwargs = {}
-            for i, (k, v) in enumerate(kwargs.items()):
+            for k, v in kwargs.items():
                 a, dr = maybe_deref_arg(v)
                 if dr:
                     if len(a) > 1:
@@ -148,8 +146,6 @@ def argref_by_name(  # noqa: C901,PLR0915
                         )
                     deref_kwargs[k] = a[0]
                 else:
-                    if i == 0 and isinstance(a, str) and not atleast_one_deref:
-                        raise KeyError(f"The key {a} is not found in state.")
                     deref_kwargs[k] = a
 
             return deref_args, deref_kwargs, state
