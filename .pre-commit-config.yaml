@@ -19,7 +19,7 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.7
+    rev: v0.6.8
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -63,11 +63,11 @@ repos:
         additional_dependencies:
           - "validate-pyproject-schema-store[all]>=2024.08.19" # For Ruff renaming RUF025 to C420
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.4.16
+    rev: 0.4.17
     hooks:
       - id: uv-lock
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 38.95.3
+    rev: 38.101.1
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/pre-commit/mirrors-mypy
