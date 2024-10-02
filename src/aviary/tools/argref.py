@@ -1,5 +1,6 @@
 import uuid
 from functools import partial, update_wrapper
+from inspect import signature
 
 from aviary.utils import is_coroutine_callable
 
@@ -47,10 +48,11 @@ def argref_wraps(wrapped):
     return partial(argref_wrapper, wrapped=wrapped)
 
 
-def argref_by_name(  # noqa: C901
+def argref_by_name(  # noqa: C901, PLR0915
     fxn_requires_state: bool = False,
     prefix: str = "",
     return_direct: bool = False,
+    type_check: bool = False,
 ):
     """Decorator to allow args to be a string key into a refs dict instead of the full object.
 
@@ -63,6 +65,8 @@ def argref_by_name(  # noqa: C901
         fxn_requires_state: Whether to pass the state object to the decorated function.
         prefix: A prefix to add to the generated reference ID.
         return_direct: Whether to return the result directly or update the state object.
+        type_check: Whether to type-check arguments with respect to the wrapped function's
+            type annotations.
 
     Example 1:
         >>> @argref_by_name()  # doctest: +SKIP
@@ -94,7 +98,7 @@ def argref_by_name(  # noqa: C901
         >>> wrapped_fxn("a", "b", state=state)  # doctest: +SKIP
     """
 
-    def decorator(func):  # noqa: C901
+    def decorator(func):  # noqa: C901, PLR0915
         def get_call_args(*args, **kwargs):  # noqa: C901
             if "state" not in kwargs:
                 raise ValueError(
@@ -140,9 +144,11 @@ def argref_by_name(  # noqa: C901
                 a, dr = maybe_deref_arg(v)
                 if dr:
                     if len(a) > 1:
+                        # TODO: figure this out
+                        # deref_kwargs[k] = a
                         raise ValueError(
                             f"Multiple values for argument '{k}' found in state. "
-                            " cannot use split notation for kwargs."
+                            "Cannot use comma-separated notation for kwargs."
                         )
                     deref_kwargs[k] = a[0]
                 else:
@@ -166,15 +172,29 @@ def argref_by_name(  # noqa: C901
             state.refs[new_name] = result
             return f"{new_name} ({result.__class__.__name__}): {result!s}"
 
+        if type_check:
+            # extract these before any in-place modifications to func
+            annotations = {
+                k: v
+                for k, v in func.__annotations__.items()
+                if k not in {"return", "state"}
+            }
+
+            sig = signature(func)
+
         @argref_wraps(func)
         def wrapper(*args, **kwargs):
             args, kwargs, state = get_call_args(*args, **kwargs)
+            if type_check:
+                _check_arg_types(annotations, sig, args, kwargs)
             result = func(*args, **kwargs)
             return update_state(state, result)
 
         @argref_wraps(func)
         async def awrapper(*args, **kwargs):
             args, kwargs, state = get_call_args(*args, **kwargs)
+            if type_check:
+                _check_arg_types(annotations, sig, args, kwargs)
             result = await func(*args, **kwargs)
             return update_state(state, result)
 
@@ -185,3 +205,42 @@ def argref_by_name(  # noqa: C901
         return wrapper
 
     return decorator
+
+
+def _check_arg_types(annotations, sig, args, kwargs) -> None:
+    param_names = list(sig.parameters.keys())
+
+    # param, expected, provided
+    wrong_types: list[tuple[str, str, str]] = []
+
+    # Map positional arguments to their parameter names
+    for idx, arg in enumerate(args):
+        if idx >= len(param_names):
+            break  # Extra arguments are handled by *args if any
+        param = param_names[idx]
+        expected_type = annotations.get(param)
+        if expected_type and not isinstance(arg, expected_type):
+            wrong_types.append((
+                param,
+                expected_type.__name__,
+                type(arg).__name__,
+            ))
+
+    # Check keyword arguments
+    for param, arg in kwargs.items():
+        expected_type = annotations.get(param)
+        if expected_type and not isinstance(arg, expected_type):
+            wrong_types.append((
+                param,
+                expected_type.__name__,
+                type(arg).__name__,
+            ))
+
+    if wrong_types:
+        raise TypeError(
+            "The following arguments have incorrect types:\n"
+            + "\n".join(
+                f"- {param}: expected {expected}, got {provided}"
+                for param, expected, provided in wrong_types
+            )
+        )

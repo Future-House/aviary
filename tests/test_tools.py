@@ -688,3 +688,22 @@ async def test_argref_by_name_advanced_features() -> None:
     my_env = DummyEnv()
     my_env.tools = [tool]
     await my_env.exec_tool_calls(action, state=MyState())
+
+
+@pytest.mark.asyncio
+async def test_argref_by_name_type_checking() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1, "bar": "abc"}
+
+    @argref_by_name(type_check=True)
+    def type_checked(a: int, b) -> int:  # noqa: ARG001
+        """Some docstring."""
+        return a
+
+    s = MyState()
+
+    type_checked(a="foo", b="bar", state=s)  # correctly-typed
+    with pytest.raises(TypeError):
+        # bar is not an int
+        type_checked(a="bar", b="bar", state=s)
