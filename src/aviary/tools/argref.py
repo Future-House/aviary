@@ -208,7 +208,7 @@ def argref_by_name(  # noqa: C901, PLR0915
 def _check_arg_types(annotations, sig, args, kwargs) -> None:
     param_names = list(sig.parameters.keys())
 
-    # param, expected, provided
+    # Elements are tuple of (param, expected, provided)
     wrong_types: list[tuple[str, str, str]] = []
 
     # Map positional arguments to their parameter names

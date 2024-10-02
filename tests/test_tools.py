@@ -705,5 +705,5 @@ async def test_argref_by_name_type_checking() -> None:
 
     type_checked(a="foo", b="bar", state=s)  # correctly-typed
     with pytest.raises(TypeError):
-        # bar is not an int
+        # A non-int value is passed to a by name
         type_checked(a="bar", b="bar", state=s)
