@@ -212,7 +212,7 @@ class Environment(ABC, Generic[TEnvState]):
                 # more human-friendly version: log a readable error message and emit the exception
                 # at DEBUG level.
                 logger.error(logger_msg)  # noqa: TRY400
-                logger.log(logging.DEBUG, str(exc), exc_info=True)
+                logger.debug(str(exc), exc_info=True)
                 tool_exc = exc
             if tool_exc:
                 s_content: str = f"{logger_msg}:\n{tool_exc}"

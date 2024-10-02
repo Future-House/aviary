@@ -144,8 +144,6 @@ def argref_by_name(  # noqa: C901, PLR0915
                 a, dr = maybe_deref_arg(v)
                 if dr:
                     if len(a) > 1:
-                        # TODO: figure this out
-                        # deref_kwargs[k] = a
                         raise ValueError(
                             f"Multiple values for argument '{k}' found in state. "
                             "Cannot use comma-separated notation for kwargs."
