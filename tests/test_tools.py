@@ -696,14 +696,18 @@ async def test_argref_by_name_type_checking() -> None:
         def __init__(self):
             self.refs = {"foo": 1, "bar": "abc"}
 
-    @argref_by_name(type_check=True)
-    def type_checked(a: int, b) -> int:  # noqa: ARG001
+    s = MyState()
+
+    def typed_fn(a: int, b) -> int:  # noqa: ARG001
         """Some docstring."""
         return a
 
-    s = MyState()
+    # Make sure we can decorate the function twice. Decoration should not
+    # modify the underlying function or its annotations.
+    for _ in range(2):
+        type_checked_fn = argref_by_name(type_check=True)(typed_fn)
 
-    type_checked(a="foo", b="bar", state=s)  # correctly-typed
-    with pytest.raises(TypeError):
-        # A non-int value is passed to a by name
-        type_checked(a="bar", b="bar", state=s)
+        type_checked_fn(a="foo", b="bar", state=s)  # correctly-typed
+        with pytest.raises(TypeError):
+            # A non-int value is passed to a by name
+            type_checked_fn(a="bar", b="bar", state=s)

@@ -26,6 +26,8 @@ def argref_wrapper(wrapper, wrapped):
     """Inject the ARGREF_NOTE into the Args."""
     # normal wraps
     wrapped_func = update_wrapper(wrapper, wrapped)
+    # when we modify wrapped_func's annotations, we don't want to mutate wrapped
+    wrapped_func.__annotations__ = wrapped.__annotations__.copy()
     # now adjust what we need
     for a in wrapped_func.__annotations__:
         if a in {"return", "state"}:
