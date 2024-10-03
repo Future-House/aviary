@@ -6,7 +6,7 @@ from functools import partial
 from itertools import starmap
 from typing import Annotated, Any, Literal, NoReturn, Self, TypeAlias
 
-from docstring_parser import DocstringStyle, parse
+from docstring_parser import DocstringParam, DocstringStyle, parse
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -300,12 +300,19 @@ class Tool(BaseModel):
         state["__dict__"].pop("_tool_fn", None)
         return state
 
+    @staticmethod
+    def _get_param_desc(param: DocstringParam, include_type: bool) -> str:
+        if not include_type or not param.type_name:
+            return param.description or ""
+        return f"({param.type_name}): {param.description or ''}"
+
     @classmethod
     def from_function(
         cls,
         function: Callable[..., Any] | Callable[..., Awaitable[Any]],
         docstring_style: DocstringStyle = DocstringStyle.AUTO,
         allow_empty_param_descriptions: bool = False,
+        types_in_param_descriptions: bool = False,
         **formats,
     ) -> "Tool":
         """Hydrate this class via inspection from a free function with a docstring."""
@@ -323,13 +330,16 @@ class Tool(BaseModel):
             description_stop_index = None
         field_definitions: dict[str, tuple[type, FieldInfo]] = {}
         required: dict[str, bool] = {}
+        annotations = function.__annotations__
         for pname, parameter in inspect.signature(function).parameters.items():
             if pname == "state":
                 # NOTE: ToolRequestMessage passes state for us, not the LLM
                 continue
             d = next(
                 (
-                    (p.description or "").replace("\n", " ")
+                    cls._get_param_desc(
+                        p, include_type=types_in_param_descriptions
+                    ).replace("\n", " ")
                     for p in docstring.params
                     if p.arg_name == pname
                 ),
@@ -343,8 +353,16 @@ class Tool(BaseModel):
                 field_config["description"] = description
             if not required[pname]:
                 field_config["default"] = parameter.default
+
+            # Annotation resolution order:
+            # 1. function.__annotations__: type-hints in function signature or injected
+            #    by argref_by_name. If a function has an opinion on a type hint, take it
+            #    at face-value.
+            # 2. parameter.annotation - this will descend into wrapped functions. For
+            #    argref_by_name, this is undesirabe, since the wrapper overwrites type hints.
+            #    Hence, this is second in resolution order.
             field_definitions[pname] = (
-                parameter.annotation or type(None),
+                annotations.get(pname) or parameter.annotation or type(None),
                 Field(**field_config),  # type: ignore[pydantic-field]
             )
 

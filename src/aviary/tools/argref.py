@@ -1,6 +1,10 @@
 import uuid
-from functools import partial, update_wrapper
+from collections.abc import Callable
+from functools import update_wrapper
 from inspect import signature
+from typing import Union, get_args, get_origin
+
+from docstring_parser import compose, parse
 
 from aviary.utils import is_coroutine_callable
 
@@ -19,35 +23,43 @@ def make_pretty_id(prefix: str = "") -> str:
     return prefix + "-" + uuid_frags[0]
 
 
-ARGREF_NOTE = "(set via a string key instead of the full object)"
+ARGREF_NOTE = "(Pass a string key instead of the full object)"
 
 
-def argref_wrapper(wrapper, wrapped):
+def argref_wrapper(wrapper, wrapped, args_to_skip: set[str] | None):
     """Inject the ARGREF_NOTE into the Args."""
+    args_to_skip = (args_to_skip or set()) | {"state", "return"}
+
     # normal wraps
     wrapped_func = update_wrapper(wrapper, wrapped)
     # when we modify wrapped_func's annotations, we don't want to mutate wrapped
-    wrapped_func.__annotations__ = wrapped.__annotations__.copy()
+    wrapped_func.__annotations__ = wrapped_func.__annotations__.copy()
     # now adjust what we need
     for a in wrapped_func.__annotations__:
-        if a in {"return", "state"}:
+        if a in args_to_skip:
             continue
         wrapped_func.__annotations__[a] = str
 
+    orig_annots = wrapped.__annotations__
+
     # now add note to docstring for all relevant Args
-    ds = wrapped_func.__doc__
-    if ds and "Args:" in ds:
-        arg_doc = ds.split("Args:")[1].split("Returns:")[0].split("\n")
-        for line in arg_doc:
-            if line.strip():  # Filter whitespace
-                ds = ds.replace(line, " ".join((line, ARGREF_NOTE)))
-    wrapped_func.__doc__ = ds
+    if wrapped_func.__doc__:
+        ds = parse(wrapped_func.__doc__)
+        for param in ds.params:
+            if param.arg_name in args_to_skip:
+                continue
+
+            if (
+                param.type_name is None
+                and (type_hint := orig_annots.get(param.arg_name)) is not None
+            ):
+                param.type_name = type_to_str(type_hint)
+
+            param.description = (param.description or "") + f" {ARGREF_NOTE}"
+
+        wrapped_func.__doc__ = compose(ds)
+
     return wrapped_func
-
-
-def argref_wraps(wrapped):
-    """Enable decorator syntax with argref_wrapper."""
-    return partial(argref_wrapper, wrapped=wrapped)
 
 
 def argref_by_name(  # noqa: C901, PLR0915
@@ -55,6 +67,7 @@ def argref_by_name(  # noqa: C901, PLR0915
     prefix: str = "",
     return_direct: bool = False,
     type_check: bool = False,
+    args_to_skip: set[str] | None = None,
 ):
     """Decorator to allow args to be a string key into a refs dict instead of the full object.
 
@@ -69,6 +82,7 @@ def argref_by_name(  # noqa: C901, PLR0915
         return_direct: Whether to return the result directly or update the state object.
         type_check: Whether to type-check arguments with respect to the wrapped function's
             type annotations.
+        args_to_skip: If provided, a set of argument names that should not be referenced by name.
 
     Example 1:
         >>> @argref_by_name()  # doctest: +SKIP
@@ -172,42 +186,38 @@ def argref_by_name(  # noqa: C901, PLR0915
             state.refs[new_name] = result
             return f"{new_name} ({result.__class__.__name__}): {result!s}"
 
-        if type_check:
-            # extract these before any in-place modifications to func
-            annotations = {
-                k: v
-                for k, v in func.__annotations__.items()
-                if k not in {"return", "state"}
-            }
-
-            sig = signature(func)
-
-        @argref_wraps(func)
         def wrapper(*args, **kwargs):
             args, kwargs, state = get_call_args(*args, **kwargs)
             if type_check:
-                _check_arg_types(annotations, sig, args, kwargs)
+                _check_arg_types(func, args, kwargs)
             result = func(*args, **kwargs)
             return update_state(state, result)
 
-        @argref_wraps(func)
         async def awrapper(*args, **kwargs):
             args, kwargs, state = get_call_args(*args, **kwargs)
             if type_check:
-                _check_arg_types(annotations, sig, args, kwargs)
+                _check_arg_types(func, args, kwargs)
             result = await func(*args, **kwargs)
             return update_state(state, result)
 
-        wrapper.requires_state = True
-        awrapper.requires_state = True
         if is_coroutine_callable(func):
+            awrapper = argref_wrapper(awrapper, func, args_to_skip)
+            awrapper.requires_state = True  # type: ignore[attr-defined]
             return awrapper
+
+        wrapper = argref_wrapper(wrapper, func, args_to_skip)
+        wrapper.requires_state = True  # type: ignore[attr-defined]
         return wrapper
 
     return decorator
 
 
-def _check_arg_types(annotations, sig, args, kwargs) -> None:
+def _check_arg_types(func: Callable, args, kwargs) -> None:
+    annotations = {
+        k: v for k, v in func.__annotations__.items() if k not in {"return", "state"}
+    }
+
+    sig = signature(func)
     param_names = list(sig.parameters.keys())
 
     # Elements are tuple of (param, expected, provided)
@@ -244,3 +254,30 @@ def _check_arg_types(annotations, sig, args, kwargs) -> None:
                 for param, expected, provided in wrong_types
             )
         )
+
+
+def type_to_str(t) -> str:
+    """
+    Convert a Python type annotation into its string representation.
+
+    Examples:
+        type_to_str(int) -> "int"
+        type_to_str(Union[int, float]) -> "int | float"
+        type_to_str(list[str]) -> "list[str]"
+    """
+    origin = get_origin(t)
+    args = get_args(t)
+
+    if origin is Union:
+        # Handle Union types, including the new | syntax in Python 3.10+
+        return " | ".join(type_to_str(arg) for arg in args)
+    if origin is not None:
+        # Handle generic types like list[str], dict[str, int], etc.
+        origin_name = origin.__name__
+        args_str = ", ".join(type_to_str(arg) for arg in args)
+        return f"{origin_name}[{args_str}]"
+    if hasattr(t, "__name__"):
+        # Handle basic types
+        return t.__name__
+    # Fallback for types without a __name__ attribute
+    return str(t)
