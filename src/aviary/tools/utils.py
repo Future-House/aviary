@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from enum import StrEnum
 from functools import partial
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from pydantic import BaseModel, Field
 
@@ -145,15 +145,33 @@ class ToolSelector:
         self._model_name = model_name
         self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
 
+    # SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
+    # > `required` means the model must call one or more tools.
+    TOOL_CHOICE_REQUIRED: ClassVar[str] = "required"
+
     async def __call__(
-        self, messages: list[Message], tools: list[Tool]
+        self,
+        messages: list[Message],
+        tools: list[Tool],
+        tool_choice: Tool | str | None = TOOL_CHOICE_REQUIRED,
     ) -> ToolRequestMessage:
         """Run a completion that selects a tool in tools given the messages."""
+        kwargs = {}
+        if tool_choice is not None:
+            kwargs["tool_choice"] = (
+                {
+                    "type": "function",
+                    "function": {"name": tool_choice.info.name},
+                }
+                if isinstance(tool_choice, Tool)
+                else tool_choice
+            )
         model_response = await self._bound_acompletion(
             messages=MessagesAdapter.dump_python(
                 messages, exclude_none=True, by_alias=True
             ),
             tools=ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
+            **kwargs,
         )
 
         if (num_choices := len(model_response.choices)) != 1:
