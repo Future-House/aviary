@@ -3,12 +3,12 @@ interactions:
       body:
         '{"messages": [{"role": "user", "content": "You are the president of the
         United States of America. Please move both hands at the same time, and then
-        smile and wave."}], "model": "gpt-4o-mini-2024-07-18", "stream": false, "tools":
-        [{"type": "function", "function": {"name": "move_left_hand", "description":
-        "Move your left hand forward or backward.", "parameters": {"type": "object",
-        "properties": {"distance": {"description": "Integer distance to move (mm), where
-        forward is positive.", "title": "Distance", "type": "integer"}}, "required":
-        ["distance"]}}}, {"type": "function", "function": {"name": "move_right_hand",
+        smile and wave."}], "model": "gpt-4o-mini-2024-07-18", "stream": false, "tool_choice":
+        "required", "tools": [{"type": "function", "function": {"name": "move_left_hand",
+        "description": "Move your left hand forward or backward.", "parameters": {"type":
+        "object", "properties": {"distance": {"description": "Integer distance to move
+        (mm), where forward is positive.", "title": "Distance", "type": "integer"}},
+        "required": ["distance"]}}}, {"type": "function", "function": {"name": "move_right_hand",
         "description": "Move your right hand forward or backward.", "parameters": {"type":
         "object", "properties": {"distance": {"description": "Integer distance to move
         (mm), where forward is positive.", "title": "Distance", "type": "integer"}},
@@ -23,13 +23,13 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "1050"
+          - "1077"
         content-type:
           - application/json
         host:
           - api.openai.com
         user-agent:
-          - AsyncOpenAI/Python 1.48.0
+          - AsyncOpenAI/Python 1.50.2
         x-stainless-arch:
           - arm64
         x-stainless-async:
@@ -39,7 +39,7 @@ interactions:
         x-stainless-os:
           - MacOS
         x-stainless-package-version:
-          - 1.48.0
+          - 1.50.2
         x-stainless-raw-response:
           - "true"
         x-stainless-retry-count:
@@ -53,21 +53,20 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//xFTLbtswELzrK4g9W4Ws+CXfYqQJ0CBxkqYFmqYgaGolseZDECnHseF/
-          LyTbkmKgj0tQHQRyR7M7Q3F36xECIoYpAZ4xx1Uu/fPZYxKJeGmduFtPBmfM4uL6/nK+Wd9mGfQq
-          hln8RO6OrA/cqFyiE0bvYV4gc1hl7Y/DcRhNomhYA8rEKCtamjt/YHwltPDDIBz4wdjvTw7szAiO
-          Fqbku0cIIdv6XenUMa5hSoLeMaLQWpYiTJuPCIHCyCoCzFphHdMOei3IjXaoK+m6lLIDOGMk5UzK
-          tvD+2XbW7WExKam8ulpJNB/leTLj19/mFy+f+3NruvX2qV/zWlBSat4cUgdv4tOTYoSAZqrmKrNC
-          KjFxNGM6PslACLAiLRVqV6mH7TPEtXWOz9VPCIIdvCHsOrtd75/MjmebJzN84LdPLg6XNxt9/7C+
-          3PC7dzNbiDT7b27nhl182ribL18neX8WPohR8bgsRfQebq0SEinTMX1hK/yb2T95a9Y/Ohe7wKS0
-          TB5uvHdyDCBNmhdmYU86AhKhhc1ogczW8rsN4h2r1XWgfNODkBdG5Y46s0Rdpe0PDg0L7Zxo0dER
-          dMYx2cbD4LcsGqNjom7UZjbsdQqdthmCRmbtFuyrdahoInSKRV6IegpAklOMRuF4MTwbjMDbeb8A
-          AAD//wMAxir/1BMFAAA=
+          H4sIAAAAAAAAAwAAAP//tFNNb5wwFLzzK6x3hgoozW64raJEW6lquv1U2lTImAc4NbZrm222q/3v
+          FbABssmhl3BAxsPMvLHf23uEAC8gJcBq6lijRbC62gimo+XH99vkevf9y7X6VtSf2qvfYXkRgt8x
+          VH6HzD2wXjHVaIGOKznAzCB12KlGi3gZJ1G0OOuBRhUoOlqlXZCooOGSB3EYJ0G4CKLlkV0rztBC
+          Sn54hBCy799dnbLAe0hJ6D/sNGgtrRDS8SdCwCjR7QC1lltHpQN/ApmSDmVXumyFmAFOKZExKsRk
+          PDz72Xo6LCpE1q5v7jZsE+ZvL2+q+1UuTb29fPf1w8xvkN7pvqCylWw8pBk+7qcnZoSApE3PbdQW
+          M4Gly2oqixMFQoCaqm1Quq562N9C0UdneNtdQhge4BHhMPs6+P8Vdr1e/WlzunrDzp38y+MLq85f
+          b9efXyys4VX9AmnH9c/Z5RssW0vFsSu8k4MBoSptVG5PugZKLrmtM4PU9oHAOqUH786nd4D2UYeC
+          NqrRLnPqF8pOMEriQQ+mKZrQJDmCTjkqZqzlmf+MXlago7xv4XFqGGU1FhM19Gbhnpo+JzEE5LJ6
+          ouIdlcDurMMmK7ms0GjD+xGDUmeLJKfJIk8oA+/g/QMAAP//AwAhjLt5cAQAAA==
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8c8e093e4ca7fae3-SJC
+          - 8ce7e3b7885f96c5-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -75,14 +74,14 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 25 Sep 2024 21:16:36 GMT
+          - Sun, 06 Oct 2024 18:59:37 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=61MlWpcVCvcXhVMRw_t9t5Q6hmJPVAGJb5A4Vt0GSlc-1727298996-1.0.1.1-AcYunKuwM2rw555mXDPqNIH2sIQXAjqNdCdwx7UMiAaAHopbx_FkvctXNV5a47p8EpNoazAPa9sVYZWMgQOb0Q;
-            path=/; expires=Wed, 25-Sep-24 21:46:36 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=HFn57_VQxpb2gMCkqIoLHi4dyiljNgxG8rc_6L_UuD0-1728241177-1.0.1.1-NdZetfWhoyqhqHHeJN5KdtJ4HYOVbibh81wE2O0Nwh30.OqqmxATDvh0VyhDyb8wYgC1tYdy7Uaasdv1W9X8xQ;
+            path=/; expires=Sun, 06-Oct-24 19:29:37 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=26q7EoByIpQZsYO4OhmGTbRN8ePEcvK7nN5tVc7FfUE-1727298996227-0.0.1.1-604800000;
+          - _cfuvid=6dmGt.cJRQMle0M8SdXudRfpnZEOMYUVNHEPcYhZc64-1728241177669-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
@@ -95,7 +94,7 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "1052"
+          - "1238"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
@@ -113,7 +112,7 @@ interactions:
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_a95a2040041bbd5b0c0d20fd309eafdf
+          - req_c1a8805a094a36b8dbdce38d5f02e1ed
       status:
         code: 200
         message: OK
