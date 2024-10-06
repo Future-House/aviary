@@ -155,16 +155,21 @@ class ToolSelector:
             ),
             tools=ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
         )
-        if (
-            len(model_response.choices) != 1
-            or model_response.choices[0].finish_reason != "tool_calls"
-        ):
+
+        if (num_choices := len(model_response.choices)) != 1:
             raise MalformedMessageError(
-                f"Unexpected shape of LiteLLM model response {model_response}."
+                f"Expected one choice in LiteLLM model response, got {num_choices}"
+                f" choices, full response was {model_response}."
+            )
+        choice = model_response.choices[0]
+        if choice.finish_reason != "tool_calls":
+            raise MalformedMessageError(
+                "Expected finish reason 'tool_calls' in LiteLLM model response, got"
+                f" {choice.finish_reason!r}, full response was {model_response}."
             )
         usage = model_response.usage
         return ToolRequestMessage(
-            **model_response.choices[0].message.model_dump(),
+            **choice.message.model_dump(),
             info={
                 "usage": (usage.prompt_tokens, usage.completion_tokens),
                 "model": self._model_name,
