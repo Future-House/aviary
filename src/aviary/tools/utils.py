@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from enum import StrEnum
 from functools import partial
-from typing import TYPE_CHECKING, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from pydantic import BaseModel, Field
 
@@ -156,22 +156,26 @@ class ToolSelector:
         tool_choice: Tool | str | None = TOOL_CHOICE_REQUIRED,
     ) -> ToolRequestMessage:
         """Run a completion that selects a tool in tools given the messages."""
-        kwargs = {}
-        if tool_choice is not None:
-            kwargs["tool_choice"] = (
-                {
-                    "type": "function",
-                    "function": {"name": tool_choice.info.name},
-                }
-                if isinstance(tool_choice, Tool)
-                else tool_choice
-            )
+        completion_kwargs: dict[str, Any] = {}
+        # SEE: https://platform.openai.com/docs/guides/function-calling/configuring-function-calling-behavior-using-the-tool_choice-parameter
+        expected_finish_reason: str = "tool_calls"
+        if isinstance(tool_choice, Tool):
+            completion_kwargs["tool_choice"] = {
+                "type": "function",
+                "function": {"name": tool_choice.info.name},
+            }
+            expected_finish_reason = "stop"
+        elif tool_choice is not None:
+            completion_kwargs["tool_choice"] = tool_choice
+            if tool_choice == self.TOOL_CHOICE_REQUIRED:
+                expected_finish_reason = "stop"
+
         model_response = await self._bound_acompletion(
             messages=MessagesAdapter.dump_python(
                 messages, exclude_none=True, by_alias=True
             ),
             tools=ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
-            **kwargs,
+            **completion_kwargs,
         )
 
         if (num_choices := len(model_response.choices)) != 1:
@@ -180,10 +184,11 @@ class ToolSelector:
                 f" choices, full response was {model_response}."
             )
         choice = model_response.choices[0]
-        if choice.finish_reason != "tool_calls":
+        if choice.finish_reason != expected_finish_reason:
             raise MalformedMessageError(
-                "Expected finish reason 'tool_calls' in LiteLLM model response, got"
-                f" {choice.finish_reason!r}, full response was {model_response}."
+                f"Expected finish reason {expected_finish_reason!r} in LiteLLM model"
+                f" response, got {choice.finish_reason!r}, full response was"
+                f" {model_response}."
             )
         usage = model_response.usage
         return ToolRequestMessage(
