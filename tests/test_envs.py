@@ -22,6 +22,7 @@ from aviary.tools import (
     ToolSelectorLedger,
 )
 from tests import CILLMModelNames
+from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
 class TestDummyEnv:
@@ -328,7 +329,7 @@ class TestParallelism:
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
 
-    @pytest.mark.vcr
+    @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
     async def test_tool_selector_from_model_name(
