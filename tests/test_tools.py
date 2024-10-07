@@ -668,9 +668,7 @@ async def test_argref_by_name_advanced_features() -> None:
 
     # Assert that we can describe the tool
     assert tool.info.describe_str()
-    assert (
-        "(set via a string key instead of the full object)" in tool.info.describe_str()
-    )
+    assert "(Pass a string key instead of the full object)" in tool.info.describe_str()
 
     # Test state passing with fxn_requires_state
     @argref_by_name(fxn_requires_state=True)
