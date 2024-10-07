@@ -7,6 +7,7 @@ from typing import ClassVar
 import litellm
 import pytest
 from pydantic import BaseModel
+from pytest_subtests import SubTests
 
 from aviary.env import DummyEnv, DummyEnvState, Environment, Frame, TaskDataset
 from aviary.message import Message
@@ -21,6 +22,7 @@ from aviary.tools import (
     ToolSelectorLedger,
 )
 from tests import CILLMModelNames
+from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
 class TestDummyEnv:
@@ -327,20 +329,34 @@ class TestParallelism:
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
 
-    @pytest.mark.vcr
+    @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
-    async def test_tool_selector_from_model_name(self, model_name: str) -> None:
+    async def test_tool_selector_from_model_name(
+        self, subtests: SubTests, model_name: str
+    ) -> None:
         env = ParallelizedDummyEnv()
         obs, tools = await env.reset()
-        ledger = ToolSelectorLedger(tools=tools)
 
-        selector = ToolSelector(model_name)
-        tool_request_message = await selector(obs, tools)
-        ledger.messages.append(tool_request_message)
-        ledger.model_dump()  # Proving we can serialize the ledger
-        assert isinstance(tool_request_message, ToolRequestMessage)
-        assert tool_request_message.tool_calls, "Expected at least one tool call"
+        with subtests.test("'required' tool_choice"):
+            ledger = ToolSelectorLedger(tools=tools)
+            selector = ToolSelector(model_name)
+            tool_request_message = await selector(obs, tools)
+            ledger.messages.append(tool_request_message)
+            ledger.model_dump()  # Proving we can serialize the ledger
+            assert isinstance(tool_request_message, ToolRequestMessage)
+            assert tool_request_message.tool_calls, "Expected at least one tool call"
+
+        with subtests.test("'auto' tool_choice"):
+            # NOTE: 'auto' can work, but you risk the ToolSelector not actually
+            # selecting a tool, which is why 'auto' is not the default
+            ledger = ToolSelectorLedger(tools=tools)
+            selector = ToolSelector(model_name)
+            tool_request_message = await selector(obs, tools, tool_choice="auto")
+            ledger.messages.append(tool_request_message)
+            ledger.model_dump()  # Proving we can serialize the ledger
+            assert isinstance(tool_request_message, ToolRequestMessage)
+            assert tool_request_message.tool_calls, "Expected at least one tool call"
 
     @pytest.mark.vcr
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
