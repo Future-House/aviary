@@ -4,6 +4,9 @@ from functools import update_wrapper
 from inspect import signature
 from itertools import starmap
 from types import UnionType
+
+# NOTE: even though typing.Dict etc is not recommended, we support both variants for
+# type-checking (i.e. dict and Dict) in case callers use the latter.
 from typing import Any, Dict, List, Tuple, Union, get_args, get_origin  # noqa: UP035
 
 from docstring_parser import compose, parse
