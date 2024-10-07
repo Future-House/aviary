@@ -1,8 +1,10 @@
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from functools import update_wrapper
 from inspect import signature
-from typing import Union, get_args, get_origin
+from itertools import starmap
+from types import UnionType
+from typing import Any, Dict, List, Tuple, Union, get_args, get_origin  # noqa: UP035
 
 from docstring_parser import compose, parse
 
@@ -53,7 +55,7 @@ def argref_wrapper(wrapper, wrapped, args_to_skip: set[str] | None):
                 param.type_name is None
                 and (type_hint := orig_annots.get(param.arg_name)) is not None
             ):
-                param.type_name = type_to_str(type_hint)
+                param.type_name = _type_to_str(type_hint)
 
             param.description = (param.description or "") + f" {ARGREF_NOTE}"
 
@@ -229,7 +231,7 @@ def _check_arg_types(func: Callable, args, kwargs) -> None:
             break  # Extra arguments are handled by *args if any
         param = param_names[idx]
         expected_type = annotations.get(param)
-        if expected_type and not isinstance(arg, expected_type):
+        if expected_type and not _isinstance_with_generics(arg, expected_type):
             wrong_types.append((
                 param,
                 expected_type.__name__,
@@ -239,10 +241,11 @@ def _check_arg_types(func: Callable, args, kwargs) -> None:
     # Check keyword arguments
     for param, arg in kwargs.items():
         expected_type = annotations.get(param)
-        if expected_type and not isinstance(arg, expected_type):
+        if expected_type and not _isinstance_with_generics(arg, expected_type):
             wrong_types.append((
                 param,
-                expected_type.__name__,
+                # sometimes need str for generics like Union
+                getattr(expected_type, "__name__", str(expected_type)),
                 type(arg).__name__,
             ))
 
@@ -256,7 +259,7 @@ def _check_arg_types(func: Callable, args, kwargs) -> None:
         )
 
 
-def type_to_str(t) -> str:
+def _type_to_str(t) -> str:
     """
     Convert a Python type annotation into its string representation.
 
@@ -270,14 +273,56 @@ def type_to_str(t) -> str:
 
     if origin is Union:
         # Handle Union types, including the new | syntax in Python 3.10+
-        return " | ".join(type_to_str(arg) for arg in args)
+        return " | ".join(_type_to_str(arg) for arg in args)
     if origin is not None:
         # Handle generic types like list[str], dict[str, int], etc.
         origin_name = origin.__name__
-        args_str = ", ".join(type_to_str(arg) for arg in args)
+        args_str = ", ".join(_type_to_str(arg) for arg in args)
         return f"{origin_name}[{args_str}]"
     if hasattr(t, "__name__"):
         # Handle basic types
         return t.__name__
     # Fallback for types without a __name__ attribute
     return str(t)
+
+
+def _isinstance_with_generics(obj, expected_type) -> bool:  # noqa: C901, PLR0911
+    """Like isinstance, but with support for generics."""
+    origin = get_origin(expected_type)
+    if origin is None:
+        # Handle special cases like typing.Any
+        if expected_type is Any:
+            return True
+        return isinstance(obj, expected_type)
+    if origin in {UnionType, Union}:
+        return any(
+            _isinstance_with_generics(obj, arg) for arg in get_args(expected_type)
+        )
+    if origin in {list, List, Sequence}:  # noqa: UP006
+        if not isinstance(obj, list):
+            return False
+        elem_type = get_args(expected_type)[0]
+        return all(_isinstance_with_generics(elem, elem_type) for elem in obj)
+    if origin in {dict, Dict}:  # noqa: UP006
+        if not isinstance(obj, dict):
+            return False
+        key_type, val_type = get_args(expected_type)
+        return all(
+            _isinstance_with_generics(k, key_type)
+            and _isinstance_with_generics(v, val_type)
+            for k, v in obj.items()
+        )
+    if origin in {tuple, Tuple}:  # noqa: UP006
+        if not isinstance(obj, tuple):
+            return False
+        elem_types = get_args(expected_type)
+        if len(elem_types) == 2 and elem_types[1] is Ellipsis:  # noqa: PLR2004
+            # Tuple of variable length
+            return all(_isinstance_with_generics(elem, elem_types[0]) for elem in obj)
+        if len(elem_types) != len(obj):
+            return False
+        return all(
+            starmap(_isinstance_with_generics, zip(obj, elem_types, strict=True))
+        )
+    # Fallback to checking the origin type
+    return isinstance(obj, origin)
