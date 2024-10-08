@@ -18,6 +18,6 @@ jobs:
           uv build --sdist --wheel --out-dir dist/ .
           uv build --sdist --wheel --out-dir dist/ packages/gsm8k
           uv build --sdist --wheel --out-dir dist/ packages/hotpotqa
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+      - run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
