@@ -19,6 +19,7 @@ jobs:
           uv build --sdist --wheel --out-dir dist/ .
           uv build --sdist --wheel --out-dir dist/ packages/gsm8k
           uv build --sdist --wheel --out-dir dist/ packages/hotpotqa
-      - run: uv publish
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      # TODO: go back to `uv publish` after https://github.com/astral-sh/uv/issues/8030
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
