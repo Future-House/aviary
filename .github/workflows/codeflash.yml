@@ -34,9 +34,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up uv
-        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
       - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
         run: uv sync
       - name: Run CodeFlash on fhaviary

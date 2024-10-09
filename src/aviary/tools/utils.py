@@ -158,17 +158,19 @@ class ToolSelector:
         """Run a completion that selects a tool in tools given the messages."""
         completion_kwargs: dict[str, Any] = {}
         # SEE: https://platform.openai.com/docs/guides/function-calling/configuring-function-calling-behavior-using-the-tool_choice-parameter
-        expected_finish_reason: str = "tool_calls"
+        expected_finish_reason: set[str] = {"tool_calls"}
         if isinstance(tool_choice, Tool):
             completion_kwargs["tool_choice"] = {
                 "type": "function",
                 "function": {"name": tool_choice.info.name},
             }
-            expected_finish_reason = "stop"
+            expected_finish_reason = {"stop"}  # TODO: should this be .add("stop") too?
         elif tool_choice is not None:
             completion_kwargs["tool_choice"] = tool_choice
             if tool_choice == self.TOOL_CHOICE_REQUIRED:
-                expected_finish_reason = "stop"
+                # Even though docs say it should be just 'stop',
+                # in practice 'tool_calls' shows up too
+                expected_finish_reason.add("stop")
 
         model_response = await self._bound_acompletion(
             messages=MessagesAdapter.dump_python(
@@ -184,11 +186,11 @@ class ToolSelector:
                 f" choices, full response was {model_response}."
             )
         choice = model_response.choices[0]
-        if choice.finish_reason != expected_finish_reason:
+        if choice.finish_reason not in expected_finish_reason:
             raise MalformedMessageError(
-                f"Expected finish reason {expected_finish_reason!r} in LiteLLM model"
-                f" response, got {choice.finish_reason!r}, full response was"
-                f" {model_response}."
+                f"Expected a finish reason in {expected_finish_reason} in LiteLLM"
+                f" model response, got finish reason {choice.finish_reason!r}, full"
+                f" response was {model_response} and tool choice was {tool_choice}."
             )
         usage = model_response.usage
         return ToolRequestMessage(
