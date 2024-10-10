@@ -690,6 +690,9 @@ async def test_argref_by_name_advanced_features() -> None:
 
 @pytest.mark.asyncio
 async def test_argref_by_name_type_checking() -> None:
+    class MyInt(int):
+        pass
+
     class MyState:
         def __init__(self):
             self.refs = {
@@ -697,6 +700,7 @@ async def test_argref_by_name_type_checking() -> None:
                 "str_arg": "abc",
                 "int_list_arg": [1],
                 "str_list_arg": ["abc"],
+                "my_int_list_arg": [MyInt()],
             }
 
     s = MyState()
@@ -722,6 +726,8 @@ async def test_argref_by_name_type_checking() -> None:
         type_checked_fn = argref_by_name(type_check=True)(complex_typed_fn)
 
         type_checked_fn(c="int_list_arg", d="str_arg", state=s)  # correctly-typed
+        # list[MyInt] should match Sequence[int]
+        type_checked_fn(c="my_int_list_arg", d="str_arg", state=s)
 
         with pytest.raises(TypeError):
             # passing int, not list[int]
