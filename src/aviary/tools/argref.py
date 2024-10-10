@@ -1,13 +1,10 @@
 import uuid
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from functools import update_wrapper
 from inspect import signature
 from itertools import starmap
 from types import UnionType
-
-# NOTE: even though typing.Dict etc is not recommended, we support both variants for
-# type-checking (i.e. dict and Dict) in case callers use the latter.
-from typing import Any, Dict, List, Tuple, Union, get_args, get_origin  # noqa: UP035
+from typing import Any, Union, get_args, get_origin
 
 from docstring_parser import compose, parse
 
@@ -301,13 +298,13 @@ def _isinstance_with_generics(obj, expected_type) -> bool:  # noqa: C901, PLR091
         return any(
             _isinstance_with_generics(obj, arg) for arg in get_args(expected_type)
         )
-    if origin in {list, List, Sequence}:  # noqa: UP006
-        if not isinstance(obj, list):
+    if origin in {list, Sequence}:
+        if not isinstance(obj, Sequence):
             return False
         elem_type = get_args(expected_type)[0]
         return all(_isinstance_with_generics(elem, elem_type) for elem in obj)
-    if origin in {dict, Dict}:  # noqa: UP006
-        if not isinstance(obj, dict):
+    if origin in {dict, Mapping}:
+        if not isinstance(obj, Mapping):
             return False
         key_type, val_type = get_args(expected_type)
         return all(
@@ -315,7 +312,7 @@ def _isinstance_with_generics(obj, expected_type) -> bool:  # noqa: C901, PLR091
             and _isinstance_with_generics(v, val_type)
             for k, v in obj.items()
         )
-    if origin in {tuple, Tuple}:  # noqa: UP006
+    if origin is tuple:
         if not isinstance(obj, tuple):
             return False
         elem_types = get_args(expected_type)
