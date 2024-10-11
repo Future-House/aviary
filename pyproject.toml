@@ -221,7 +221,6 @@ addopts = "--typeguard-packages=aviary --doctest-modules"
 # By default all warnings emitted during the test session will be displayed in
 # a summary at the end of the test session.
 filterwarnings = [
-    "ignore:'imghdr' is deprecated and slated for removal in Python 3.13:DeprecationWarning",  # SEE: https://github.com/BerriAI/litellm/issues/2929#issuecomment-2345224633
     "ignore:Support for class-based `config` is deprecated, use ConfigDict instead",  # SEE: https://github.com/BerriAI/litellm/issues/5648
     'ignore:open_text is deprecated. Use files\(\) instead:DeprecationWarning',  # SEE: https://github.com/BerriAI/litellm/issues/5647
 ]
