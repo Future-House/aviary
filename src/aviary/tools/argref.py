@@ -26,6 +26,7 @@ def make_pretty_id(prefix: str = "") -> str:
 
 
 ARGREF_NOTE = "(Pass a string key instead of the full object)"
+LIST_ARGREF_NOTE = "(Pass comma-separated string keys instead of the full object)"
 
 
 def argref_wrapper(wrapper, wrapped, args_to_skip: set[str] | None):
@@ -51,13 +52,17 @@ def argref_wrapper(wrapper, wrapped, args_to_skip: set[str] | None):
             if param.arg_name in args_to_skip:
                 continue
 
+            note = ARGREF_NOTE
+
             if (
                 param.type_name is None
                 and (type_hint := orig_annots.get(param.arg_name)) is not None
             ):
                 param.type_name = _type_to_str(type_hint)
+                if list in {type_hint, get_origin(type_hint)}:
+                    note = LIST_ARGREF_NOTE
 
-            param.description = (param.description or "") + f" {ARGREF_NOTE}"
+            param.description = (param.description or "") + f" {note}"
 
         wrapped_func.__doc__ = compose(ds)
 
@@ -161,13 +166,15 @@ def argref_by_name(  # noqa: C901, PLR0915
             for k, v in kwargs.items():
                 a, dr = maybe_deref_arg(v)
                 if dr:
+                    # We dereferenced
                     if len(a) > 1:
-                        raise ValueError(
-                            f"Multiple values for argument '{k}' found in state. "
-                            "Cannot use comma-separated notation for kwargs."
-                        )
-                    deref_kwargs[k] = a[0]
+                        # We got multiple items, so pass the whole list
+                        deref_kwargs[k] = a
+                    else:
+                        # We only got one item - pass it directly
+                        deref_kwargs[k] = a[0]
                 else:
+                    # Did not dereference
                     deref_kwargs[k] = a
 
             return deref_args, deref_kwargs, state
@@ -234,8 +241,8 @@ def _check_arg_types(func: Callable, args, kwargs) -> None:
         if expected_type and not _isinstance_with_generics(arg, expected_type):
             wrong_types.append((
                 param,
-                expected_type.__name__,
-                type(arg).__name__,
+                _type_to_str(expected_type),
+                _type_to_str(type(arg)),
             ))
 
     # Check keyword arguments
@@ -245,8 +252,8 @@ def _check_arg_types(func: Callable, args, kwargs) -> None:
             wrong_types.append((
                 param,
                 # sometimes need str for generics like Union
-                getattr(expected_type, "__name__", str(expected_type)),
-                type(arg).__name__,
+                _type_to_str(expected_type),
+                _type_to_str(type(arg)),
             ))
 
     if wrong_types:
