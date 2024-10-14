@@ -70,12 +70,6 @@ repos:
     rev: 38.120.1
     hooks:
       - id: renovate-config-validator
-  - repo: https://github.com/henryiii/check-sdist
-    rev: v1.1.0
-    hooks:
-      - id: check-sdist
-        args: [--inject-junk]
-        additional_dependencies: [setuptools>=64, setuptools_scm>=8]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.11.2
     hooks:
