@@ -10,16 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - id: build-fhaviary
+        uses: hynek/build-and-inspect-python-package@v2
         with:
-          enable-cache: true
-      - run: uv sync
-      - name: Build a binary wheel and a source tarball
-        run: |
-          uv build --sdist --wheel --out-dir dist/ .
-          uv build --sdist --wheel --out-dir dist/ packages/gsm8k
-          uv build --sdist --wheel --out-dir dist/ packages/hotpotqa
-      # TODO: go back to `uv publish` after https://github.com/astral-sh/uv/issues/8030
+          upload-name-suffix: -fhaviary
+      - name: Download built fhaviary artifact to dist/
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.build-fhaviary.outputs.artifact-name }}
+          path: dist
+      - id: build-aviary-gsm8k
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/gsm8k
+          upload-name-suffix: -gsm8k
+      - name: Download built aviary.gsm8k artifact to dist/
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.build-aviary-gsm8k.outputs.artifact-name }}
+          path: dist
+      - id: build-aviary-hotpotqa
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/hotpotqa
+          upload-name-suffix: -hotpotqa
+      - name: Download built aviary.hotpotqa artifact to dist/
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.build-aviary-hotpotqa.outputs.artifact-name }}
+          path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
