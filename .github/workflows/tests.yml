@@ -32,6 +32,23 @@ jobs:
         with:
           enable-cache: true
       - run: uv python pin ${{ matrix.python-version }}
+      - name: Check fhaviary build
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          upload-name-suffix: -fhaviary
+      - name: Check aviary.gsm8k build
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/gsm8k
+          upload-name-suffix: -gsm8k
+      - name: Check aviary.hotpotqa build
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/hotpotqa
+          upload-name-suffix: -hotpotqa
       - run: uv sync --python-preference=only-managed
       - name: Run refurb
         run: | # Go with this until https://github.com/astral-sh/uv/issues/6459

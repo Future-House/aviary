@@ -3,7 +3,7 @@ default_language_version:
   python: python3
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-byte-order-marker
@@ -19,7 +19,7 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.8
+    rev: v0.6.9
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -63,19 +63,13 @@ repos:
         additional_dependencies:
           - "validate-pyproject-schema-store[all]>=2024.08.19" # For Ruff renaming RUF025 to C420
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.4.17
+    rev: 0.4.21
     hooks:
       - id: uv-lock
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 38.101.1
+    rev: 38.122.0
     hooks:
       - id: renovate-config-validator
-  - repo: https://github.com/henryiii/check-sdist
-    rev: v1.0.0
-    hooks:
-      - id: check-sdist
-        args: [--inject-junk]
-        additional_dependencies: [setuptools>=64, setuptools_scm>=8]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.11.2
     hooks:
