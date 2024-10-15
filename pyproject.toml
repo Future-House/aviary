@@ -131,7 +131,6 @@ ignore_missing_imports = true
 module = [
     "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
     "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
-    "litellm",  # SEE: https://github.com/BerriAI/litellm/issues/825
 ]
 
 [tool.pylint]
