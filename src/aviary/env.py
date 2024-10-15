@@ -215,6 +215,7 @@ class Environment(ABC, Generic[TEnvState]):
                 logger.debug(str(exc), exc_info=True)
                 tool_exc = exc
             if tool_exc:
+                # No need to mention tool.info.name here, since it'll get wrapped in a ToolResponseMessage
                 s_content = f"Encountered exception during tool call: {tool_exc}"
             elif isinstance(content, str):
                 s_content = content
