@@ -25,7 +25,7 @@ def make_pretty_id(prefix: str = "") -> str:
     return prefix + "-" + uuid_frags[0]
 
 
-ARGREF_NOTE = "(Pass a string key instead of the full object)"
+DEFAULT_ARGREF_NOTE = "(Pass a string key instead of the full object)"
 LIST_ARGREF_NOTE = "(Pass comma-separated string keys instead of the full object)"
 
 
@@ -50,7 +50,7 @@ def argref_wrapper(wrapper, wrapped, args_to_skip: set[str]):
             if param.arg_name in args_to_skip:
                 continue
 
-            note = ARGREF_NOTE
+            note = DEFAULT_ARGREF_NOTE
 
             if (
                 param.type_name is None
