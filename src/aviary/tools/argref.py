@@ -29,10 +29,8 @@ ARGREF_NOTE = "(Pass a string key instead of the full object)"
 LIST_ARGREF_NOTE = "(Pass comma-separated string keys instead of the full object)"
 
 
-def argref_wrapper(wrapper, wrapped, args_to_skip: set[str] | None):
+def argref_wrapper(wrapper, wrapped, args_to_skip: set[str]):
     """Inject the ARGREF_NOTE into the Args."""
-    args_to_skip = (args_to_skip or set()) | {"state", "return"}
-
     # normal wraps
     wrapped_func = update_wrapper(wrapper, wrapped)
     # when we modify wrapped_func's annotations, we don't want to mutate wrapped
@@ -120,6 +118,7 @@ def argref_by_name(  # noqa: C901, PLR0915
         >>> # Equivalent to my_func(state.refs["a"], state.refs["b"])
         >>> wrapped_fxn("a", "b", state=state)  # doctest: +SKIP
     """
+    args_to_skip = (args_to_skip or set()) | {"state", "return"}
 
     def decorator(func):  # noqa: C901, PLR0915
         def get_call_args(*args, **kwargs):  # noqa: C901
@@ -134,37 +133,36 @@ def argref_by_name(  # noqa: C901, PLR0915
 
             # now convert the keynames to actual references (if they are a string)
             # tuple is (arg, if was dereferenced)
-            def maybe_deref_arg(arg):
-                if not isinstance(arg, str):
-                    raise TypeError(
-                        f"All key-value store keys must be strings; received: {arg}"
-                    )
-
+            def maybe_deref_arg(arg, must_exist: bool) -> tuple[Any, bool]:
                 try:
-                    if arg in state.refs:
-                        return [state.refs[arg]], True
-                    # sometimes it is not correctly converted to a tuple
-                    # so as an attempt to be helpful...
-                    if all(a.strip() in state.refs for a in arg.split(",")):
-                        try:
-                            return [state.refs[a.strip()] for a in arg.split(",")], True
-                        except KeyError:
-                            raise KeyError(
-                                f'At least one key not found in current key-value store: "{arg}"'
-                            ) from None
-
-                    raise KeyError(
-                        f'Not a valid element of the current key-value store: "{arg}"'
-                    )
+                    refs = state.refs
                 except AttributeError as e:
                     raise AttributeError(
                         "The state object must have a 'refs' attribute to use argref_by_name decorator."
                     ) from e
 
+                if arg in refs:
+                    return [refs[arg]], True
+
+                if isinstance(arg, str):
+                    # sometimes it is not correctly converted to a tuple
+                    # so as an attempt to be helpful...
+                    split_args = [a.strip() for a in arg.split(",")]
+                    if all(a in refs for a in split_args):
+                        return [refs[a] for a in split_args], True
+
+                if not must_exist:
+                    return arg, False
+
+                raise KeyError(
+                    f'Not a valid element of the current key-value store: "{arg}"'
+                )
+
             # the split thing makes it complicated and we cannot use comprehension
             deref_args = []
             for i, arg in enumerate(args):
-                a, dr = maybe_deref_arg(arg)
+                # In order to support *args, allow arguments that are either ref keys or strings
+                a, dr = maybe_deref_arg(arg, must_exist=False)
                 if dr:
                     deref_args.extend(a)
                 else:
@@ -173,24 +171,21 @@ def argref_by_name(  # noqa: C901, PLR0915
                         # likely the user intended to use a reference
                         raise KeyError(f"The key {arg} is not found in state.")
                     deref_args.append(a)
+
             deref_kwargs = {}
             for k, v in kwargs.items():
                 if args_to_skip and k in args_to_skip:
                     deref_kwargs[k] = v
                     continue
 
-                a, dr = maybe_deref_arg(v)
-                if dr:
-                    # We dereferenced
-                    if len(a) > 1:
-                        # We got multiple items, so pass the whole list
-                        deref_kwargs[k] = a
-                    else:
-                        # We only got one item - pass it directly
-                        deref_kwargs[k] = a[0]
-                else:
-                    # Did not dereference
+                # In the kwarg case, force arguments to be ref keys (unless in args_to_skip)
+                a, _ = maybe_deref_arg(v, must_exist=True)
+                if len(a) > 1:
+                    # We got multiple items, so pass the whole list
                     deref_kwargs[k] = a
+                else:
+                    # We only got one item - pass it directly
+                    deref_kwargs[k] = a[0]
 
             return deref_args, deref_kwargs, state
 

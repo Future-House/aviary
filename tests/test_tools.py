@@ -561,16 +561,18 @@ async def test_argref_by_name_basic_usage() -> None:
             self.refs = {"foo": 1}
 
     # Check we can use argref_by_name to add 1 + 2 using a value in refs
-    wrapped_add = argref_by_name()(add)
+    wrapped_add = argref_by_name(args_to_skip={"b"})(add)
     s = MyState()
+
     result = wrapped_add("foo", 2, state=s)
     # Now s.refs has a new entry at the below `name`
     name = result.split()[0]
     assert s.refs[name] == 1 + 2
 
-    # Check we can still use argref_by_name without refs
-    result = wrapped_add(6, 2, state=s)
-    assert s.refs[result.split()[0]] == 6 + 2
+    # Check kwargs work too
+    result = wrapped_add(a="foo", b=2, state=s)
+    name = result.split()[0]
+    assert s.refs[name] == 1 + 2
 
 
 @pytest.mark.asyncio
@@ -584,11 +586,15 @@ async def test_argref_by_name_error_handling() -> None:
 
     # Check if we use a key name that doesn't exist, we blow up
     with pytest.raises(KeyError, match="not found in state"):
-        wrapped_add("bar", 2, state=MyState())
+        wrapped_add("bar", 2, state=s)
 
     # Check if state doesn't have refs, we blow up
     with pytest.raises(AttributeError, match="must have a 'refs' attribute"):
         wrapped_add("foo", 2, state="not a state")
+
+    # Check that we cannot pass a direct value as a kwarg
+    with pytest.raises(KeyError, match="Not a valid element"):
+        wrapped_add(a=1, b=2, state=s)
 
 
 @pytest.mark.asyncio
@@ -652,14 +658,14 @@ async def test_argref_by_name_advanced_features() -> None:
         """Some docstring."""
         return f"{foo} {a}"
 
-    assert skip_deref_test("foo", a="not in state", state=s) == "1 not in state"
+    assert skip_deref_test("foo", "not in state", state=s) == "1 not in state"
     assert skip_deref_test("foo", "foo", state=s) == "1 1"
 
     # Call in context using Tool and related classes
-    wrapped_add = argref_by_name()(add)
+    wrapped_add = argref_by_name(args_to_skip={"b"})(add)
     tool = Tool.from_function(wrapped_add)
 
-    tool_call = ToolCall.from_tool(tool, "foo", 2)
+    tool_call = ToolCall.from_tool(tool, "foo", b=2)
     action = ToolRequestMessage(tool_calls=[tool_call])
     my_env = DummyEnv()
     my_env.tools = [tool]
@@ -717,7 +723,7 @@ async def test_argref_by_name_type_checking() -> None:
         type_checked_fn(a="int_arg", b="str_arg", state=s)  # correctly-typed
         with pytest.raises(TypeError):
             # A non-int value is passed to a by name
-            type_checked_fn(a="str_arg", b="bar", state=s)
+            type_checked_fn(a="str_arg", b="str_arg", state=s)
 
     def complex_typed_fn(c: Sequence[int], d: int | str) -> None:
         """Some docstring."""
