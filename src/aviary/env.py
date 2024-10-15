@@ -217,7 +217,7 @@ class Environment(ABC, Generic[TEnvState]):
                 logger.debug(str(exc), exc_info=True)
                 tool_exc = exc
             if tool_exc:
-                s_content: str = f"{logger_msg}:\n{tool_exc}"
+                s_content = str(tool_exc)
             elif isinstance(content, str):
                 s_content = content
             elif isinstance(content, BaseModel):

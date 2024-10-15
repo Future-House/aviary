@@ -135,23 +135,31 @@ def argref_by_name(  # noqa: C901, PLR0915
             # now convert the keynames to actual references (if they are a string)
             # tuple is (arg, if was dereferenced)
             def maybe_deref_arg(arg):
-                if isinstance(arg, str):
-                    try:
-                        if arg in state.refs:
-                            return [state.refs[arg]], True
-                        # sometimes it is not correctly converted to a tuple
-                        # so as an attempt to be helpful...
-                        if all(a.strip() in state.refs for a in arg.split(",")):
+                if not isinstance(arg, str):
+                    raise TypeError(
+                        f"All key-value store keys must be strings; received: {arg}"
+                    )
+
+                try:
+                    if arg in state.refs:
+                        return [state.refs[arg]], True
+                    # sometimes it is not correctly converted to a tuple
+                    # so as an attempt to be helpful...
+                    if all(a.strip() in state.refs for a in arg.split(",")):
+                        try:
                             return [state.refs[a.strip()] for a in arg.split(",")], True
-                        # fall through
-                        raise KeyError(
-                            f'Not a valid element of the current key-value store: "{arg}"'
-                        )
-                    except AttributeError as e:
-                        raise AttributeError(
-                            "The state object must have a 'refs' attribute to use argref_by_name decorator."
-                        ) from e
-                return arg, False
+                        except KeyError:
+                            raise KeyError(
+                                f'At least one key not found in current key-value store: "{arg}"'
+                            ) from None
+
+                    raise KeyError(
+                        f'Not a valid element of the current key-value store: "{arg}"'
+                    )
+                except AttributeError as e:
+                    raise AttributeError(
+                        "The state object must have a 'refs' attribute to use argref_by_name decorator."
+                    ) from e
 
             # the split thing makes it complicated and we cannot use comprehension
             deref_args = []
