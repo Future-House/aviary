@@ -144,6 +144,9 @@ def argref_by_name(  # noqa: C901, PLR0915
                         if all(a.strip() in state.refs for a in arg.split(",")):
                             return [state.refs[a.strip()] for a in arg.split(",")], True
                         # fall through
+                        raise KeyError(
+                            f'Not a valid element of the current key-value store: "{arg}"'
+                        )
                     except AttributeError as e:
                         raise AttributeError(
                             "The state object must have a 'refs' attribute to use argref_by_name decorator."
@@ -164,6 +167,10 @@ def argref_by_name(  # noqa: C901, PLR0915
                     deref_args.append(a)
             deref_kwargs = {}
             for k, v in kwargs.items():
+                if args_to_skip and k in args_to_skip:
+                    deref_kwargs[k] = v
+                    continue
+
                 a, dr = maybe_deref_arg(v)
                 if dr:
                     # We dereferenced
