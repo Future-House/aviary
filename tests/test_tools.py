@@ -693,6 +693,13 @@ async def test_argref_by_name_advanced_features() -> None:
     my_env.tools = [tool]
     await my_env.exec_tool_calls(action, state=MyState())
 
+    # Check we can pass kwarg lists as comma-separated keys
+    @argref_by_name(return_direct=True)
+    def kwarg_list_test(a: list[int]) -> int:
+        return sum(a)
+
+    assert kwarg_list_test(a="foo,foo", state=s) == 2
+
 
 @pytest.mark.asyncio
 async def test_argref_by_name_type_checking() -> None:
