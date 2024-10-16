@@ -154,8 +154,12 @@ def argref_by_name(  # noqa: C901, PLR0915
                 if not must_exist:
                     return arg, False
 
+                if "," in arg:
+                    raise KeyError(
+                        f'Not all keys are present in the current key-value store: "{arg}"'
+                    )
                 raise KeyError(
-                    f'Not a valid element of the current key-value store: "{arg}"'
+                    f'Not a valid key in the current key-value store: "{arg}"'
                 )
 
             # the split thing makes it complicated and we cannot use comprehension
