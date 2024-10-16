@@ -593,7 +593,7 @@ async def test_argref_by_name_error_handling() -> None:
         wrapped_add("foo", 2, state="not a state")
 
     # Check that we cannot pass a direct value as a kwarg
-    with pytest.raises(KeyError, match="Not a valid element"):
+    with pytest.raises(KeyError, match="Key is not present"):
         wrapped_add(a=1, b=2, state=s)
 
 
