@@ -144,19 +144,19 @@ def argref_by_name(  # noqa: C901, PLR0915
                 if arg in refs:
                     return [refs[arg]], True
 
-                if isinstance(arg, str):
                     # sometimes it is not correctly converted to a tuple
                     # so as an attempt to be helpful...
-                    split_args = [a.strip() for a in arg.split(",")]
-                    if len(split_args) > 1:
-                        missing = [a for a in split_args if a not in refs]
-                        if not missing:
-                            return [refs[a] for a in split_args], True
+                if (
+                    isinstance(arg, str)
+                    and len(split_args := [a.strip() for a in arg.split(",")]) > 1
+                ):
+                    if not (missing := [a for a in split_args if a not in refs]):
+                        return [refs[a] for a in split_args], True
 
-                        if must_exist:
-                            raise KeyError(
-                                f'The following are not valid keys in the current key-value store: "{", ".join(missing)}"'
-                            )
+                    if must_exist:
+                        raise KeyError(
+                            f'The following are not valid keys in the current key-value store: "{", ".join(missing)}"'
+                        )
 
                 if not must_exist:
                     return arg, False
