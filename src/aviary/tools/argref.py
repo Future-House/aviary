@@ -144,8 +144,8 @@ def argref_by_name(  # noqa: C901, PLR0915
                 if arg in refs:
                     return [refs[arg]], True
 
-                    # sometimes it is not correctly converted to a tuple
-                    # so as an attempt to be helpful...
+                # sometimes it is not correctly converted to a tuple
+                # so as an attempt to be helpful...
                 if (
                     isinstance(arg, str)
                     and len(split_args := [a.strip() for a in arg.split(",")]) > 1
