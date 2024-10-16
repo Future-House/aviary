@@ -154,15 +154,17 @@ def argref_by_name(  # noqa: C901, PLR0915
                         return [refs[a] for a in split_args], True
 
                     if must_exist:
+                        # Error message for the agent
                         raise KeyError(
-                            f'The following are not valid keys in the current key-value store: "{", ".join(missing)}"'
+                            f'The following keys are not present in the current key-value store: "{", ".join(missing)}"'
                         )
 
                 if not must_exist:
                     return arg, False
 
+                # Error message for the agent
                 raise KeyError(
-                    f'Not a valid key in the current key-value store: "{arg}"'
+                    f'Key is not present the current key-value store: "{arg}"'
                 )
 
             # the split thing makes it complicated and we cannot use comprehension
