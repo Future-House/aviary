@@ -148,16 +148,19 @@ def argref_by_name(  # noqa: C901, PLR0915
                     # sometimes it is not correctly converted to a tuple
                     # so as an attempt to be helpful...
                     split_args = [a.strip() for a in arg.split(",")]
-                    if all(a in refs for a in split_args):
-                        return [refs[a] for a in split_args], True
+                    if len(split_args) > 1:
+                        missing = [a for a in split_args if a not in refs]
+                        if not missing:
+                            return [refs[a] for a in split_args], True
+
+                        if must_exist:
+                            raise KeyError(
+                                f'The following are not valid keys in the current key-value store: "{", ".join(missing)}"'
+                            )
 
                 if not must_exist:
                     return arg, False
 
-                if "," in arg:
-                    raise KeyError(
-                        f'Not all keys are present in the current key-value store: "{arg}"'
-                    )
                 raise KeyError(
                     f'Not a valid key in the current key-value store: "{arg}"'
                 )
