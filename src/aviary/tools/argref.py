@@ -164,7 +164,7 @@ def argref_by_name(  # noqa: C901, PLR0915
 
                 # Error message for the agent
                 raise KeyError(
-                    f'Key is not present the current key-value store: "{arg}"'
+                    f'Key is not present in the current key-value store: "{arg}"'
                 )
 
             # the split thing makes it complicated and we cannot use comprehension
