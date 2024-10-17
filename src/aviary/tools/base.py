@@ -54,8 +54,8 @@ class ToolCallFunction(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def deserialize_args(cls, data: Any) -> Any:
-        if isinstance(data, dict) and isinstance(data["arguments"], str):
-            if data["arguments"] == "":
+        if isinstance(data, dict) and isinstance(data["arguments"], str | None):
+            if not data["arguments"]:
                 data["arguments"] = {}
             else:
                 try:
