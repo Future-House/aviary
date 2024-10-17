@@ -426,9 +426,8 @@ class DummyEnv(Environment[DummyEnvState]):
         self.state = type(self).State(
             messages=[
                 Message(
-                    content="Write a 5 word story via print_story" f" about {self.task}"
-                    if self.task
-                    else ""
+                    content="Write a 5 word story via print_story"
+                    + (f" about {self.task}" if self.task else "")
                 )
             ],
         )
