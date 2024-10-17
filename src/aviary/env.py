@@ -256,6 +256,8 @@ class Environment(ABC, Generic[TEnvState]):
     def from_name(cls, name: str, task: str | None = None, **env_kwargs) -> Self:
         new_cls = _get_cls_from_name(ENV_REGISTRY, name)
         if task is not None:
+            if env_kwargs:
+                raise ValueError("Cannot pass both a task and environment kwargs.")
             return new_cls.from_task(task)
         return new_cls(**env_kwargs)
 
