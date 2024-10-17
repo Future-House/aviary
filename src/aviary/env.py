@@ -249,11 +249,19 @@ class Environment(ABC, Generic[TEnvState]):
 
     @classmethod
     def from_task(cls, task: str) -> Self:
-        """Create an environment from a task description."""
+        """Create an environment from a task description.
+
+        A task is meant to be closer to a user prompt - like what you would expect
+        in calling an LLM. This is how the environment should be used after training
+        and in deployment. We don't take config here, because the default environment config
+        should be general for arbitrary tasks. Or, the config should be coupled to the agent
+        training (future TODO).
+        """
         raise NotImplementedError(f"{cls.__name__} does not implement from_task")
 
     @classmethod
     def from_name(cls, name: str, task: str | None = None, **env_kwargs) -> Self:
+        """Create an environment from the name of the class. Call `Environment.available()` to see list."""
         new_cls = _get_cls_from_name(ENV_REGISTRY, name)
         if task is not None:
             if env_kwargs:
@@ -262,8 +270,13 @@ class Environment(ABC, Generic[TEnvState]):
         return new_cls(**env_kwargs)
 
     @classmethod
-    def available(cls) -> list[str]:
-        return list(ENV_REGISTRY.keys())
+    def available(cls) -> set[str]:
+        """See list of available environment classes for `from_name`.
+
+        This is not exhaustive, because some may be importable and so you should just
+        try to call `from_name`. This is more for logging/debugging purposes.
+        """
+        return set(ENV_REGISTRY.keys())
 
 
 # Maps baseline environment names to their module and class names
