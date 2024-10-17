@@ -191,6 +191,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             create_tool(self.finish, "Finish"),
         ]
 
+    @classmethod
+    def from_task(cls, task: str) -> "HotPotQAEnv":
+        return cls(question=task, correct_answer=0.0)
+
     def calculate_reward(self, answer: str | None) -> float:
         """Calculate the reward based on the agent's answer.
 

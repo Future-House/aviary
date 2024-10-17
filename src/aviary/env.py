@@ -248,8 +248,20 @@ class Environment(ABC, Generic[TEnvState]):
         """
 
     @classmethod
-    def from_name(cls, name: str, **env_kwargs) -> Self:
-        return _construct_obj_from_name(ENV_REGISTRY, name, **env_kwargs)
+    def from_task(cls, task: str) -> Self:
+        """Create an environment from a task description."""
+        raise NotImplementedError(f"{cls.__name__} does not implement from_task")
+
+    @classmethod
+    def from_name(cls, name: str, task: str | None = None, **env_kwargs) -> Self:
+        new_cls = _get_cls_from_name(ENV_REGISTRY, name)
+        if task is not None:
+            return new_cls.from_task(task)
+        return new_cls(**env_kwargs)
+
+    @classmethod
+    def available(cls) -> list[str]:
+        return list(ENV_REGISTRY.keys())
 
 
 # Maps baseline environment names to their module and class names
@@ -272,7 +284,7 @@ class TaskDataset(ABC, Generic[TEnvironment]):
 
     @classmethod
     def from_name(cls, name: str, **env_kwargs) -> TaskDataset:
-        return _construct_obj_from_name(TASK_DATASET_REGISTRY, name, **env_kwargs)
+        return _get_cls_from_name(TASK_DATASET_REGISTRY, name)(**env_kwargs)
 
     def __len__(self) -> int:
         raise TypeError(f'"Object of type {self.__class__.__name__}" has no len()')
@@ -372,8 +384,13 @@ class DummyEnv(Environment[DummyEnvState]):
 
     State = DummyEnvState
 
-    def __init__(self, end_immediately: bool = True):
+    def __init__(self, task: str | None = None, end_immediately: bool = True):
         self.end_immediately = end_immediately
+        self.task = task
+
+    @classmethod
+    def from_task(cls, task: str) -> DummyEnv:
+        return cls(task=task)
 
     async def step(
         self, action: ToolRequestMessage
@@ -407,7 +424,13 @@ class DummyEnv(Environment[DummyEnvState]):
             Tool.from_function(cast_int, allow_empty_param_descriptions=True),
         ]
         self.state = type(self).State(
-            messages=[Message(content="Write a 5 word story via print_story")]
+            messages=[
+                Message(
+                    content="Write a 5 word story via print_story" f" about {self.task}"
+                    if self.task
+                    else ""
+                )
+            ],
         )
         return self.state.messages, self.tools
 
@@ -432,7 +455,7 @@ class DummyTaskDataset(TaskDataset[DummyEnv]):
         return True
 
 
-def _construct_obj_from_name(registry: dict[str, tuple[str, str]], name: str, **kwargs):
+def _get_cls_from_name(registry: dict[str, tuple[str, str]], name: str):
     try:
         module_name, cls_name = registry[name]
     except KeyError:
@@ -446,4 +469,4 @@ def _construct_obj_from_name(registry: dict[str, tuple[str, str]], name: str, **
             f"Could not import env from {module_name}; you need to install it."
         ) from None
 
-    return getattr(module, cls_name)(**kwargs)
+    return getattr(module, cls_name)
