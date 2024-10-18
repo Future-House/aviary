@@ -254,8 +254,9 @@ class Environment(ABC, Generic[TEnvState]):
         A task is meant to be closer to a user prompt - like what you would expect
         in calling an LLM. This is how the environment should be used after training
         and in deployment. We don't take config here, because the default environment config
-        should be general for arbitrary tasks. Or, the config should be coupled to the agent
-        training (future TODO).
+        should be general for arbitrary tasks.
+
+        For example, with GSM8k/calculator: "What is 18 * (number of legs on a cat) / moons of mars?"
         """
         raise NotImplementedError(f"{cls.__name__} does not implement from_task")
 
