@@ -1,6 +1,7 @@
 import asyncio
 import json
 import pathlib
+import re
 import tempfile
 from typing import ClassVar
 
@@ -23,6 +24,9 @@ from aviary.tools import (
 )
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
+
+# Mistral API v0.0.2 required tool calls to comply with this pattern
+MISTRAL_API_TOOL_CALL_ID_PATTERN = re.compile(r"^[a-zA-Z0-9]{9}$")
 
 
 class TestDummyEnv:
@@ -120,6 +124,10 @@ class TestDummyEnv:
         tool_request_message = ToolRequestMessage(
             tool_calls=[ToolCall.from_name("get_todo_list", n=3)]
         )
+        assert all(
+            MISTRAL_API_TOOL_CALL_ID_PATTERN.match(tc.id)
+            for tc in tool_request_message.tool_calls
+        )
         new_messages = await dummy_env.exec_tool_calls(tool_request_message)
         (new_message,) = new_messages
         assert new_message.content == "Go for a walk\nRead a book\nCall a friend"
@@ -133,6 +141,10 @@ class TestDummyEnv:
         dummy_env.tools = [tool]
         tool_request_message = ToolRequestMessage(
             tool_calls=[ToolCall.from_name("get_todo_list_no_args")]
+        )
+        assert all(
+            MISTRAL_API_TOOL_CALL_ID_PATTERN.match(tc.id)
+            for tc in tool_request_message.tool_calls
         )
         new_messages = await dummy_env.exec_tool_calls(tool_request_message)
         (new_message,) = new_messages
@@ -148,10 +160,12 @@ class TestDummyEnv:
         tool2 = Tool.from_function(get_calendar)
         dummy_env.tools = [tool, tool2]
         tool_request_message = ToolRequestMessage(
-            tool_calls=[
-                ToolCall.from_name("get_todo_list_no_args"),
-                ToolCall.from_name("get_calendar"),
-            ],
+            # NOTE: use from_tool to test coverage of that classmethod too
+            tool_calls=[ToolCall.from_tool(tool), ToolCall.from_tool(tool2)],
+        )
+        assert all(
+            MISTRAL_API_TOOL_CALL_ID_PATTERN.match(tc.id)
+            for tc in tool_request_message.tool_calls
         )
         new_messages = await dummy_env.exec_tool_calls(tool_request_message)
         if model_name.startswith("claude"):

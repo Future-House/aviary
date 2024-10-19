@@ -82,6 +82,11 @@ class ToolCall(BaseModel):
     type: Literal["function"] = "function"
     function: ToolCallFunction
 
+    @staticmethod
+    def generate_id() -> str:
+        """Generate a tool call ID of length 9 with values in [a-zA-Z0-9]."""
+        return str(uuid.uuid4()).replace("-", "")[:9]
+
     @classmethod
     def from_tool(cls, tool: "Tool", *args, id: str | None = None, **kwargs) -> Self:  # noqa: A002
         """Create a ToolCall from a Tool and arguments.
@@ -94,14 +99,14 @@ class ToolCall(BaseModel):
             if i < len(args):
                 kwargs[name] = args[i]
         return cls(
-            id=id or str(uuid.uuid4()),
+            id=id or cls.generate_id(),
             function=ToolCallFunction(name=tool.info.name, arguments=kwargs),
         )
 
     @classmethod
     def from_name(cls, function_name: str, **kwargs) -> Self:
         return cls(
-            id=str(uuid.uuid4()),
+            id=cls.generate_id(),
             function=ToolCallFunction(name=function_name, arguments=kwargs),
         )
 
