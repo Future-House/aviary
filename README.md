@@ -226,7 +226,7 @@ pip install fhaviary[server]
 aviary tools [env name]
 ```
 
-This will start a server that allows you to view the tools and call them, viewing the descriptions/types and output that an agent would see when using the server.
+This will start a server that allows you to view the tools and call them, viewing the descriptions/types and output that an agent would see when using the tools.
 
 ## Environments
 
