@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 import click
@@ -23,7 +24,8 @@ def tools(env, host, port, token):
     # use empty task to trigger
     # an empty task/no problem
     env = Environment.from_name(env, task="")
-    app = make_tool_server(env.tools)
+    _, tools = asyncio.run(env.reset())
+    app = make_tool_server(tools)
     click.echo(
         f"View tools at http://{host}:{port}/docs and log in with token {token!r}"
     )
