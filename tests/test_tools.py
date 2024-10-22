@@ -1,10 +1,12 @@
 import json
+import os
 import pickle
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
 from typing import Any
 
 import pytest
+from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
 
@@ -17,6 +19,7 @@ from aviary.tools import (
     ToolRequestMessage,
     argref_by_name,
 )
+from aviary.tools.server import make_tool_server
 
 
 def simple() -> None:
@@ -749,3 +752,47 @@ async def test_argref_by_name_type_checking() -> None:
         with pytest.raises(TypeError):
             # passing list[str], not list[int]
             type_checked_fn(c="str_list_arg", d="int_arg", state=s)
+
+
+def test_make_tool_server():
+    def add(a: int, b: int) -> int:
+        """Add two numbers."""
+        return a + b
+
+    def subtract(a: int, b: int) -> int:
+        """Subtract two numbers.
+
+        Args:
+            a: first number
+            b: second number
+        """
+        return a - b
+
+    tools = [
+        Tool.from_function(add, allow_empty_param_descriptions=True),
+        Tool.from_function(subtract),
+    ]
+    server = make_tool_server(tools)
+
+    # make sure there are two endpoints
+    route_names = [route.name for route in server.routes]
+    assert "add" in route_names
+    assert "subtract" in route_names
+
+    # make sure we can call them
+    client = TestClient(server)
+    prev_token = os.environ.get("AUTH_TOKEN")
+    token = "test_make_tool_server"
+    os.environ["AUTH_TOKEN"] = token
+
+    try:
+        response = client.post(
+            "/add", json={"a": 1, "b": 2}, headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        assert response.json() == 3
+    finally:
+        if prev_token is None:
+            del os.environ["AUTH_TOKEN"]
+        else:
+            os.environ["AUTH_TOKEN"] = prev_token

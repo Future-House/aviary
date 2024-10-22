@@ -39,7 +39,7 @@ type_map: dict[type | None, str] = {
     dict: "object",
     None: "null",
 }
-
+reverse_type_map = {v: k for k, v in type_map.items()}
 
 # A string to denote an invalid tool. It can be used to indicate
 # an attempt to use a non-existent tool, missing/invalid parameters,
