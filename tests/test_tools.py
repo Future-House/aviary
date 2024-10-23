@@ -793,18 +793,10 @@ async def test_make_tool_server():
 
     # make sure we can call them
     client = TestClient(server)
-    prev_token = os.environ.get("AUTH_TOKEN")
-    token = "test_make_tool_server"
-    os.environ["AUTH_TOKEN"] = token
-
-    try:
+    token = "stub"
+    with patch.dict(os.environ, {"AUTH_TOKEN": token}):
         response = client.post(
             "/add", json={"a": 1, "b": 2}, headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 200
         assert response.json() == 3
-    finally:
-        if prev_token is None:
-            del os.environ["AUTH_TOKEN"]
-        else:
-            os.environ["AUTH_TOKEN"] = prev_token
