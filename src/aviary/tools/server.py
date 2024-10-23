@@ -9,14 +9,14 @@ from uuid import uuid4
 
 from pydantic import Field, create_model
 
-from aviary.tools.base import Tool, reverse_type_map
+from aviary.tools.base import reverse_type_map
 from aviary.utils import is_coroutine_callable
 
 
-async def make_tool_server(
+async def make_tool_server(  # noqa: C901, PLR0915
     environment_factory: Callable,
     name: str | None = None,
-    env_path: Path = Path("/tmp"),
+    env_path: Path = Path("/tmp"),  # noqa: S108
 ):
     """Create a FastAPI server for the provided environment.
 
@@ -125,6 +125,7 @@ async def make_tool_server(
         return_type = signature(tool._tool_fn).return_annotation
 
         # ensure the this will be in fast api scope
+        # because fastapi will barf on a request model that isn't in scope
         # close your eyes PR reviewers
         # also fuck your IDE tools
         RequestModel.__module__ = sys._getframe(1).f_globals.get("__name__", "__main__")
@@ -209,8 +210,8 @@ async def make_tool_server(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Environment {environment_id} not found",
                 )
-            with open(env_path / f"{environment_id}.pkl", "rb") as f:
-                env, tools = pickle.load(f)
+            with open(env_path / f"{environment_id}.pkl", "rb") as f:  # noqa: ASYNC230
+                env, _ = pickle.load(f)
 
             return env.state
 

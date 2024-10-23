@@ -8,6 +8,9 @@ from aviary.env import Environment
 from aviary.tools.server import make_tool_server
 
 
+# this enables sub commands for the CLI
+# so we can call `aviary tools` to start the tool server
+# rather than aviary-tools or something
 @click.group()
 def cli():
     pass
@@ -18,7 +21,7 @@ def cli():
 @click.option("--host", default="localhost")
 @click.option("--port", default=8000)
 @click.option("--token", default="secret")
-def tools(env, host, port, token):
+def tools(env: str, host: str, port: int, token: str):
     if not os.environ.get("AUTH_TOKEN"):
         os.environ["AUTH_TOKEN"] = token
 
