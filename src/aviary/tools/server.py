@@ -13,7 +13,7 @@ from aviary.tools.base import Tool, ToolCall, ToolRequestMessage, reverse_type_m
 
 async def make_tool_server(  # noqa: C901, PLR0915
     environment_factory: Callable,
-    name: str | None = None,
+    name: str = "Aviary Tool Server",
     env_path: Path = Path("/tmp"),  # noqa: S108
 ):
     """Create a FastAPI server for the provided environment.
@@ -103,7 +103,7 @@ async def make_tool_server(  # noqa: C901, PLR0915
         return create_model(f"{tool.info.name.capitalize()}Params", **fields)  # type: ignore[call-overload]
 
     web_app = FastAPI(
-        title=name or "Aviary Tool Server",
+        title=name,
         description="API Server for Aviary Environment Tools",
         dependencies=[Depends(validate_token)],
     )
