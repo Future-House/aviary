@@ -21,11 +21,13 @@ def cli():
 def tools(env, host, port, token):
     if not os.environ.get("AUTH_TOKEN"):
         os.environ["AUTH_TOKEN"] = token
+
     # use empty task to trigger
     # an empty task/no problem
-    env = Environment.from_name(env, task="")
-    _, tools = asyncio.run(env.reset())
-    app = make_tool_server(tools)
+    def env_factory():
+        return Environment.from_name(env, task="")
+
+    app = asyncio.run(make_tool_server(env_factory))
     click.echo(
         f"View tools at http://{host}:{port}/docs and log in with token {token!r}"
     )

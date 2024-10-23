@@ -158,5 +158,9 @@ class MalformedMessageError(ValueError):
         return not all(x in record.msg for x in (cls.__name__, EMPTY_CONTENT_BASE_MSG))
 
 
+class EnvStateMessage(Message):
+    """A message that contains the current state of the environment."""
+
+
 # Define separately so we can filter out this message type
 EMPTY_CONTENT_BASE_MSG = "No content in message"

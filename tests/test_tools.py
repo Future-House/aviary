@@ -10,7 +10,8 @@ from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
 
-from aviary.env import DummyEnv
+from aviary.env import DummyEnv, Environment, Frame
+from aviary.message import Message
 from aviary.tools import (
     INVALID_TOOL_NAME,
     FunctionInfo,
@@ -754,7 +755,8 @@ async def test_argref_by_name_type_checking() -> None:
             type_checked_fn(c="str_list_arg", d="int_arg", state=s)
 
 
-def test_make_tool_server():
+@pytest.mark.asyncio
+async def test_make_tool_server():
     def add(a: int, b: int) -> int:
         """Add two numbers."""
         return a + b
@@ -768,11 +770,21 @@ def test_make_tool_server():
         """
         return a - b
 
-    tools = [
-        Tool.from_function(add, allow_empty_param_descriptions=True),
-        Tool.from_function(subtract),
-    ]
-    server = make_tool_server(tools)
+    class MyEnv(Environment):
+        async def reset(self) -> tuple[list[Message], list[Tool]]:
+            tools = [
+                Tool.from_function(add, allow_empty_param_descriptions=True),
+                Tool.from_function(subtract),
+            ]
+            return [], tools
+
+        async def step(self):
+            pass
+
+        async def export_frame(self):
+            pass
+
+    server = await make_tool_server(MyEnv)
 
     # make sure there are two endpoints
     route_names = [route.name for route in server.routes]

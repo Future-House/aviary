@@ -297,10 +297,14 @@ class Tool(BaseModel):
         super().__init__(**kwargs)
         # NOTE: this Callable is excluded from serialization
         self._tool_fn = tool_fn
+        self._force_pickle_fn = False
 
     def __getstate__(self) -> dict[Any, Any]:
         # Prevent _tool_fn from being pickled, SEE: https://stackoverflow.com/a/2345953
         state = super().__getstate__()
+        # allow forcing pickle, e.g., for cloud pickle sending
+        if self._force_pickle_fn:
+            return state
         state["__dict__"] = state["__dict__"].copy()
         state["__dict__"].pop("_tool_fn", None)
         return state
