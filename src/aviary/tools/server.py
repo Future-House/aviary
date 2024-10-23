@@ -208,7 +208,7 @@ async def make_tool_server(  # noqa: C901, PLR0915
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Environment {environment_id} not found",
                 )
-            with open(env_path / f"{environment_id}.pkl", "rb") as f:  # noqa: ASYNC230
+            with (env_path / f"{environment_id}.pkl").open("rb") as f:
                 env, _ = pickle.load(f)
 
             return env.state

@@ -1,8 +1,14 @@
 import asyncio
 import os
 
-import click
-import uvicorn
+try:
+    import click
+    import uvicorn
+except ImportError as e:
+    raise ImportError(
+        "CLI requires the 'server' extra for 'aviary'. Please:"
+        " `pip install aviary[server]`."
+    ) from e
 
 from aviary.env import Environment
 from aviary.tools.server import make_tool_server

@@ -54,7 +54,7 @@ xml = [
 ]
 
 [project.scripts]
-aviary = "aviary:main"
+aviary = "aviary.main:cli"
 
 [project.urls]
 issues = "https://github.com/Future-House/aviary/issues"
