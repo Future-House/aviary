@@ -4,13 +4,15 @@ import pickle
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
+from typeguard import suppress_type_checks
 
-from aviary.env import DummyEnv, Environment, Frame
+from aviary.env import DummyEnv, Environment
 from aviary.message import Message
 from aviary.tools import (
     INVALID_TOOL_NAME,
@@ -776,15 +778,17 @@ async def test_make_tool_server():
                 Tool.from_function(add, allow_empty_param_descriptions=True),
                 Tool.from_function(subtract),
             ]
+            self.tools = tools
             return [], tools
 
-        async def step(self):
-            pass
+        async def step(self, action):
+            return await self.exec_tool_calls(action), False, 0, 0
 
         async def export_frame(self):
             pass
 
-    server = await make_tool_server(MyEnv)
+    with suppress_type_checks():
+        server = await make_tool_server(MyEnv)
 
     # make sure there are two endpoints
     route_names = [route.name for route in server.routes]
@@ -799,4 +803,4 @@ async def test_make_tool_server():
             "/add", json={"a": 1, "b": 2}, headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 200
-        assert response.json() == 3
+        assert response.json()["result"] == "3"

@@ -2,15 +2,13 @@ import os
 import secrets
 import sys
 from collections.abc import Callable
-from inspect import signature
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from pydantic import Field, create_model
+from pydantic import BaseModel, Field, create_model
 
-from aviary.tools.base import reverse_type_map
-from aviary.utils import is_coroutine_callable
+from aviary.tools.base import Tool, ToolCall, ToolRequestMessage, reverse_type_map
 
 
 async def make_tool_server(  # noqa: C901, PLR0915
@@ -115,11 +113,10 @@ async def make_tool_server(  # noqa: C901, PLR0915
     _, tools = await env.reset()
 
     # Dynamically create routes for each tool
-    for executable_tool in (t for t in tools if hasattr(t, "_tool_fn")):
+    for tool in (t for t in tools if hasattr(t, "_tool_fn")):
         tool_name = tool.info.name
         tool_description = tool.info.description
         RequestModel = create_request_model_from_tool(tool)
-        return_type = signature(tool._tool_fn).return_annotation
 
         # ensure the this will be in fast api scope
         # because fastapi will barf on a request model that isn't in scope
@@ -141,21 +138,26 @@ async def make_tool_server(  # noqa: C901, PLR0915
 
                 # ok now find the tool_fn to call it with
                 # that came from the env I just loaded
-                tool_fn = next(
-                    tool._tool_fn for tool in env_tools if tool.info.name == tool_name
+                msg = ToolRequestMessage(
+                    tool_calls=[ToolCall.from_name(tool_name, **data.model_dump())]  # type: ignore[attr-defined]
                 )
-
                 try:
-                    # Call the tool function with the provided arguments
-                    if is_coroutine_callable(tool_fn):
-                        result = await tool_fn(**data.model_dump())  # type: ignore[attr-defined]
-                    else:
-                        result = tool_fn(**data.model_dump())  # type: ignore[attr-defined]
+                    result_msgs, done, *_ = await env.step(msg)
                 except Exception as e:
-                    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+                    ) from e
+
+                if done:
+                    _, env_tools = await env.reset()
 
                 save_environment(env, env_tools, environment_id)
-                return {"result": result, "environment_id": environment_id}
+                return {
+                    "result": "\n\n".join([
+                        str(msg.content) for msg in result_msgs if msg.content
+                    ]),
+                    "environment_id": environment_id,
+                }
 
             _tool_handler.__doc__ = tool_description
             return _tool_handler
@@ -169,7 +171,6 @@ async def make_tool_server(  # noqa: C901, PLR0915
             f"/{tool_name}",
             summary=tool_name,
             name=tool_name,
-            response_model=return_type,
             description=tool_description,
         )(tool_handler)
 
