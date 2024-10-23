@@ -80,7 +80,7 @@ async def make_tool_server(  # noqa: C901, PLR0915
     def make_environment_id():
         return f"env{str(uuid4())[:8].replace('-', '')}"
 
-    def create_request_model_from_tool(tool):
+    def create_request_model_from_tool(tool: Tool) -> BaseModel:
         fields = {}
         for pname, info in tool.info.parameters.properties.items():
             if pname == "type":
@@ -114,11 +114,8 @@ async def make_tool_server(  # noqa: C901, PLR0915
     env = environment_factory()
     _, tools = await env.reset()
 
-    # filter only for tools that are executable
-    tools = [tool for tool in tools if hasattr(tool, "_tool_fn")]
-
     # Dynamically create routes for each tool
-    for tool in tools:
+    for executable_tool in (t for t in tools if hasattr(t, "_tool_fn")):
         tool_name = tool.info.name
         tool_description = tool.info.description
         RequestModel = create_request_model_from_tool(tool)
@@ -155,7 +152,7 @@ async def make_tool_server(  # noqa: C901, PLR0915
                     else:
                         result = tool_fn(**data.model_dump())  # type: ignore[attr-defined]
                 except Exception as e:
-                    raise HTTPException(status_code=500, detail=str(e)) from e
+                    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
                 save_environment(env, env_tools, environment_id)
                 return {"result": result, "environment_id": environment_id}
@@ -167,7 +164,7 @@ async def make_tool_server(  # noqa: C901, PLR0915
             tool.info.name, RequestModel, tool_description
         )
 
-        # Add a POST route for the tool
+        # Add a POST route so we can invoke the tool function
         web_app.post(
             f"/{tool_name}",
             summary=tool_name,
