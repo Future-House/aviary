@@ -1,6 +1,7 @@
 import os
 import secrets
 import sys
+import tempfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -14,7 +15,7 @@ from aviary.tools.base import Tool, ToolCall, ToolRequestMessage, reverse_type_m
 async def make_tool_server(  # noqa: C901, PLR0915
     environment_factory: Callable,
     name: str = "Aviary Tool Server",
-    env_path: Path = Path("/tmp"),  # noqa: S108
+    env_path: Path | None = None,
 ):
     """Create a FastAPI server for the provided environment.
 
@@ -40,6 +41,8 @@ async def make_tool_server(  # noqa: C901, PLR0915
             " `pip install aviary[server]`."
         ) from exc
 
+    if not env_path:
+        env_path = Path(tempfile.gettempdir())
     auth_scheme = HTTPBearer()
 
     async def validate_token(
