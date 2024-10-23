@@ -424,6 +424,15 @@ wheels = [
 ]
 
 [[package]]
+name = "cloudpickle"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/97/c7/f746cadd08c4c08129215cf1b984b632f9e579fc781301e63da9e85c76c1/cloudpickle-3.1.0.tar.gz", hash = "sha256:81a929b6e3c7335c863c771d673d105f02efdb89dfaba0c90495d1c64796601b", size = 66155 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/48/41/e1d85ca3cab0b674e277c8c4f678cf66a91cd2cecf93df94353a606fe0db/cloudpickle-3.1.0-py3-none-any.whl", hash = "sha256:fe11acda67f61aaaec473e3afe030feb131d78a43461b718185363384f1ba12e", size = 22021 },
+]
+
+[[package]]
 name = "codeflash"
 version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
@@ -589,7 +598,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.5.1.dev49+gf34802d.d20241022"
+version = "0.5.1.dev59+g8d9a4e4.d20241023"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -615,6 +624,7 @@ llm = [
 ]
 server = [
     { name = "click" },
+    { name = "cloudpickle" },
     { name = "fastapi" },
     { name = "uvicorn" },
 ]
@@ -633,6 +643,7 @@ dev = [
     { name = "aviary-hotpotqa" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
+    { name = "cloudpickle" },
     { name = "codeflash" },
     { name = "dicttoxml" },
     { name = "fastapi" },
@@ -666,6 +677,7 @@ requires-dist = [
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
+    { name = "cloudpickle", marker = "extra == 'server'" },
     { name = "dicttoxml", marker = "extra == 'xml'" },
     { name = "docstring-parser", specifier = ">=0.16" },
     { name = "fastapi", marker = "extra == 'server'" },
