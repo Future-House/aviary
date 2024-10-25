@@ -24,10 +24,8 @@ if TYPE_CHECKING:
 class EvalAnswerMode(StrEnum):
     EXACT = "exact"  # strings must match exactly
     CONTAINS = "contains"  # the correct answer is contained in the supplied answer
-    LLM = "llm"  # Ask an LLM (default: GPT-4o-mini) to evaluate
-    LLM_SCORE = (  # Ask an LLM (default: GPT-4o-mini) to evaluate and return the score (normalized)
-        "llm-score"
-    )
+    LLM = "llm"  # Ask an LLM to evaluate
+    LLM_SCORE = "llm-score"  # Ask an LLM to evaluate and return the score (normalized)
 
 
 LLM_EVAL_CONFIG = {
