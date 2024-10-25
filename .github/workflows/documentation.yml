@@ -11,9 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - name: Install dependencies
-        uses: astral-sh/setup-uv@v3
-        run: |
+      - uses: astral-sh/setup-uv@v3
+      - name: Install Python dependencies
+        run: |-
           uv sync
       - name: Sphinx build
         run: |
