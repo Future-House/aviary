@@ -10,6 +10,7 @@ Welcome to aviary's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   readme
    modules
 
 
