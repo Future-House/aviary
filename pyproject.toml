@@ -424,9 +424,9 @@ trailing_comma_inline_array = true
 [tool.uv]
 dev-dependencies = [
     "fhaviary[dev]",
+    "myst_parser",
     "sphinx",
     "sphinx_rtd_theme",
-    "myst_parser"
 ]
 
 [tool.uv.sources]
