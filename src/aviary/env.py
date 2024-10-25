@@ -207,7 +207,10 @@ class Environment(ABC, Generic[TEnvState]):
             except Exception as exc:
                 if not handle_tool_exc:
                     raise
-                logger_msg = f"Encountered exception during tool call for tool {tool.info.name}: {exc!r}"
+                logger_msg = (
+                    f"Encountered exception during tool call for tool {tool.info.name}:"
+                    f" {exc!r}"
+                )
                 # logger.exception is just too verbose and clogs up console logging. This is a
                 # more human-friendly version: log a readable error message and emit the exception
                 # at DEBUG level.

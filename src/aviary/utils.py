@@ -30,7 +30,7 @@ def encode_image_to_base64(img: "np.ndarray") -> str:
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return (
-        f'data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode("utf-8")}'
+        f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
     )
 
 

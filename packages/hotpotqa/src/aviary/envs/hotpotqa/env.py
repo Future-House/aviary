@@ -266,7 +266,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 [
                     Message(
                         content=(
-                            f"Must call one of the provided tools"
+                            "Must call one of the provided tools"
                             f" { {t.info.name for t in self.tools} }."
                         )
                     )
@@ -453,7 +453,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         if self.state.lookup_index >= len(self.state.lookup_results):
             return "No more results."
 
-        obs = f"(Result {self.state.lookup_index + 1} / {len(self.state.lookup_results)}) {self.state.lookup_results[self.state.lookup_index]}"
+        obs = (
+            f"(Result {self.state.lookup_index + 1} / {len(self.state.lookup_results)})"
+            f" {self.state.lookup_results[self.state.lookup_index]}"
+        )
         self.state.lookup_index += 1
         return obs
 
@@ -490,10 +493,12 @@ class HotPotQAEnvConfig(BaseModel):
     tool_failure_reward: float = 0.0
     difficulty_level: set[HotPotQADifficultyLevel] | None = Field(
         None,
-        description="The HotPotQA difficulty level to filter on. "
-        "Can be any subset of `{'easy', 'medium', 'hard'}`. "
-        "If None, we will not filter any task instances. "
-        "Note that not all splits have a 'level' field.",
+        description=(
+            "The HotPotQA difficulty level to filter on. "
+            "Can be any subset of `{'easy', 'medium', 'hard'}`. "
+            "If None, we will not filter any task instances. "
+            "Note that not all splits have a 'level' field."
+        ),
     )
     proxy: str | None = None
 

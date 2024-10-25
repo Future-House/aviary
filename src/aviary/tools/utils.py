@@ -25,17 +25,19 @@ class EvalAnswerMode(StrEnum):
     EXACT = "exact"  # strings must match exactly
     CONTAINS = "contains"  # the correct answer is contained in the supplied answer
     LLM = "llm"  # Ask an LLM (default: GPT-4o-mini) to evaluate
-    LLM_SCORE = "llm-score"  # Ask an LLM (default: GPT-4o-mini) to evaluate and return the score (normalized)
+    LLM_SCORE = (  # Ask an LLM (default: GPT-4o-mini) to evaluate and return the score (normalized)
+        "llm-score"
+    )
 
 
 LLM_EVAL_CONFIG = {
     "prompt": (
-        "Here is a question, the correct answer to the question, and a proposed answer to the question. "
-        "Please tell me if the proposed answer is correct, given the correct answer. "
-        "ONLY SAY 'YES' OR 'NO'. No other output is permitted.\n\n"
-        "Question: {question} \n\n"
-        "Correct answer: {correct_answer} \n\n"
-        "Proposed answer: {proposed_answer}"
+        "Here is a question, the correct answer to the question, and a proposed answer"
+        " to the question. Please tell me if the proposed answer is correct, given the"
+        " correct answer. ONLY SAY 'YES' OR 'NO'. No other output is permitted."
+        "\n\nQuestion: {question}"
+        "\n\nCorrect answer: {correct_answer}"
+        "\n\nProposed answer: {proposed_answer}"
     ),
     "model": "gpt-4o-mini",
     "temperature": 0,
@@ -43,12 +45,12 @@ LLM_EVAL_CONFIG = {
 
 LLM_SCORE_EVAL_CONFIG = {
     "prompt": (
-        "Here is a question, the correct answer to the question, and a rubric for evaluating the question. "
-        "Judge the proposed answer based on the given rubric. "
-        "Give a score from 0 to 10. No other output is permitted.\n\n"
-        "Question: {question} \n\n"
-        "Rubric: {correct_answer} \n\n"
-        "Proposed answer: {proposed_answer}"
+        "Here is a question, the correct answer to the question, and a rubric for"
+        " evaluating the question. Judge the proposed answer based on the given rubric."
+        " Give a score from 0 to 10. No other output is permitted."
+        "\n\nQuestion: {question}"
+        "\n\nRubric: {correct_answer}"
+        "\n\nProposed answer: {proposed_answer}"
     ),
     "model": "gpt-4o-mini",
     "temperature": 0,
@@ -139,8 +141,8 @@ class ToolSelector:
                 from litellm import acompletion
             except ImportError as e:
                 raise ImportError(
-                    f"{type(self).__name__} requires the 'llm' extra for 'litellm'. Please:"
-                    " `pip install aviary[llm]`."
+                    f"{type(self).__name__} requires the 'llm' extra for 'litellm'."
+                    " Please: `pip install aviary[llm]`."
                 ) from e
         self._model_name = model_name
         self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
