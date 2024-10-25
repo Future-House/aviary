@@ -6,7 +6,7 @@ from functools import partial
 from itertools import starmap
 from typing import Annotated, Any, Literal, NoReturn, Self, TypeAlias
 
-from docstring_parser import DocstringStyle, parse
+from docstring_parser import DocstringParam, DocstringStyle, parse
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -39,7 +39,7 @@ type_map: dict[type | None, str] = {
     dict: "object",
     None: "null",
 }
-
+reverse_type_map = {v: k for k, v in type_map.items()}
 
 # A string to denote an invalid tool. It can be used to indicate
 # an attempt to use a non-existent tool, missing/invalid parameters,
@@ -54,8 +54,8 @@ class ToolCallFunction(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def deserialize_args(cls, data: Any) -> Any:
-        if isinstance(data, dict) and isinstance(data["arguments"], str):
-            if data["arguments"] == "":
+        if isinstance(data, dict) and isinstance(data["arguments"], str | None):
+            if not data["arguments"]:
                 data["arguments"] = {}
             else:
                 try:
@@ -82,6 +82,11 @@ class ToolCall(BaseModel):
     type: Literal["function"] = "function"
     function: ToolCallFunction
 
+    @staticmethod
+    def generate_id() -> str:
+        """Generate a tool call ID of length 9 with values in [a-zA-Z0-9]."""
+        return str(uuid.uuid4()).replace("-", "")[:9]
+
     @classmethod
     def from_tool(cls, tool: "Tool", *args, id: str | None = None, **kwargs) -> Self:  # noqa: A002
         """Create a ToolCall from a Tool and arguments.
@@ -94,14 +99,14 @@ class ToolCall(BaseModel):
             if i < len(args):
                 kwargs[name] = args[i]
         return cls(
-            id=id or str(uuid.uuid4()),
+            id=id or cls.generate_id(),
             function=ToolCallFunction(name=tool.info.name, arguments=kwargs),
         )
 
     @classmethod
     def from_name(cls, function_name: str, **kwargs) -> Self:
         return cls(
-            id=str(uuid.uuid4()),
+            id=cls.generate_id(),
             function=ToolCallFunction(name=function_name, arguments=kwargs),
         )
 
@@ -292,13 +297,23 @@ class Tool(BaseModel):
         super().__init__(**kwargs)
         # NOTE: this Callable is excluded from serialization
         self._tool_fn = tool_fn
+        self._force_pickle_fn = False
 
     def __getstate__(self) -> dict[Any, Any]:
         # Prevent _tool_fn from being pickled, SEE: https://stackoverflow.com/a/2345953
         state = super().__getstate__()
+        # allow forcing pickle, e.g., for cloud pickle sending
+        if self._force_pickle_fn:
+            return state
         state["__dict__"] = state["__dict__"].copy()
         state["__dict__"].pop("_tool_fn", None)
         return state
+
+    @staticmethod
+    def _get_param_desc(param: DocstringParam, include_type: bool) -> str:
+        if not include_type or not param.type_name:
+            return param.description or ""
+        return f"({param.type_name}): {param.description or ''}"
 
     @classmethod
     def from_function(
@@ -306,6 +321,7 @@ class Tool(BaseModel):
         function: Callable[..., Any] | Callable[..., Awaitable[Any]],
         docstring_style: DocstringStyle = DocstringStyle.AUTO,
         allow_empty_param_descriptions: bool = False,
+        types_in_param_descriptions: bool = False,
         **formats,
     ) -> "Tool":
         """Hydrate this class via inspection from a free function with a docstring."""
@@ -323,13 +339,16 @@ class Tool(BaseModel):
             description_stop_index = None
         field_definitions: dict[str, tuple[type, FieldInfo]] = {}
         required: dict[str, bool] = {}
+        annotations = function.__annotations__
         for pname, parameter in inspect.signature(function).parameters.items():
             if pname == "state":
                 # NOTE: ToolRequestMessage passes state for us, not the LLM
                 continue
             d = next(
                 (
-                    (p.description or "").replace("\n", " ")
+                    cls._get_param_desc(
+                        p, include_type=types_in_param_descriptions
+                    ).replace("\n", " ")
                     for p in docstring.params
                     if p.arg_name == pname
                 ),
@@ -343,8 +362,16 @@ class Tool(BaseModel):
                 field_config["description"] = description
             if not required[pname]:
                 field_config["default"] = parameter.default
+
+            # Annotation resolution order:
+            # 1. function.__annotations__: type-hints in function signature or injected
+            #    by argref_by_name. If a function has an opinion on a type hint, take it
+            #    at face-value.
+            # 2. parameter.annotation - this will descend into wrapped functions. For
+            #    argref_by_name, this is undesirabe, since the wrapper overwrites type hints.
+            #    Hence, this is second in resolution order.
             field_definitions[pname] = (
-                parameter.annotation or type(None),
+                annotations.get(pname) or parameter.annotation or type(None),
                 Field(**field_config),  # type: ignore[pydantic-field]
             )
 

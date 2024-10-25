@@ -45,19 +45,25 @@ class TestMessage:
                     tool_calls=[
                         ToolCall(
                             id="1",
-                            function=ToolCallFunction(
-                                name="name1", arguments={"hi": 5}
-                            ),
+                            function=ToolCallFunction(name="foo1", arguments={"hi": 5}),
                         ),
                         ToolCall(
                             id="2",
-                            function=ToolCallFunction(name="name2", arguments={}),
+                            function=ToolCallFunction(name="foo2", arguments={}),
+                        ),
+                        ToolCall(
+                            id="3",
+                            function=ToolCallFunction(name="foo1", arguments=""),
+                        ),
+                        ToolCall(
+                            id="4",
+                            function=ToolCallFunction(name="foo2", arguments=None),
                         ),
                     ],
                 ),
                 (
                     "Tool request message '' for tool calls: "
-                    "name1(hi='5') [id=1]; name2() [id=2]"
+                    "foo1(hi='5') [id=1]; foo2() [id=2]; foo1() [id=3]; foo2() [id=4]"
                 ),
             ),
             (

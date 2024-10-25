@@ -1,12 +1,14 @@
 import asyncio
 import json
 import pathlib
+import re
 import tempfile
 from typing import ClassVar
 
 import litellm
 import pytest
 from pydantic import BaseModel
+from pytest_subtests import SubTests
 
 from aviary.core import (
     DummyEnv,
@@ -25,6 +27,10 @@ from aviary.core import (
     ToolSelectorLedger,
 )
 from tests import CILLMModelNames
+from tests.conftest import VCR_DEFAULT_MATCH_ON
+
+# Mistral API v0.0.2 required tool calls to comply with this pattern
+MISTRAL_API_TOOL_CALL_ID_PATTERN = re.compile(r"^[a-zA-Z0-9]{9}$")
 
 
 class TestDummyEnv:
@@ -122,6 +128,10 @@ class TestDummyEnv:
         tool_request_message = ToolRequestMessage(
             tool_calls=[ToolCall.from_name("get_todo_list", n=3)]
         )
+        assert all(
+            MISTRAL_API_TOOL_CALL_ID_PATTERN.match(tc.id)
+            for tc in tool_request_message.tool_calls
+        )
         new_messages = await dummy_env.exec_tool_calls(tool_request_message)
         (new_message,) = new_messages
         assert new_message.content == "Go for a walk\nRead a book\nCall a friend"
@@ -135,6 +145,10 @@ class TestDummyEnv:
         dummy_env.tools = [tool]
         tool_request_message = ToolRequestMessage(
             tool_calls=[ToolCall.from_name("get_todo_list_no_args")]
+        )
+        assert all(
+            MISTRAL_API_TOOL_CALL_ID_PATTERN.match(tc.id)
+            for tc in tool_request_message.tool_calls
         )
         new_messages = await dummy_env.exec_tool_calls(tool_request_message)
         (new_message,) = new_messages
@@ -150,10 +164,12 @@ class TestDummyEnv:
         tool2 = Tool.from_function(get_calendar)
         dummy_env.tools = [tool, tool2]
         tool_request_message = ToolRequestMessage(
-            tool_calls=[
-                ToolCall.from_name("get_todo_list_no_args"),
-                ToolCall.from_name("get_calendar"),
-            ],
+            # NOTE: use from_tool to test coverage of that classmethod too
+            tool_calls=[ToolCall.from_tool(tool), ToolCall.from_tool(tool2)],
+        )
+        assert all(
+            MISTRAL_API_TOOL_CALL_ID_PATTERN.match(tc.id)
+            for tc in tool_request_message.tool_calls
         )
         new_messages = await dummy_env.exec_tool_calls(tool_request_message)
         if model_name.startswith("claude"):
@@ -331,20 +347,34 @@ class TestParallelism:
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
 
-    @pytest.mark.vcr
+    @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
-    async def test_tool_selector_from_model_name(self, model_name: str) -> None:
+    async def test_tool_selector_from_model_name(
+        self, subtests: SubTests, model_name: str
+    ) -> None:
         env = ParallelizedDummyEnv()
         obs, tools = await env.reset()
-        ledger = ToolSelectorLedger(tools=tools)
 
-        selector = ToolSelector(model_name)
-        tool_request_message = await selector(obs, tools)
-        ledger.messages.append(tool_request_message)
-        ledger.model_dump()  # Proving we can serialize the ledger
-        assert isinstance(tool_request_message, ToolRequestMessage)
-        assert tool_request_message.tool_calls, "Expected at least one tool call"
+        with subtests.test("'required' tool_choice"):
+            ledger = ToolSelectorLedger(tools=tools)
+            selector = ToolSelector(model_name)
+            tool_request_message = await selector(obs, tools)
+            ledger.messages.append(tool_request_message)
+            ledger.model_dump()  # Proving we can serialize the ledger
+            assert isinstance(tool_request_message, ToolRequestMessage)
+            assert tool_request_message.tool_calls, "Expected at least one tool call"
+
+        with subtests.test("'auto' tool_choice"):
+            # NOTE: 'auto' can work, but you risk the ToolSelector not actually
+            # selecting a tool, which is why 'auto' is not the default
+            ledger = ToolSelectorLedger(tools=tools)
+            selector = ToolSelector(model_name)
+            tool_request_message = await selector(obs, tools, tool_choice="auto")
+            ledger.messages.append(tool_request_message)
+            ledger.model_dump()  # Proving we can serialize the ledger
+            assert isinstance(tool_request_message, ToolRequestMessage)
+            assert tool_request_message.tool_calls, "Expected at least one tool call"
 
     @pytest.mark.vcr
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])

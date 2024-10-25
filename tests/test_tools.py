@@ -1,22 +1,29 @@
 import json
+import os
 import pickle
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
 from typing import Any
+from unittest.mock import patch
 
 import pytest
+from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
+from typeguard import suppress_type_checks
 
 from aviary.core import (
     INVALID_TOOL_NAME,
     DummyEnv,
+    Environment,
     FunctionInfo,
+    Message,
     Tool,
     ToolCall,
     ToolRequestMessage,
     argref_by_name,
 )
+from aviary.tools.server import make_tool_server
 
 
 def simple() -> None:
@@ -555,51 +562,76 @@ PARAMETERS:
 
 
 @pytest.mark.asyncio
-async def test_argref_by_name() -> None:
+async def test_argref_by_name_basic_usage() -> None:
     class MyState:
         def __init__(self):
             self.refs = {"foo": 1}
 
     # Check we can use argref_by_name to add 1 + 2 using a value in refs
-    wrapped_add = argref_by_name()(add)
+    wrapped_add = argref_by_name(args_to_skip={"b"})(add)
     s = MyState()
+
     result = wrapped_add("foo", 2, state=s)
     # Now s.refs has a new entry at the below `name`
     name = result.split()[0]
     assert s.refs[name] == 1 + 2
 
-    # Check we can still use argref_by_name without refs
-    result = wrapped_add(6, 2, state=s)
-    assert s.refs[result.split()[0]] == 6 + 2
+    # Check kwargs work too
+    result = wrapped_add(a="foo", b=2, state=s)
+    name = result.split()[0]
+    assert s.refs[name] == 1 + 2
+
+
+@pytest.mark.asyncio
+async def test_argref_by_name_error_handling() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1}
+
+    wrapped_add = argref_by_name()(add)
+    s = MyState()
 
     # Check if we use a key name that doesn't exist, we blow up
     with pytest.raises(KeyError, match="not found in state"):
-        wrapped_add("bar", 2, state=MyState())
+        wrapped_add("bar", 2, state=s)
 
     # Check if state doesn't have refs, we blow up
     with pytest.raises(AttributeError, match="must have a 'refs' attribute"):
         wrapped_add("foo", 2, state="not a state")
 
-    # now try with async and decorator
+    # Check that we cannot pass a direct value as a kwarg
+    with pytest.raises(KeyError, match="Key is not present"):
+        wrapped_add(a=1, b=2, state=s)
+
+
+@pytest.mark.asyncio
+async def test_argref_by_name_async_functions() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1, "bar": 7}
+
+    # Define the async_add function with the decorator
     @argref_by_name()
     async def async_add(a: int, b: int) -> int:
         """Some docstring."""
         return a + b
 
+    s = MyState()
     result = await async_add("foo", 2, state=s)
     assert s.refs[result.split()[0]] == 1 + 2
+
     result = await async_add(6, 2, state=s)
     assert s.refs[result.split()[0]] == 6 + 2
 
-    # now try with lists
-    s.refs["bar"] = 7
+    # Now try with lists
     result = await async_add("foo", "bar", state=s)
     assert s.refs[result.split()[0]] == 1 + 7
 
-    # try the convenience of comma splitting on key
+    # Try the convenience of comma splitting on key
     result = await async_add("foo,bar", state=s)
     assert s.refs[result.split()[0]] == 1 + 7
 
+    # Define and test async_list
     @argref_by_name()
     async def async_list(a: int, b: int) -> list[int]:
         """Some docstring."""
@@ -610,6 +642,7 @@ async def test_argref_by_name() -> None:
     assert s.refs[name1] == 1
     assert s.refs[name2] == 2
 
+    # Define and test async_list_direct
     @argref_by_name(return_direct=True)
     async def async_list_direct(a: int, b: int) -> list[int]:
         """Some docstring."""
@@ -617,23 +650,40 @@ async def test_argref_by_name() -> None:
 
     assert await async_list_direct("foo", 2, state=s) == [1, 2]
 
-    # call in context
-    tool = Tool.from_function(argref_by_name()(add))
 
-    tool_call = ToolCall.from_tool(tool, "foo", 2)
+@pytest.mark.asyncio
+async def test_argref_by_name_advanced_features() -> None:
+    class MyState:
+        def __init__(self):
+            self.refs = {"foo": 1}
+
+    s = MyState()
+
+    # Define and test dereference via no state value found with return_direct
+    @argref_by_name(return_direct=True)
+    def skip_deref_test(foo: float, a: str) -> str:
+        """Some docstring."""
+        return f"{foo} {a}"
+
+    assert skip_deref_test("foo", "not in state", state=s) == "1 not in state"
+    assert skip_deref_test("foo", "foo", state=s) == "1 1"
+
+    # Call in context using Tool and related classes
+    wrapped_add = argref_by_name(args_to_skip={"b"})(add)
+    tool = Tool.from_function(wrapped_add)
+
+    tool_call = ToolCall.from_tool(tool, "foo", b=2)
     action = ToolRequestMessage(tool_calls=[tool_call])
     my_env = DummyEnv()
     my_env.tools = [tool]
     new_messages = await my_env.exec_tool_calls(action, state=MyState())
     assert new_messages[0].content.endswith("3")
 
-    # assert that we can describe the tool
+    # Assert that we can describe the tool
     assert tool.info.describe_str()
-    assert (
-        "(set via a string key instead of the full object)" in tool.info.describe_str()
-    )
+    assert "(Pass a string key instead of the full object)" in tool.info.describe_str()
 
-    # now try state passing
+    # Test state passing with fxn_requires_state
     @argref_by_name(fxn_requires_state=True)
     async def want_state(a: int, state: MyState) -> int:  # noqa: ARG001
         """Some docstring.
@@ -649,3 +699,109 @@ async def test_argref_by_name() -> None:
     my_env = DummyEnv()
     my_env.tools = [tool]
     await my_env.exec_tool_calls(action, state=MyState())
+
+    # Check we can pass kwarg lists as comma-separated keys
+    @argref_by_name(return_direct=True)
+    def kwarg_list_test(a: list[int]) -> int:
+        return sum(a)
+
+    assert kwarg_list_test(a="foo,foo", state=s) == 2
+
+
+@pytest.mark.asyncio
+async def test_argref_by_name_type_checking() -> None:
+    class MyInt(int):
+        pass
+
+    class MyState:
+        def __init__(self):
+            self.refs = {
+                "int_arg": 1,
+                "str_arg": "abc",
+                "int_list_arg": [1],
+                "str_list_arg": ["abc"],
+                "my_int_list_arg": [MyInt()],
+            }
+
+    s = MyState()
+
+    def typed_fn(a: int, b) -> int:  # noqa: ARG001
+        """Some docstring."""
+        return a
+
+    # Make sure we can decorate the function twice. Decoration should not
+    # modify the underlying function or its annotations.
+    for _ in range(2):
+        type_checked_fn = argref_by_name(type_check=True)(typed_fn)
+
+        type_checked_fn(a="int_arg", b="str_arg", state=s)  # correctly-typed
+        with pytest.raises(TypeError):
+            # A non-int value is passed to a by name
+            type_checked_fn(a="str_arg", b="str_arg", state=s)
+
+    def complex_typed_fn(c: Sequence[int], d: int | str) -> None:
+        """Some docstring."""
+
+    for _ in range(2):
+        type_checked_fn = argref_by_name(type_check=True)(complex_typed_fn)
+
+        type_checked_fn(c="int_list_arg", d="str_arg", state=s)  # correctly-typed
+        # list[MyInt] should match Sequence[int]
+        type_checked_fn(c="my_int_list_arg", d="str_arg", state=s)
+
+        with pytest.raises(TypeError):
+            # passing int, not list[int]
+            type_checked_fn(c="int_arg", d="str_arg", state=s)
+
+        with pytest.raises(TypeError):
+            # passing list[str], not list[int]
+            type_checked_fn(c="str_list_arg", d="int_arg", state=s)
+
+
+@pytest.mark.asyncio
+async def test_make_tool_server():
+    def add(a: int, b: int) -> int:
+        """Add two numbers."""
+        return a + b
+
+    def subtract(a: int, b: int) -> int:
+        """Subtract two numbers.
+
+        Args:
+            a: first number
+            b: second number
+        """
+        return a - b
+
+    class MyEnv(Environment):
+        async def reset(self) -> tuple[list[Message], list[Tool]]:
+            tools = [
+                Tool.from_function(add, allow_empty_param_descriptions=True),
+                Tool.from_function(subtract),
+            ]
+            self.tools = tools
+            return [], tools
+
+        async def step(self, action):
+            return await self.exec_tool_calls(action), False, 0, 0
+
+        async def export_frame(self):
+            pass
+
+    with suppress_type_checks():
+        server = await make_tool_server(MyEnv)
+
+    # make sure there are two endpoints
+    route_names = [route.name for route in server.routes]
+    assert "add" in route_names
+    assert "subtract" in route_names
+
+    # make sure we can call them
+    client = TestClient(server)
+    token = "stub"
+    with patch.dict(os.environ, {"AUTH_TOKEN": token}):
+        response = client.post(
+            "/add", json={"a": 1, "b": 2}, headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        assert response.json()["result"] == "3"

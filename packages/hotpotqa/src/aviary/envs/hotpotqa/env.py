@@ -169,7 +169,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
     def __init__(
         self,
         question: str,
-        correct_answer: str,
+        correct_answer: str | float,
         correct_reward: float = 1.0,
         incorrect_reward: float = 0.0,
         tool_failure_reward: float = 0.0,
@@ -177,7 +177,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
     ):
         super().__init__()
         self.question = question
-        self.correct_answer = correct_answer
+        # Normalize the correct answer once here as a minor performance optimization
+        self.normalized_correct_answer = normalize_answer(correct_answer)
         self.correct_reward = correct_reward
         self.incorrect_reward = incorrect_reward
         self.tool_failure_reward = tool_failure_reward
@@ -190,6 +191,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             create_tool(self.finish, "Finish"),
         ]
 
+    @classmethod
+    def from_task(cls, task: str) -> "HotPotQAEnv":
+        return cls(question=task, correct_answer=0.0)
+
     def calculate_reward(self, answer: str | None) -> float:
         """Calculate the reward based on the agent's answer.
 
@@ -199,8 +204,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         """
         if answer is None:
             return self.incorrect_reward
-        gt = normalize_answer(self.correct_answer)
-        pred = normalize_answer(answer)
+        pred, gt = normalize_answer(answer), self.normalized_correct_answer
         return self.correct_reward if pred == gt else self.incorrect_reward
 
     async def reset(self) -> tuple[list[Message], list[Tool]]:
@@ -515,6 +519,14 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
                 f" please specify a split from {set(all_datasets.keys())}."
             ) from exc
 
+        if not all(  # Making up for datasets not being typed: https://github.com/huggingface/datasets/issues/3841
+            isinstance(d["question"], str) and isinstance(d["answer"], str | float)
+            for d in data
+        ):
+            raise ValueError(
+                f"Dataset {hf_dataset!r} and split {split!r} contains invalid"
+                " question(s) or answer(s)."
+            )
         return [(d["question"], d["answer"]) for d in data if self._filter_task(d)]
 
     def __init__(

@@ -217,6 +217,17 @@ def export_frame(self) -> Frame:
     )
 ```
 
+### View Environment Tools
+
+If an environment can be instantiated without anything other than a task (i.e., it implements `from_task`), you can start a server to view its tools:
+
+```sh
+pip install fhaviary[server]
+aviary tools [env name]
+```
+
+This will start a server that allows you to view the tools and call them, viewing the descriptions/types and output that an agent would see when using the tools.
+
 ## Environments
 
 ### GSM8k Environment

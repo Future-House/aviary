@@ -28,10 +28,27 @@ jobs:
         python-version: [3.11, 3.12] # Our min and max supported Python versions
     steps:
       - uses: actions/checkout@v4
-      - name: Set up uv
-        run: |-
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv python pin ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: uv python pin ${{ matrix.python-version }}
+      - name: Check fhaviary build
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          upload-name-suffix: -fhaviary
+      - name: Check aviary.gsm8k build
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/gsm8k
+          upload-name-suffix: -gsm8k
+      - name: Check aviary.hotpotqa build
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/hotpotqa
+          upload-name-suffix: -hotpotqa
       - run: uv sync --python-preference=only-managed
       - name: Run refurb
         run: | # Go with this until https://github.com/astral-sh/uv/issues/6459
@@ -44,12 +61,15 @@ jobs:
           cd ../../..
           uv run refurb tests packages/gsm8k/tests packages/hotpotqa/tests
       - run: uv run pylint src packages
+      - if: matrix.python-version == '3.11' # Only need to run this on one version
+        uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.0
   test:
     runs-on: large-runner
     steps:
       - uses: actions/checkout@v4
-      - name: Set up uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
       - run: uv sync
       - name: Cache datasets
         uses: actions/cache@v4

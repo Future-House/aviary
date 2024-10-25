@@ -34,10 +34,11 @@ dev = [
     "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
     "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
     "aviary.hotpotqa",  # So `uv sync` pulls this in
+    "codeflash",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
-    "pre-commit~=3.4",
+    "pre-commit>=3.4",  # Pin to keep recent
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
     "pylint>=3.2",
@@ -59,6 +60,12 @@ image = [
 llm = [
     "litellm",
 ]
+server = [
+    "click",
+    "cloudpickle",
+    "fastapi",
+    "uvicorn",
+]
 typing = [
     "boto3-stubs[s3]",
     "numpy",
@@ -67,6 +74,9 @@ typing = [
 xml = [
     "dicttoxml",
 ]
+
+[project.scripts]
+aviary = "aviary.main:cli"
 
 [project.urls]
 issues = "https://github.com/Future-House/aviary/issues"
@@ -152,7 +162,6 @@ ignore_missing_imports = true
 module = [
     "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
     "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
-    "litellm",  # SEE: https://github.com/BerriAI/litellm/issues/825
 ]
 
 [tool.pylint]
@@ -242,7 +251,6 @@ addopts = "--typeguard-packages=aviary --doctest-modules"
 # By default all warnings emitted during the test session will be displayed in
 # a summary at the end of the test session.
 filterwarnings = [
-    "ignore:'imghdr' is deprecated and slated for removal in Python 3.13:DeprecationWarning",  # SEE: https://github.com/BerriAI/litellm/issues/2929#issuecomment-2345224633
     "ignore:Support for class-based `config` is deprecated, use ConfigDict instead",  # SEE: https://github.com/BerriAI/litellm/issues/5648
     'ignore:open_text is deprecated. Use files\(\) instead:DeprecationWarning',  # SEE: https://github.com/BerriAI/litellm/issues/5647
 ]
