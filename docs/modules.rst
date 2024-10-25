@@ -2,7 +2,7 @@ aviary
 ======
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    env
    env_client
@@ -11,3 +11,4 @@ aviary
    render
    tools
    utils
+
