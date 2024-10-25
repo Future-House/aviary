@@ -125,6 +125,7 @@ class ToolSelector:
         self,
         model_name: str = "gpt-4o",
         acompletion: "Callable[..., Awaitable[ModelResponse]] | None" = None,
+        accum_messages: bool = False,
     ):
         """Initialize.
 
@@ -133,6 +134,7 @@ class ToolSelector:
             acompletion: Optional async completion function to use, leaving as the
                 default of None will use LiteLLM's acompletion. Alternately, specify
                 LiteLLM's Router.acompletion function for centralized rate limiting.
+            accum_messages: Whether the selector should accumulate messages in a ledger.
         """
         if acompletion is None:
             try:
@@ -144,6 +146,9 @@ class ToolSelector:
                 ) from e
         self._model_name = model_name
         self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
+        self._ledger: ToolSelectorLedger | None = None
+        if accum_messages:
+            self._ledger = ToolSelectorLedger()
 
     # SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
     # > `required` means the model must call one or more tools.
@@ -172,6 +177,10 @@ class ToolSelector:
                 # in practice 'tool_calls' shows up too
                 expected_finish_reason.add("stop")
 
+        if self._ledger is not None:
+            self._ledger.messages.extend(messages)
+            messages = self._ledger.messages
+
         model_response = await self._bound_acompletion(
             messages=MessagesAdapter.dump_python(
                 messages, exclude_none=True, by_alias=True
@@ -193,13 +202,16 @@ class ToolSelector:
                 f" response was {model_response} and tool choice was {tool_choice}."
             )
         usage = model_response.usage
-        return ToolRequestMessage(
+        action = ToolRequestMessage(
             **choice.message.model_dump(),
             info={
                 "usage": (usage.prompt_tokens, usage.completion_tokens),
                 "model": self._model_name,
             },
         )
+        if self._ledger is not None:
+            self._ledger.messages.append(action)
+        return action
 
 
 class ToolSelectorLedger(BaseModel):
