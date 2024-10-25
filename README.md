@@ -2,6 +2,32 @@
 
 Gymnasium framework for training language model agents on constructive tasks.
 
+<!--TOC-->
+
+- [Installation](#installation)
+- [Messages](#messages)
+- [Environment](#environment)
+  - [Environment subclass and state](#environment-subclass-and-state)
+  - [Common environments](#common-environments)
+  - [Tool](#tool)
+    - [Advanced tool descriptions](#advanced-tool-descriptions)
+  - [Environment `reset` method](#environment-reset-method)
+  - [Environment `step` method](#environment-step-method)
+  - [Environment `export_frame` method](#environment-export_frame-method)
+  - [View Environment Tools](#view-environment-tools)
+- [Environments](#environments)
+  - [GSM8k Environment](#gsm8k-environment)
+    - [What it does](#what-it-does)
+    - [Installation](#installation-1)
+  - [HotPotQA Environment](#hotpotqa-environment)
+    - [What it does](#what-it-does-1)
+    - [Installation](#installation-2)
+  - [PaperQA Environment](#paperqa-environment)
+    - [What it does](#what-it-does-2)
+    - [Installation](#installation-3)
+
+<!--TOC-->
+
 ## Installation
 
 To install aviary:

@@ -51,6 +51,10 @@ repos:
     rev: v0.23.1
     hooks:
       - id: toml-sort-fix
+  - repo: https://github.com/jsh9/markdown-toc-creator
+    rev: 0.0.8
+    hooks:
+      - id: markdown-toc-creator
   - repo: https://github.com/srstevenson/nb-clean
     rev: 4.0.1
     hooks:
