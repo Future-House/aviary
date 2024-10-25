@@ -32,16 +32,15 @@ cloud = [
 ]
 dev = [
     "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
-    "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
-    "aviary.hotpotqa",  # So `uv sync` pulls this in
-    "codeflash",
+    "aviary.gsm8k[typing]",
+    "aviary.hotpotqa",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
     "pre-commit>=3.4",  # Pin to keep recent
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
-    "pylint>=3.2",
+    "pylint>=3.2",  # Pin to keep recent
     "pytest-asyncio",
     "pytest-recording",
     "pytest-subtests",
