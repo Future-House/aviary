@@ -243,7 +243,8 @@ You will probably often use this specific syntax for calling the tools - calling
 
 ### Environment `export_frame` method
 
-Lastly, we can define a function to export the state for visualization or debugging purposes. This is optional.
+Optionally, we can define a function to export a snapshot of the environment
+and its state for visualization or debugging purposes.
 
 ```py
 from aviary.core import Frame
