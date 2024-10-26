@@ -11,7 +11,6 @@ import sys
 sys.path.insert(0, os.path.abspath("../src/aviary"))
 
 project = "aviary"
-copyright = "2024, FutureHouse"
 author = "FutureHouse"
 
 # -- General configuration ---------------------------------------------------
