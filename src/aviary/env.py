@@ -234,14 +234,14 @@ class Environment(ABC, Generic[TEnvState]):
             )
         return [await _exec_tool_call(tool_call) for tool_call in message.tool_calls]
 
-    @abstractmethod
     def export_frame(self) -> Frame:
         """
-        Export the environment as a Frame.
+        Export a snapshot of the environment as a Frame for visualization or debugging.
 
         If you are not sure what to put in the Frame, just give it the entire state.
-        Read Field descriptions in Frame for more information.
+        See the Frame class itself for more information.
         """
+        return Frame()
 
     async def close(self) -> None:
         """

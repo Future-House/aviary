@@ -59,6 +59,7 @@ image = [
 llm = [
     "litellm",
 ]
+paperqa = ["paper-qa"]
 server = [
     "click",
     "cloudpickle",

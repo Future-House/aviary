@@ -1,6 +1,7 @@
 # aviary.gsm8k
 
-GSM8k environment implemented with aviary.
+GSM8k environment implemented with aviary,
+allowing agents to solve math word problems from the GSM8k dataset.
 
 ## Citation
 
