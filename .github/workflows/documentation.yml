@@ -17,7 +17,7 @@ jobs:
       - name: Sphinx build
         run: sphinx-build docs _build
       - name: Deploy to GitHub Page
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/docs' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
