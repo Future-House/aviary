@@ -146,9 +146,7 @@ class ToolSelector:
                 ) from e
         self._model_name = model_name
         self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
-        self._ledger: ToolSelectorLedger | None = None
-        if accum_messages:
-            self._ledger = ToolSelectorLedger()
+        self._ledger = ToolSelectorLedger() if accum_messages else None
 
     # SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
     # > `required` means the model must call one or more tools.
@@ -202,7 +200,7 @@ class ToolSelector:
                 f" response was {model_response} and tool choice was {tool_choice}."
             )
         usage = model_response.usage
-        action = ToolRequestMessage(
+        selection = ToolRequestMessage(
             **choice.message.model_dump(),
             info={
                 "usage": (usage.prompt_tokens, usage.completion_tokens),
@@ -210,8 +208,8 @@ class ToolSelector:
             },
         )
         if self._ledger is not None:
-            self._ledger.messages.append(action)
-        return action
+            self._ledger.messages.append(selection)
+        return selection
 
 
 class ToolSelectorLedger(BaseModel):
