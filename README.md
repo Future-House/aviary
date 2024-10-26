@@ -43,16 +43,10 @@ As of 10/25/2024, unfortunately Google Colab does not yet support Python 3.11 or
 ([issue](https://github.com/googlecolab/colabtools/issues/3190)).
 
 Thus, as a workaround, you will need to install Python 3.11 into your notebook.
-Here is a simple snippet that will do that for you:
+Here is a sample notebook showing how to do this:
+https://colab.research.google.com/drive/1mejZ5cxgKZrMpYEe0iRoanaGGQ0Cr6WI?usp=sharing
 
-```bash
-!sudo apt update > /dev/null
-!sudo apt-get install python3.11 python3.11-dev python3.11-distutils python3.11-venv > /dev/null
-!curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11  > /dev/null
-!sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 > /dev/null
-!sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2 > /dev/null
-!sudo apt autoremove > /dev/null
-```
+Also, note that `async` code works in Google Colab.
 
 ### Developer Installation
 
