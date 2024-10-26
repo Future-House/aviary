@@ -124,9 +124,10 @@ def argref_by_name(  # noqa: C901, PLR0915
         def get_call_args(*args, **kwargs):  # noqa: C901
             if "state" not in kwargs:
                 raise ValueError(
-                    "argref_by_name decorated function must have a 'state' argument. "
-                    f"Function signature: {func.__name__}({', '.join(func.__annotations__)}) "
-                    f" received args: {args} kwargs: {kwargs}"
+                    "argref_by_name decorated function must have a 'state' argument."
+                    " Function signature:"
+                    f" {func.__name__}({', '.join(func.__annotations__)})  received"
+                    f" args: {args} kwargs: {kwargs}"
                 )
             # pop the state argument
             state = kwargs["state"] if fxn_requires_state else kwargs.pop("state")
@@ -138,7 +139,8 @@ def argref_by_name(  # noqa: C901, PLR0915
                     refs = state.refs
                 except AttributeError as e:
                     raise AttributeError(
-                        "The state object must have a 'refs' attribute to use argref_by_name decorator."
+                        "The state object must have a 'refs' attribute to use"
+                        " argref_by_name decorator."
                     ) from e
 
                 if arg in refs:
@@ -157,7 +159,8 @@ def argref_by_name(  # noqa: C901, PLR0915
                         # Error message for the agent - cast back to comma-separated, since that's the format the agent
                         # is expected to use.
                         raise KeyError(
-                            f'The following keys are not present in the current key-value store: "{", ".join(missing)}"'
+                            "The following keys are not present in the current"
+                            f' key-value store: "{", ".join(missing)}"'
                         )
 
                 if not must_exist:

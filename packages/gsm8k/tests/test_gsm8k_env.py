@@ -6,7 +6,10 @@ from aviary.envs.gsm8k import CalculatorEnv, CalculatorEnvConfig
 
 @pytest.mark.asyncio
 async def test_calculator_env() -> None:
-    problem = "What is the answer to the ultimate question of life, the universe, and everything?"
+    problem = (
+        "What is the answer to the ultimate question of life, the universe, and"
+        " everything?"
+    )
     answer = 42.0
     env = CalculatorEnv(
         problem_id="douglas-adams",

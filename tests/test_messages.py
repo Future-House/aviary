@@ -77,7 +77,10 @@ class TestMessage:
                         {"type": "image_url", "image_url": {"url": "stub_url"}},
                     ]
                 ),
-                '[{"type": "text", "text": "stub"}, {"type": "image_url", "image_url": {"url": "stub_url"}}]',
+                (
+                    '[{"type": "text", "text": "stub"}, {"type": "image_url",'
+                    ' "image_url": {"url": "stub_url"}}]'
+                ),
             ),
         ],
     )

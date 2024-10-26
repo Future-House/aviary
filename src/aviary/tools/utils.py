@@ -24,18 +24,18 @@ if TYPE_CHECKING:
 class EvalAnswerMode(StrEnum):
     EXACT = "exact"  # strings must match exactly
     CONTAINS = "contains"  # the correct answer is contained in the supplied answer
-    LLM = "llm"  # Ask an LLM (default: GPT-4o-mini) to evaluate
-    LLM_SCORE = "llm-score"  # Ask an LLM (default: GPT-4o-mini) to evaluate and return the score (normalized)
+    LLM = "llm"  # Ask an LLM to evaluate
+    LLM_SCORE = "llm-score"  # Ask an LLM to evaluate and return the score (normalized)
 
 
 LLM_EVAL_CONFIG = {
     "prompt": (
-        "Here is a question, the correct answer to the question, and a proposed answer to the question. "
-        "Please tell me if the proposed answer is correct, given the correct answer. "
-        "ONLY SAY 'YES' OR 'NO'. No other output is permitted.\n\n"
-        "Question: {question} \n\n"
-        "Correct answer: {correct_answer} \n\n"
-        "Proposed answer: {proposed_answer}"
+        "Here is a question, the correct answer to the question, and a proposed answer"
+        " to the question. Please tell me if the proposed answer is correct, given the"
+        " correct answer. ONLY SAY 'YES' OR 'NO'. No other output is permitted."
+        "\n\nQuestion: {question}"
+        "\n\nCorrect answer: {correct_answer}"
+        "\n\nProposed answer: {proposed_answer}"
     ),
     "model": "gpt-4o-mini",
     "temperature": 0,
@@ -43,12 +43,12 @@ LLM_EVAL_CONFIG = {
 
 LLM_SCORE_EVAL_CONFIG = {
     "prompt": (
-        "Here is a question, the correct answer to the question, and a rubric for evaluating the question. "
-        "Judge the proposed answer based on the given rubric. "
-        "Give a score from 0 to 10. No other output is permitted.\n\n"
-        "Question: {question} \n\n"
-        "Rubric: {correct_answer} \n\n"
-        "Proposed answer: {proposed_answer}"
+        "Here is a question, the correct answer to the question, and a rubric for"
+        " evaluating the question. Judge the proposed answer based on the given rubric."
+        " Give a score from 0 to 10. No other output is permitted."
+        "\n\nQuestion: {question}"
+        "\n\nRubric: {correct_answer}"
+        "\n\nProposed answer: {proposed_answer}"
     ),
     "model": "gpt-4o-mini",
     "temperature": 0,
@@ -125,6 +125,7 @@ class ToolSelector:
         self,
         model_name: str = "gpt-4o",
         acompletion: "Callable[..., Awaitable[ModelResponse]] | None" = None,
+        accum_messages: bool = False,
     ):
         """Initialize.
 
@@ -133,17 +134,19 @@ class ToolSelector:
             acompletion: Optional async completion function to use, leaving as the
                 default of None will use LiteLLM's acompletion. Alternately, specify
                 LiteLLM's Router.acompletion function for centralized rate limiting.
+            accum_messages: Whether the selector should accumulate messages in a ledger.
         """
         if acompletion is None:
             try:
                 from litellm import acompletion
             except ImportError as e:
                 raise ImportError(
-                    f"{type(self).__name__} requires the 'llm' extra for 'litellm'. Please:"
-                    " `pip install aviary[llm]`."
+                    f"{type(self).__name__} requires the 'llm' extra for 'litellm'."
+                    " Please: `pip install aviary[llm]`."
                 ) from e
         self._model_name = model_name
         self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
+        self._ledger = ToolSelectorLedger() if accum_messages else None
 
     # SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
     # > `required` means the model must call one or more tools.
@@ -172,6 +175,10 @@ class ToolSelector:
                 # in practice 'tool_calls' shows up too
                 expected_finish_reason.add("stop")
 
+        if self._ledger is not None:
+            self._ledger.messages.extend(messages)
+            messages = self._ledger.messages
+
         model_response = await self._bound_acompletion(
             messages=MessagesAdapter.dump_python(
                 messages, exclude_none=True, by_alias=True
@@ -193,13 +200,16 @@ class ToolSelector:
                 f" response was {model_response} and tool choice was {tool_choice}."
             )
         usage = model_response.usage
-        return ToolRequestMessage(
+        selection = ToolRequestMessage(
             **choice.message.model_dump(),
             info={
                 "usage": (usage.prompt_tokens, usage.completion_tokens),
                 "model": self._model_name,
             },
         )
+        if self._ledger is not None:
+            self._ledger.messages.append(selection)
+        return selection
 
 
 class ToolSelectorLedger(BaseModel):
