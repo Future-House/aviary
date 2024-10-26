@@ -210,14 +210,15 @@ def print_story(story: str | bytes, state: ExampleState) -> None:
 
 ### Environment `reset` method
 
-Now we'll define the `reset` function which should set-up the tools and return one or more observations and the tools.
+Now we'll define the `reset` function which should set-up the tools,
+and return one or more initial observations and the tools.
+The `reset` function is `async` to allow for database interactions or HTTP requests.
 
 ```py
-from aviary.core import Message
-from aviary.core import Tool
+from aviary.core import Message, Tool
 
 
-def reset(self) -> tuple[list[Message], list[Tool]]:
+async def reset(self) -> tuple[list[Message], list[Tool]]:
     self.tools = [Tool.from_function(ExampleEnv.print_story)]
 
     start = Message(content="Write a 5 word story and call print")
