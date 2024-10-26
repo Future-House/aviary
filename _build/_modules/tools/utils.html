@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tools.utils &#8212; aviary  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for tools.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">StrEnum</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+
+<span class="kn">from</span> <span class="nn">aviary.message</span> <span class="kn">import</span> <span class="n">MalformedMessageError</span><span class="p">,</span> <span class="n">Message</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MessagesAdapter</span><span class="p">,</span>
+    <span class="n">Tool</span><span class="p">,</span>
+    <span class="n">ToolRequestMessage</span><span class="p">,</span>
+    <span class="n">ToolResponseMessage</span><span class="p">,</span>
+    <span class="n">ToolsAdapter</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Awaitable</span>
+
+    <span class="kn">from</span> <span class="nn">litellm</span> <span class="kn">import</span> <span class="n">ModelResponse</span>
+
+
+<div class="viewcode-block" id="EvalAnswerMode">
+<a class="viewcode-back" href="../../tools.html#tools.utils.EvalAnswerMode">[docs]</a>
+<span class="k">class</span> <span class="nc">EvalAnswerMode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+    <span class="n">EXACT</span> <span class="o">=</span> <span class="s2">&quot;exact&quot;</span>  <span class="c1"># strings must match exactly</span>
+    <span class="n">CONTAINS</span> <span class="o">=</span> <span class="s2">&quot;contains&quot;</span>  <span class="c1"># the correct answer is contained in the supplied answer</span>
+    <span class="n">LLM</span> <span class="o">=</span> <span class="s2">&quot;llm&quot;</span>  <span class="c1"># Ask an LLM to evaluate</span>
+    <span class="n">LLM_SCORE</span> <span class="o">=</span> <span class="s2">&quot;llm-score&quot;</span>  <span class="c1"># Ask an LLM to evaluate and return the score (normalized)</span></div>
+
+
+
+<span class="n">LLM_EVAL_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;Here is a question, the correct answer to the question, and a proposed answer&quot;</span>
+        <span class="s2">&quot; to the question. Please tell me if the proposed answer is correct, given the&quot;</span>
+        <span class="s2">&quot; correct answer. ONLY SAY &#39;YES&#39; OR &#39;NO&#39;. No other output is permitted.&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Question: </span><span class="si">{question}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Correct answer: </span><span class="si">{correct_answer}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Proposed answer: </span><span class="si">{proposed_answer}</span><span class="s2">&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">LLM_SCORE_EVAL_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">&quot;Here is a question, the correct answer to the question, and a rubric for&quot;</span>
+        <span class="s2">&quot; evaluating the question. Judge the proposed answer based on the given rubric.&quot;</span>
+        <span class="s2">&quot; Give a score from 0 to 10. No other output is permitted.&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Question: </span><span class="si">{question}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Rubric: </span><span class="si">{correct_answer}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Proposed answer: </span><span class="si">{proposed_answer}</span><span class="s2">&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;max_score&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="eval_answer">
+<a class="viewcode-back" href="../../tools.html#tools.utils.eval_answer">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">eval_answer</span><span class="p">(</span>
+    <span class="n">proposed</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">correct</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">question</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">eval_mode</span><span class="p">:</span> <span class="n">EvalAnswerMode</span> <span class="o">=</span> <span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">CONTAINS</span><span class="p">,</span>
+    <span class="n">llm_eval_config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate a proposed answer against a correct answer.</span>
+
+<span class="sd">    Will return 0 or 1, except for llm-score which should be between 0 and 1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">eval_mode</span> <span class="ow">in</span> <span class="p">{</span><span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">LLM</span><span class="p">,</span> <span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">LLM_SCORE</span><span class="p">}:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">litellm</span> <span class="kn">import</span> <span class="n">acompletion</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;eval_answer requires the &#39;llm&#39; extra for &#39;litellm&#39;. Please:&quot;</span>
+                <span class="s2">&quot; `pip install aviary[llm]`.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="k">if</span> <span class="n">question</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Question must be provided for LLM evaluation mode.&quot;</span><span class="p">)</span>
+        <span class="n">default_config</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">LLM_EVAL_CONFIG</span>
+            <span class="k">if</span> <span class="n">eval_mode</span> <span class="o">==</span> <span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">LLM</span>
+            <span class="k">else</span> <span class="n">LLM_SCORE_EVAL_CONFIG</span>
+        <span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">llm_eval_config</span> <span class="ow">or</span> <span class="n">default_config</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">,</span> <span class="n">default_config</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span>
+            <span class="n">correct_answer</span><span class="o">=</span><span class="n">correct</span><span class="p">,</span>
+            <span class="n">proposed_answer</span><span class="o">=</span><span class="n">proposed</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">acompletion</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="n">default_config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]),</span>
+            <span class="n">temperature</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span> <span class="n">default_config</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]),</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">}],</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">eval_mode</span> <span class="o">==</span> <span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">LLM</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">eval_answer</span><span class="p">(</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">casefold</span><span class="p">(),</span>
+                <span class="s2">&quot;yes&quot;</span><span class="p">,</span>
+                <span class="n">eval_mode</span><span class="o">=</span><span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">EXACT</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_score&quot;</span><span class="p">,</span> <span class="n">default_config</span><span class="p">[</span><span class="s2">&quot;max_score&quot;</span><span class="p">])</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">correct</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">proposed</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">eval_mode</span> <span class="o">==</span> <span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">EXACT</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">pred</span> <span class="o">==</span> <span class="n">gt</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">eval_mode</span> <span class="o">==</span> <span class="n">EvalAnswerMode</span><span class="o">.</span><span class="n">CONTAINS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">gt</span> <span class="ow">in</span> <span class="n">pred</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid evaluation mode: </span><span class="si">{</span><span class="n">eval_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ToolSelector">
+<a class="viewcode-back" href="../../tools.html#tools.utils.ToolSelector">[docs]</a>
+<span class="k">class</span> <span class="nc">ToolSelector</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple entity to select a tool based on messages.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+        <span class="n">acompletion</span><span class="p">:</span> <span class="s2">&quot;Callable[..., Awaitable[ModelResponse]] | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">accum_messages</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            model_name: Name of the model to select a tool with.</span>
+<span class="sd">            acompletion: Optional async completion function to use, leaving as the</span>
+<span class="sd">                default of None will use LiteLLM&#39;s acompletion. Alternately, specify</span>
+<span class="sd">                LiteLLM&#39;s Router.acompletion function for centralized rate limiting.</span>
+<span class="sd">            accum_messages: Whether the selector should accumulate messages in a ledger.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">acompletion</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">litellm</span> <span class="kn">import</span> <span class="n">acompletion</span>
+            <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> requires the &#39;llm&#39; extra for &#39;litellm&#39;.&quot;</span>
+                    <span class="s2">&quot; Please: `pip install aviary[llm]`.&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_name</span> <span class="o">=</span> <span class="n">model_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bound_acompletion</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="n">Callable</span><span class="p">,</span> <span class="n">acompletion</span><span class="p">),</span> <span class="n">model_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ledger</span> <span class="o">=</span> <span class="n">ToolSelectorLedger</span><span class="p">()</span> <span class="k">if</span> <span class="n">accum_messages</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="c1"># SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice</span>
+    <span class="c1"># &gt; `required` means the model must call one or more tools.</span>
+    <span class="n">TOOL_CHOICE_REQUIRED</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;required&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Message</span><span class="p">],</span>
+        <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tool</span><span class="p">],</span>
+        <span class="n">tool_choice</span><span class="p">:</span> <span class="n">Tool</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">TOOL_CHOICE_REQUIRED</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolRequestMessage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a completion that selects a tool in tools given the messages.&quot;&quot;&quot;</span>
+        <span class="n">completion_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># SEE: https://platform.openai.com/docs/guides/function-calling/configuring-function-calling-behavior-using-the-tool_choice-parameter</span>
+        <span class="n">expected_finish_reason</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;tool_calls&quot;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tool_choice</span><span class="p">,</span> <span class="n">Tool</span><span class="p">):</span>
+            <span class="n">completion_kwargs</span><span class="p">[</span><span class="s2">&quot;tool_choice&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">tool_choice</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">},</span>
+            <span class="p">}</span>
+            <span class="n">expected_finish_reason</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;stop&quot;</span><span class="p">}</span>  <span class="c1"># TODO: should this be .add(&quot;stop&quot;) too?</span>
+        <span class="k">elif</span> <span class="n">tool_choice</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">completion_kwargs</span><span class="p">[</span><span class="s2">&quot;tool_choice&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool_choice</span>
+            <span class="k">if</span> <span class="n">tool_choice</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TOOL_CHOICE_REQUIRED</span><span class="p">:</span>
+                <span class="c1"># Even though docs say it should be just &#39;stop&#39;,</span>
+                <span class="c1"># in practice &#39;tool_calls&#39; shows up too</span>
+                <span class="n">expected_finish_reason</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;stop&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ledger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ledger</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ledger</span><span class="o">.</span><span class="n">messages</span>
+
+        <span class="n">model_response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bound_acompletion</span><span class="p">(</span>
+            <span class="n">messages</span><span class="o">=</span><span class="n">MessagesAdapter</span><span class="o">.</span><span class="n">dump_python</span><span class="p">(</span>
+                <span class="n">messages</span><span class="p">,</span> <span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">by_alias</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">),</span>
+            <span class="n">tools</span><span class="o">=</span><span class="n">ToolsAdapter</span><span class="o">.</span><span class="n">dump_python</span><span class="p">(</span><span class="n">tools</span><span class="p">,</span> <span class="n">exclude_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">by_alias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="o">**</span><span class="n">completion_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">num_choices</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_response</span><span class="o">.</span><span class="n">choices</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MalformedMessageError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected one choice in LiteLLM model response, got </span><span class="si">{</span><span class="n">num_choices</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; choices, full response was </span><span class="si">{</span><span class="n">model_response</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="n">model_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">choice</span><span class="o">.</span><span class="n">finish_reason</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">expected_finish_reason</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MalformedMessageError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected a finish reason in </span><span class="si">{</span><span class="n">expected_finish_reason</span><span class="si">}</span><span class="s2"> in LiteLLM&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; model response, got finish reason </span><span class="si">{</span><span class="n">choice</span><span class="o">.</span><span class="n">finish_reason</span><span class="si">!r}</span><span class="s2">, full&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; response was </span><span class="si">{</span><span class="n">model_response</span><span class="si">}</span><span class="s2"> and tool choice was </span><span class="si">{</span><span class="n">tool_choice</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="n">model_response</span><span class="o">.</span><span class="n">usage</span>
+        <span class="n">selection</span> <span class="o">=</span> <span class="n">ToolRequestMessage</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">choice</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span>
+            <span class="n">info</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;usage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">prompt_tokens</span><span class="p">,</span> <span class="n">usage</span><span class="o">.</span><span class="n">completion_tokens</span><span class="p">),</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_name</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ledger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ledger</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selection</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">selection</span></div>
+
+
+
+<div class="viewcode-block" id="ToolSelectorLedger">
+<a class="viewcode-back" href="../../tools.html#tools.utils.ToolSelectorLedger">[docs]</a>
+<span class="k">class</span> <span class="nc">ToolSelectorLedger</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple ledger to record tools and messages.&quot;&quot;&quot;</span>
+
+    <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tool</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolRequestMessage</span> <span class="o">|</span> <span class="n">ToolResponseMessage</span> <span class="o">|</span> <span class="n">Message</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">aviary</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">aviary</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, FutureHouse.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tools.server &#8212; aviary  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for tools.server</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">secrets</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+
+<span class="kn">from</span> <span class="nn">pydantic</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">create_model</span>
+
+<span class="kn">from</span> <span class="nn">aviary.tools.base</span> <span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">ToolCall</span><span class="p">,</span> <span class="n">ToolRequestMessage</span><span class="p">,</span> <span class="n">reverse_type_map</span>
+
+
+<div class="viewcode-block" id="make_tool_server">
+<a class="viewcode-back" href="../../tools.html#tools.server.make_tool_server">[docs]</a>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">make_tool_server</span><span class="p">(</span>  <span class="c1"># noqa: C901, PLR0915</span>
+    <span class="n">environment_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Aviary Tool Server&quot;</span><span class="p">,</span>
+    <span class="n">env_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a FastAPI server for the provided environment.</span>
+
+<span class="sd">    This function exposes one endpoint per tool and endpoints to create/view/delete environments.</span>
+<span class="sd">    In contrast to other environment servers that expose an action endpoint, this one exposes all tools individually.</span>
+
+<span class="sd">    This is only for debugging tools and not intended as a strategy for working with environments.</span>
+<span class="sd">    Most environments have side-effects from using tools that occur in the step function. This</span>
+<span class="sd">    bypasses that and allows you to call tools directly.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        environment_factory: A callable that returns an environment instance.</span>
+<span class="sd">        name: The name of the server. Defaults to Aviary Tool Server.</span>
+<span class="sd">        env_path: The path to the directory to store environments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">cloudpickle</span> <span class="k">as</span> <span class="nn">pickle</span>
+        <span class="kn">from</span> <span class="nn">fastapi</span> <span class="kn">import</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">status</span>
+        <span class="kn">from</span> <span class="nn">fastapi.security</span> <span class="kn">import</span> <span class="n">HTTPAuthorizationCredentials</span><span class="p">,</span> <span class="n">HTTPBearer</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;Please install aviary with the &#39;server&#39; extra like so:&quot;</span>
+            <span class="s2">&quot; `pip install aviary[server]`.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">exc</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">env_path</span><span class="p">:</span>
+        <span class="n">env_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span>
+    <span class="n">auth_scheme</span> <span class="o">=</span> <span class="n">HTTPBearer</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">validate_token</span><span class="p">(</span>
+        <span class="n">credentials</span><span class="p">:</span> <span class="n">HTTPAuthorizationCredentials</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth_scheme</span><span class="p">),</span>  <span class="c1"># noqa: B008</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># NOTE: don&#39;t use os.environ.get() to avoid possible empty string matches, and</span>
+        <span class="c1"># to have clearer server failures if the AUTH_TOKEN env var isn&#39;t present</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">secrets</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span>
+            <span class="n">credentials</span><span class="o">.</span><span class="n">credentials</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;AUTH_TOKEN&quot;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_401_UNAUTHORIZED</span><span class="p">,</span>
+                <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Incorrect bearer token&quot;</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;WWW-Authenticate&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer&quot;</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">credentials</span><span class="o">.</span><span class="n">credentials</span>
+
+    <span class="c1"># these seem useful in other contexts, but from what I read</span>
+    <span class="c1"># it is discouraged to save/load so leaving it defined here</span>
+    <span class="k">def</span> <span class="nf">save_environment</span><span class="p">(</span><span class="n">environment</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">environment_id</span><span class="p">):</span>
+        <span class="c1"># make sure we force all tools to pickle</span>
+        <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="n">tools</span><span class="p">:</span>
+            <span class="n">tool</span><span class="o">.</span><span class="n">_force_pickle_fn</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">((</span><span class="n">environment</span><span class="p">,</span> <span class="n">tools</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load_environment</span><span class="p">(</span><span class="n">environment_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">,</span>
+                <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Environment </span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">make_environment_id</span><span class="p">():</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;env</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())[:</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="nf">create_request_model_from_tool</span><span class="p">(</span><span class="n">tool</span><span class="p">:</span> <span class="n">Tool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseModel</span><span class="p">:</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">tool</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">pname</span> <span class="o">==</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># we just assume it exists</span>
+            <span class="n">ptype</span> <span class="o">=</span> <span class="n">reverse_type_map</span><span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]]</span> <span class="k">if</span> <span class="s2">&quot;type&quot;</span> <span class="ow">in</span> <span class="n">info</span> <span class="k">else</span> <span class="n">Any</span>
+
+            <span class="c1"># decipher optional description, optional default, and type</span>
+            <span class="k">if</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">tool</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">required</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;description&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+                    <span class="n">fields</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ptype</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fields</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ptype</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">&quot;description&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+                <span class="n">fields</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">ptype</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fields</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ptype</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">create_model</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">Params&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">)</span>  <span class="c1"># type: ignore[call-overload]</span>
+
+    <span class="n">web_app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;API Server for Aviary Environment Tools&quot;</span><span class="p">,</span>
+        <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="n">Depends</span><span class="p">(</span><span class="n">validate_token</span><span class="p">)],</span>
+    <span class="p">)</span>
+
+    <span class="c1"># make a starting environment to save tools</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">environment_factory</span><span class="p">()</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">tools</span> <span class="o">=</span> <span class="k">await</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="c1"># Dynamically create routes for each tool</span>
+    <span class="k">for</span> <span class="n">tool</span> <span class="ow">in</span> <span class="p">(</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tools</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;_tool_fn&quot;</span><span class="p">)):</span>
+        <span class="n">tool_name</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">tool_description</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">description</span>
+        <span class="n">RequestModel</span> <span class="o">=</span> <span class="n">create_request_model_from_tool</span><span class="p">(</span><span class="n">tool</span><span class="p">)</span>
+
+        <span class="c1"># ensure the this will be in fast api scope</span>
+        <span class="c1"># because fastapi will barf on a request model that isn&#39;t in scope</span>
+        <span class="c1"># close your eyes PR reviewers</span>
+        <span class="c1"># also fuck your IDE tools</span>
+        <span class="n">RequestModel</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">f_globals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="s2">&quot;__main__&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">create_tool_handler</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">RequestModel</span><span class="p">,</span> <span class="n">tool_description</span><span class="p">):</span>
+            <span class="k">async</span> <span class="k">def</span> <span class="nf">_tool_handler</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">RequestModel</span><span class="p">,</span>  <span class="c1"># type: ignore[valid-type]</span>
+                <span class="n">environment_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">environment_id</span><span class="p">:</span>
+                    <span class="n">env</span><span class="p">,</span> <span class="n">env_tools</span> <span class="o">=</span> <span class="n">load_environment</span><span class="p">(</span><span class="n">environment_id</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">env</span> <span class="o">=</span> <span class="n">environment_factory</span><span class="p">()</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">env_tools</span> <span class="o">=</span> <span class="k">await</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+                    <span class="n">environment_id</span> <span class="o">=</span> <span class="n">make_environment_id</span><span class="p">()</span>
+
+                <span class="c1"># ok now find the tool_fn to call it with</span>
+                <span class="c1"># that came from the env I just loaded</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">ToolRequestMessage</span><span class="p">(</span>
+                    <span class="n">tool_calls</span><span class="o">=</span><span class="p">[</span><span class="n">ToolCall</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())]</span>  <span class="c1"># type: ignore[attr-defined]</span>
+                <span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">result_msgs</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                        <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_500_INTERNAL_SERVER_ERROR</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+                <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">env_tools</span> <span class="o">=</span> <span class="k">await</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+                <span class="n">save_environment</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">env_tools</span><span class="p">,</span> <span class="n">environment_id</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+                        <span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">content</span><span class="p">)</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">result_msgs</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">content</span>
+                    <span class="p">]),</span>
+                    <span class="s2">&quot;environment_id&quot;</span><span class="p">:</span> <span class="n">environment_id</span><span class="p">,</span>
+                <span class="p">}</span>
+
+            <span class="n">_tool_handler</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">tool_description</span>
+            <span class="k">return</span> <span class="n">_tool_handler</span>
+
+        <span class="n">tool_handler</span> <span class="o">=</span> <span class="n">create_tool_handler</span><span class="p">(</span>
+            <span class="n">tool</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">RequestModel</span><span class="p">,</span> <span class="n">tool_description</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Add a POST route so we can invoke the tool function</span>
+        <span class="n">web_app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">tool_description</span><span class="p">,</span>
+        <span class="p">)(</span><span class="n">tool_handler</span><span class="p">)</span>
+
+        <span class="c1"># Add environment endpoints</span>
+        <span class="nd">@web_app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;/env/create&quot;</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="s2">&quot;Create Environment&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Create a new environment&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">create_environment_endpoint</span><span class="p">():</span>
+            <span class="n">env</span> <span class="o">=</span> <span class="n">environment_factory</span><span class="p">()</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">tools</span> <span class="o">=</span> <span class="k">await</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="n">environment_id</span> <span class="o">=</span> <span class="n">make_environment_id</span><span class="p">()</span>
+            <span class="n">save_environment</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">environment_id</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">environment_id</span>
+
+        <span class="nd">@web_app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;/env/delete/</span><span class="si">{environment_id}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="s2">&quot;Delete Environment&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Delete an environment&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">delete_environment_endpoint</span><span class="p">(</span><span class="n">environment_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">environment_id</span>
+
+        <span class="nd">@web_app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;/env/view/</span><span class="si">{environment_id}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">summary</span><span class="o">=</span><span class="s2">&quot;View Environment&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;View an environment&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">view_environment_endpoint</span><span class="p">(</span><span class="n">environment_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                    <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_404_NOT_FOUND</span><span class="p">,</span>
+                    <span class="n">detail</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Environment </span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2"> not found&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">with</span> <span class="p">(</span><span class="n">env_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">environment_id</span><span class="si">}</span><span class="s2">.pkl&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">env</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">env</span><span class="o">.</span><span class="n">state</span>
+
+    <span class="k">return</span> <span class="n">web_app</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">aviary</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">aviary</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, FutureHouse.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
