@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
       - uses: astral-sh/setup-uv@v3
       - name: Install Python dependencies
-        run: uv run pip install sphinx sphinx-rtd-theme
+        run: uv run pip install sphinx sphinx-rtd-theme myst_parser
       - name: Sphinx build
         run: sphinx-apidoc -o docs/ src/aviary
       - name: Deploy to GitHub Page
