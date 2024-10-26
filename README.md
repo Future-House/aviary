@@ -23,15 +23,6 @@ Gymnasium framework for training language model agents on constructive tasks.
   - [Environment `export_frame` method](#environment-export_frame-method)
   - [View Environment Tools](#view-environment-tools)
 - [Environments](#environments)
-  - [GSM8k Environment](#gsm8k-environment)
-    - [What it does](#what-it-does)
-    - [Installation](#installation-1)
-  - [HotPotQA Environment](#hotpotqa-environment)
-    - [What it does](#what-it-does-1)
-    - [Installation](#installation-2)
-  - [PaperQA Environment](#paperqa-environment)
-    - [What it does](#what-it-does-2)
-    - [Installation](#installation-3)
 
 <!--TOC-->
 
@@ -43,15 +34,8 @@ To install aviary (note `fh` stands for FutureHouse):
 pip install fhaviary
 ```
 
-To install aviary with the bundled environments:
-
-```bash
-pip install fhaviary[gsm8k]
-# or
-pip install fhaviary[hotpotqa]
-# or everything
-pip install fhaviary[dev]
-```
+To install aviary with the bundled environments,
+please see the [Environments section below](#environments).
 
 ### Google Colab
 
@@ -285,40 +269,10 @@ This will start a server that allows you to view the tools and call them, viewin
 
 ## Environments
 
-### GSM8k Environment
+Here are a few environments implemented with aviary:
 
-#### What it does
-
-The GSM8k environment allows agents to solve math word problems from the GSM8k dataset.
-
-#### Installation
-
-To install the GSM8k environment, run the following command:
-
-```bash
-pip install fhaviary[gsm8k]
-```
-
-### HotPotQA Environment
-
-#### What it does
-
-The HotPotQA environment allows agents to perform multi-hop question answering on the HotPotQA dataset.
-
-#### Installation
-
-To install the HotPotQA environment, run the following command:
-
-```bash
-pip install fhaviary[hotpotqa]
-```
-
-### PaperQA Environment
-
-#### What it does
-
-The PaperQA environment allows agents to perform question answering on the PaperQA dataset.
-
-#### Installation
-
-To install the PaperQA environment, follow the instructions in the [PaperQA repository](https://github.com/Future-House/paper-qa).
+| Environment | PyPI                                                           | Extra                | README                                                               |     |
+| ----------- | -------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------- | --- |
+| GSM8k       | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)       | `fhaviary[gsm8k]`    | [`README.md`](packages/gsm8k/README.md#installation)                 |     |
+| HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation)              |     |
+| PaperQA     | [`paper-qa`](https://pypi.org/project/paper-qa/)               | `fhaviary[paperqa]`  | [`README.md`](https://github.com/Future-House/paper-qa#installation) |     |
