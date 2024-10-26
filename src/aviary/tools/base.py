@@ -1,5 +1,6 @@
 import inspect
 import json
+import logging
 import uuid
 from collections.abc import Awaitable, Callable, Iterable
 from functools import partial
@@ -27,6 +28,8 @@ try:
     from dicttoxml import dicttoxml
 except ImportError:
     dicttoxml = None
+
+logger = logging.getLogger(__name__)
 
 # Mapping from python types to JSON schema types
 # SEE: https://json-schema.org/understanding-json-schema/reference/numeric
@@ -63,6 +66,10 @@ class ToolCallFunction(BaseModel):
                 except json.JSONDecodeError:
                     # If the arguments are not parseable, mark this ToolCall(Function) as invalid
                     # so we can enable "learn"ing what a valid tool call looks like
+                    logger.warning(
+                        f"Failed to JSON load tool {data.get('name')}'s arguments"
+                        f" {data['arguments']}, declaring as {INVALID_TOOL_NAME}."
+                    )
                     data["name"] = INVALID_TOOL_NAME
                     data["arguments"] = {}
 

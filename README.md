@@ -1,28 +1,78 @@
 # aviary
 
+![PyPI Version](https://img.shields.io/pypi/v/fhaviary)
+![PyPI Python Versions](https://img.shields.io/pypi/pyversions/fhaviary)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+![Tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)
+
 Gymnasium framework for training language model agents on constructive tasks.
+
+<!--TOC-->
+
+- [Installation](#installation)
+  - [Google Colab](#google-colab)
+  - [Developer Installation](#developer-installation)
+- [Messages](#messages)
+- [Environment](#environment)
+  - [Environment subclass and state](#environment-subclass-and-state)
+  - [Common environments](#common-environments)
+  - [Tool](#tool)
+    - [Advanced tool descriptions](#advanced-tool-descriptions)
+  - [Environment `reset` method](#environment-reset-method)
+  - [Environment `step` method](#environment-step-method)
+  - [Environment `export_frame` method](#environment-export_frame-method)
+  - [View Environment Tools](#view-environment-tools)
+- [Environments](#environments)
+  - [GSM8k Environment](#gsm8k-environment)
+    - [What it does](#what-it-does)
+    - [Installation](#installation-1)
+  - [HotPotQA Environment](#hotpotqa-environment)
+    - [What it does](#what-it-does-1)
+    - [Installation](#installation-2)
+  - [PaperQA Environment](#paperqa-environment)
+    - [What it does](#what-it-does-2)
+    - [Installation](#installation-3)
+
+<!--TOC-->
 
 ## Installation
 
-To install aviary:
+To install aviary (note `fh` stands for FutureHouse):
 
 ```bash
-pip install -e .
+pip install fhaviary
 ```
 
-To install aviary and the provided environments:
+To install aviary with the bundled environments:
 
 ```bash
-pip install -e . -e packages/gsm8k -e packages/hotpotqa
+pip install fhaviary[gsm8k]
+# or
+pip install fhaviary[hotpotqa]
+# or everything
+pip install fhaviary[dev]
 ```
 
-To run test suites you will need to set the `OPENAI_API_KEY` and `ANTHROPIC_API_KEY`
-environment variables. In `~/.bashrc` you can add:
+### Google Colab
+
+As of 10/25/2024, unfortunately Google Colab does not yet support Python 3.11 or 3.12
+([issue](https://github.com/googlecolab/colabtools/issues/3190)).
+
+Thus, as a workaround, you will need to install Python 3.11 into your notebook.
+Here is a simple snippet that will do that for you:
 
 ```bash
-export OPENAI_API_KEY=your_openai_api_key
-export ANTHROPIC_API_KEY=your_anthropic_api_key
+!sudo apt update > /dev/null
+!sudo apt-get install python3.11 python3.11-dev python3.11-distutils python3.11-venv > /dev/null
+!curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11  > /dev/null
+!sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 > /dev/null
+!sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2 > /dev/null
+!sudo apt autoremove > /dev/null
 ```
+
+### Developer Installation
+
+For local development, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Messages
 
@@ -70,11 +120,13 @@ information that you want to persist between steps and between tools.
 
 ```py
 from pydantic import BaseModel
-from aviary.env import Environment
+from aviary.core import Environment
+
 
 class ExampleState(BaseModel):
     reward: float = 0
     done: bool = False
+
 
 class ExampleEnv(Environment[ExampleState]):
     state: ExampleState
@@ -88,7 +140,7 @@ tasks, etc. attached to it.
 We expose a simple interface to some commonly-used environments that are included in the aviary codebase. You can instantiate one by referring to its name and passing keyword arguments:
 
 ```py
-from aviary.env import Environment
+from aviary.core import Environment
 
 env = Environment.from_name(
     "calculator",
@@ -102,7 +154,7 @@ Included with some environments are collections of problems that define training
 We refer to these as `TaskDataset`s, and expose them with a similar interface:
 
 ```py
-from aviary.env import TaskDataset
+from aviary.core import TaskDataset
 
 dataset = TaskDataset.from_name("hotpotqa", split="dev")
 ```
@@ -177,8 +229,9 @@ def print_story(story: str | bytes, state: ExampleState) -> None:
 Now we'll define the `reset` function which should set-up the tools and return one or more observations and the tools.
 
 ```py
-from aviary.message import Message
-from aviary.tools import Tool
+from aviary.core import Message
+from aviary.core import Tool
+
 
 def reset(self) -> tuple[list[Message], list[Tool]]:
     self.tools = [Tool.from_function(ExampleEnv.print_story)]
@@ -194,7 +247,8 @@ Now we can define the `step` function which should take an action and return the
 the episode was truncated.
 
 ```py
-from aviary.message import Message
+from aviary.core import Message
+
 
 async def step(self, action: Message) -> tuple[list[Message], float, bool, bool]:
     msgs: list[Message] = await self.exec_tool_calls(action, state=self.state)
@@ -208,7 +262,8 @@ You will probably often use this specific syntax for calling the tools - calling
 Lastly, we can define a function to export the state for visualization or debugging purposes. This is optional.
 
 ```py
-from aviary.env import Frame
+from aviary.core import Frame
+
 
 def export_frame(self) -> Frame:
     return Frame(

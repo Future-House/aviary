@@ -65,7 +65,10 @@ class CalculatorEnv(Environment[None]):
             return (
                 [
                     Message(
-                        content="Must call one of the provided tools (calculator or check_answer)."
+                        content=(
+                            "Must call one of the provided tools (calculator or"
+                            " check_answer)."
+                        )
                     )
                 ],
                 self.config.tool_failure_reward,

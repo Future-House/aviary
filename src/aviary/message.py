@@ -39,7 +39,9 @@ class Message(BaseModel):
     )
     content_is_json_str: bool = Field(
         default=False,
-        description="Whether the content is JSON-serialized (e.g., for multiple modalities).",
+        description=(
+            "Whether the content is JSON-serialized (e.g., for multiple modalities)."
+        ),
         exclude=True,
         repr=False,
     )
