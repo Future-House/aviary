@@ -1,10 +1,17 @@
 # aviary
 
+![PyPI Version](https://img.shields.io/pypi/v/fhaviary)
+![PyPI Python Versions](https://img.shields.io/pypi/pyversions/fhaviary)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+![Tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)
+
 Gymnasium framework for training language model agents on constructive tasks.
 
 <!--TOC-->
 
 - [Installation](#installation)
+  - [Google Colab](#google-colab)
+  - [Developer Installation](#developer-installation)
 - [Messages](#messages)
 - [Environment](#environment)
   - [Environment subclass and state](#environment-subclass-and-state)
@@ -30,25 +37,42 @@ Gymnasium framework for training language model agents on constructive tasks.
 
 ## Installation
 
-To install aviary:
+To install aviary (note `fh` stands for FutureHouse):
 
 ```bash
-pip install -e .
+pip install fhaviary
 ```
 
-To install aviary and the provided environments:
+To install aviary with the bundled environments:
 
 ```bash
-pip install -e . -e packages/gsm8k -e packages/hotpotqa
+pip install fhaviary[gsm8k]
+# or
+pip install fhaviary[hotpotqa]
+# or everything
+pip install fhaviary[dev]
 ```
 
-To run test suites you will need to set the `OPENAI_API_KEY` and `ANTHROPIC_API_KEY`
-environment variables. In `~/.bashrc` you can add:
+### Google Colab
+
+As of 10/25/2024, unfortunately Google Colab does not yet support Python 3.11 or 3.12
+([issue](https://github.com/googlecolab/colabtools/issues/3190)).
+
+Thus, as a workaround, you will need to install Python 3.11 into your notebook.
+Here is a simple snippet that will do that for you:
 
 ```bash
-export OPENAI_API_KEY=your_openai_api_key
-export ANTHROPIC_API_KEY=your_anthropic_api_key
+!sudo apt update > /dev/null
+!sudo apt-get install python3.11 python3.11-dev python3.11-distutils python3.11-venv > /dev/null
+!curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11  > /dev/null
+!sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 > /dev/null
+!sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 2 > /dev/null
+!sudo apt autoremove > /dev/null
 ```
+
+### Developer Installation
+
+For local development, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Messages
 
