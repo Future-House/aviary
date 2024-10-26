@@ -65,12 +65,12 @@ For the meaning of role, see the table below.
 You can change around roles as desired,
 except for `tool` which has a special meaning in aviary.
 
-| Role      | Host                        | Example                                 |
-| --------- | --------------------------- | --------------------------------------- |
-| assistant | Agent                       | Tool selector agent with an environment |
-| system    | Agent system prompt         | "You are an agent."                     |
-| user      | Environment system prompt   | HotPotQA problem to solve               |
-| tool      | Tool run in the environment | Some custom number crunching program    |
+| Role      | Host                                             | Example(s)                                                       |
+| --------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| assistant | Agent                                            | A tool selector agent's tool selection message                   |
+| system    | Agent system prompt                              | "You are an agent."                                              |
+| user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
+| tool      | Result of tool run in the environment            | Some number crunching program's output                           |
 
 The `content` is a string that can be anything, or a null value.
 
