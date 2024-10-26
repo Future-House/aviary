@@ -15,7 +15,7 @@ jobs:
       - name: Install Python dependencies
         run: uv run pip install sphinx sphinx-rtd-theme
       - name: Sphinx build
-        run: sphinx-apidoc -o docs src/aviary
+        run: sphinx-apidoc -o docs/ src/aviary
       - name: Deploy to GitHub Page
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: peaceiris/actions-gh-pages@v4
