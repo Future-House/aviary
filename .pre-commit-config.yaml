@@ -55,6 +55,10 @@ repos:
     rev: 0.0.8
     hooks:
       - id: markdown-toc-creator
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.19.1
+    hooks:
+      - id: blacken-docs
   - repo: https://github.com/srstevenson/nb-clean
     rev: 4.0.1
     hooks:
