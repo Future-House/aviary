@@ -396,6 +396,11 @@ mypy-init-return = true
     "N802",  # Tests function names can match class names
     "PLR2004",  # Tests can have magic values
 ]
+"docs/**.ipynb" = [
+    "PLE1142",  # allow async
+    "PLR2004",  # allow magic values
+    "S307",  # allow eval
+]
 
 [tool.ruff.lint.pycodestyle]
 # The maximum line length to allow for line-length violations within
