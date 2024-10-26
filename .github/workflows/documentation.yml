@@ -15,9 +15,9 @@ jobs:
       - name: Install Python dependencies
         run: uv run pip install sphinx sphinx-rtd-theme myst_parser
       - name: Sphinx build
-        run: sphinx-build docs docs/_build
+        run: sphinx-build docs _build
       - name: Deploy to GitHub Page
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/_build/html
+          publish_dir: _build/html
