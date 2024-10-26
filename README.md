@@ -145,7 +145,7 @@ exposed to the agent as a possible parameter and will be injected by the environ
 signature).
 
 ```py
-def print_story(story: str, state: ExampleState) -> None:
+def print_story(story: str, state: ExampleState):
     """Print a story.
 
     Args:
@@ -184,7 +184,7 @@ This convention was created by FastAPI ([docs][1]).
 [1]: https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
 
 ```python
-def print_story(story: str | bytes, state: ExampleState) -> None:
+def print_story(story: str | bytes, state: ExampleState):
     r"""Print a story.
 
     Extra information that is part of the tool description.
@@ -212,11 +212,9 @@ The `reset` function is `async` to allow for database interactions or HTTP reque
 from aviary.core import Message, Tool
 
 
-async def reset(self) -> tuple[list[Message], list[Tool]]:
+async def reset(self):
     self.tools = [Tool.from_function(ExampleEnv.print_story)]
-
     start = Message(content="Write a 5 word story and call print")
-
     return [start], self.tools
 ```
 
@@ -229,8 +227,8 @@ the episode was truncated.
 from aviary.core import Message
 
 
-async def step(self, action: Message) -> tuple[list[Message], float, bool, bool]:
-    msgs: list[Message] = await self.exec_tool_calls(action, state=self.state)
+async def step(self, action: Message):
+    msgs = await self.exec_tool_calls(action, state=self.state)
     return msgs, self.state.reward, self.state.done, False
 ```
 
@@ -245,7 +243,7 @@ and its state for visualization or debugging purposes.
 from aviary.core import Frame
 
 
-def export_frame(self) -> Frame:
+def export_frame(self):
     return Frame(
         state={"done": self.state.done, "reward": self.state.reward},
         info={"tool_names": [t.info.name for t in self.tools]},
