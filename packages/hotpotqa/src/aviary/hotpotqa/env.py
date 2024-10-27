@@ -445,7 +445,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             self.state.last_lookup = keyword
             self.state.lookup_results = [
                 s.strip() + "."
-                for s in self.state.page.split(". ")
+                for s in self.state.page.split("\n")
                 if s.strip() and keyword.lower() in s.lower()
             ]
             self.state.lookup_index = 0
