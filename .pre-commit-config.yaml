@@ -19,7 +19,7 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    rev: v0.7.1
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -51,27 +51,31 @@ repos:
     rev: v0.23.1
     hooks:
       - id: toml-sort-fix
+  - repo: https://github.com/jsh9/markdown-toc-creator
+    rev: 0.0.8
+    hooks:
+      - id: markdown-toc-creator
+  - repo: https://github.com/adamchainz/blacken-docs
+    rev: 1.19.1
+    hooks:
+      - id: blacken-docs
   - repo: https://github.com/srstevenson/nb-clean
-    rev: 3.3.0
+    rev: 4.0.1
     hooks:
       - id: nb-clean
         args: [--preserve-cell-outputs, --remove-empty-cells]
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.20.2
+    rev: v0.22
     hooks:
       - id: validate-pyproject
         additional_dependencies:
           - "validate-pyproject-schema-store[all]>=2024.08.19" # For Ruff renaming RUF025 to C420
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.4.21
+    rev: 0.4.27
     hooks:
       - id: uv-lock
-  - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 38.122.0
-    hooks:
-      - id: renovate-config-validator
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.13.0
     hooks:
       - id: mypy
         additional_dependencies:

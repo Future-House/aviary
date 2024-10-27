@@ -1,13 +1,15 @@
 import pytest
 
-from aviary.env import Environment, TaskDataset
-from aviary.gsm8k.env import CalculatorEnv, CalculatorEnvConfig
-from aviary.tools import ToolCall, ToolRequestMessage
+from aviary.core import Environment, TaskDataset, ToolCall, ToolRequestMessage
+from aviary.envs.gsm8k import CalculatorEnv, CalculatorEnvConfig
 
 
 @pytest.mark.asyncio
 async def test_calculator_env() -> None:
-    problem = "What is the answer to the ultimate question of life, the universe, and everything?"
+    problem = (
+        "What is the answer to the ultimate question of life, the universe, and"
+        " everything?"
+    )
     answer = 42.0
     env = CalculatorEnv(
         problem_id="douglas-adams",

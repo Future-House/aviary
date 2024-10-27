@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from aviary.env import DummyEnv
+from aviary.core import DummyEnv
 
 from . import CASSETTES_DIR
 

@@ -207,7 +207,10 @@ class Environment(ABC, Generic[TEnvState]):
             except Exception as exc:
                 if not handle_tool_exc:
                     raise
-                logger_msg = f"Encountered exception during tool call for tool {tool.info.name}: {exc!r}"
+                logger_msg = (
+                    f"Encountered exception during tool call for tool {tool.info.name}:"
+                    f" {exc!r}"
+                )
                 # logger.exception is just too verbose and clogs up console logging. This is a
                 # more human-friendly version: log a readable error message and emit the exception
                 # at DEBUG level.
@@ -231,14 +234,14 @@ class Environment(ABC, Generic[TEnvState]):
             )
         return [await _exec_tool_call(tool_call) for tool_call in message.tool_calls]
 
-    @abstractmethod
     def export_frame(self) -> Frame:
         """
-        Export the environment as a Frame.
+        Export a snapshot of the environment as a Frame for visualization or debugging.
 
         If you are not sure what to put in the Frame, just give it the entire state.
-        Read Field descriptions in Frame for more information.
+        See the Frame class itself for more information.
         """
+        return Frame()
 
     async def close(self) -> None:
         """
@@ -283,8 +286,8 @@ class Environment(ABC, Generic[TEnvState]):
 # Maps baseline environment names to their module and class names
 ENV_REGISTRY: dict[str, tuple[str, str]] = {
     "dummy": ("aviary.env", "DummyEnv"),
-    "calculator": ("aviary.gsm8k.env", "CalculatorEnv"),
-    "hotpotqa": ("aviary.hotpotqa.env", "HotPotQAEnv"),
+    "calculator": ("aviary.envs.gsm8k.env", "CalculatorEnv"),
+    "hotpotqa": ("aviary.envs.hotpotqa.env", "HotPotQAEnv"),
 }
 
 TEnvironment = TypeVar("TEnvironment", bound=Environment)
@@ -352,8 +355,8 @@ class TaskDataset(ABC, Generic[TEnvironment]):
 # Maps baseline task dataset names to their module and class names
 TASK_DATASET_REGISTRY: dict[str, tuple[str, str]] = {
     "dummy": ("aviary.env", "DummyTaskDataset"),
-    "gsm8k": ("aviary.gsm8k.env", "GSM8kDataset"),
-    "hotpotqa": ("aviary.hotpotqa.env", "HotPotQADataset"),
+    "gsm8k": ("aviary.envs.gsm8k.env", "GSM8kDataset"),
+    "hotpotqa": ("aviary.envs.hotpotqa.env", "HotPotQADataset"),
 }
 
 

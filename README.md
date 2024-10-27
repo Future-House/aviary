@@ -1,28 +1,56 @@
 # aviary
 
+![PyPI Version](https://img.shields.io/pypi/v/fhaviary)
+![PyPI Python Versions](https://img.shields.io/pypi/pyversions/fhaviary)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+![Tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)
+
 Gymnasium framework for training language model agents on constructive tasks.
+
+<!--TOC-->
+
+- [Installation](#installation)
+  - [Google Colab](#google-colab)
+  - [Developer Installation](#developer-installation)
+- [Messages](#messages)
+- [Environment](#environment)
+  - [Environment subclass and state](#environment-subclass-and-state)
+  - [Common environments](#common-environments)
+  - [Tool](#tool)
+    - [Advanced tool descriptions](#advanced-tool-descriptions)
+  - [Environment `reset` method](#environment-reset-method)
+  - [Environment `step` method](#environment-step-method)
+  - [Environment `export_frame` method](#environment-export_frame-method)
+  - [View Environment Tools](#view-environment-tools)
+- [Environments](#environments)
+
+<!--TOC-->
 
 ## Installation
 
-To install aviary:
+To install aviary (note `fh` stands for FutureHouse):
 
 ```bash
-pip install -e .
+pip install fhaviary
 ```
 
-To install aviary and the provided environments:
+To install aviary with the bundled environments,
+please see the [Environments section below](#environments).
 
-```bash
-pip install -e . -e packages/gsm8k -e packages/hotpotqa
-```
+### Google Colab
 
-To run test suites you will need to set the `OPENAI_API_KEY` and `ANTHROPIC_API_KEY`
-environment variables. In `~/.bashrc` you can add:
+As of 10/25/2024, unfortunately Google Colab does not yet support Python 3.11 or 3.12
+([issue](https://github.com/googlecolab/colabtools/issues/3190)).
 
-```bash
-export OPENAI_API_KEY=your_openai_api_key
-export ANTHROPIC_API_KEY=your_anthropic_api_key
-```
+Thus, as a workaround, you will need to install Python 3.11 into your notebook.
+Here is a sample notebook showing how to do this:
+https://colab.research.google.com/drive/1mejZ5cxgKZrMpYEe0iRoanaGGQ0Cr6WI?usp=sharing
+
+Also, note that `async` code works in Google Colab.
+
+### Developer Installation
+
+For local development, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Messages
 
@@ -37,12 +65,12 @@ For the meaning of role, see the table below.
 You can change around roles as desired,
 except for `tool` which has a special meaning in aviary.
 
-| Role      | Host                    | Example                              |
-| --------- | ----------------------- | ------------------------------------ |
-| assistant | AI                      | ChatGPT                              |
-| system    | AI system prompt        | You are an AI assistant              |
-| user      | User                    | You, using ChatGPT                   |
-| tool      | Tool in the environment | Some custom number crunching program |
+| Role      | Host                                             | Example(s)                                                       |
+| --------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| assistant | Agent                                            | A tool selector agent's tool selection message                   |
+| system    | Agent system prompt                              | "You are an agent."                                              |
+| user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
+| tool      | Result of tool run in the environment            | Some number crunching program's output                           |
 
 The `content` is a string that can be anything, or a null value.
 
@@ -70,11 +98,13 @@ information that you want to persist between steps and between tools.
 
 ```py
 from pydantic import BaseModel
-from aviary.env import Environment
+from aviary.core import Environment
+
 
 class ExampleState(BaseModel):
     reward: float = 0
     done: bool = False
+
 
 class ExampleEnv(Environment[ExampleState]):
     state: ExampleState
@@ -88,7 +118,7 @@ tasks, etc. attached to it.
 We expose a simple interface to some commonly-used environments that are included in the aviary codebase. You can instantiate one by referring to its name and passing keyword arguments:
 
 ```py
-from aviary.env import Environment
+from aviary.core import Environment
 
 env = Environment.from_name(
     "calculator",
@@ -102,7 +132,7 @@ Included with some environments are collections of problems that define training
 We refer to these as `TaskDataset`s, and expose them with a similar interface:
 
 ```py
-from aviary.env import TaskDataset
+from aviary.core import TaskDataset
 
 dataset = TaskDataset.from_name("hotpotqa", split="dev")
 ```
@@ -115,7 +145,7 @@ exposed to the agent as a possible parameter and will be injected by the environ
 signature).
 
 ```py
-def print_story(story: str, state: ExampleState) -> None:
+def print_story(story: str, state: ExampleState):
     """Print a story.
 
     Args:
@@ -154,7 +184,7 @@ This convention was created by FastAPI ([docs][1]).
 [1]: https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
 
 ```python
-def print_story(story: str | bytes, state: ExampleState) -> None:
+def print_story(story: str | bytes, state: ExampleState):
     r"""Print a story.
 
     Extra information that is part of the tool description.
@@ -174,17 +204,17 @@ def print_story(story: str | bytes, state: ExampleState) -> None:
 
 ### Environment `reset` method
 
-Now we'll define the `reset` function which should set-up the tools and return one or more observations and the tools.
+Now we'll define the `reset` function which should set-up the tools,
+and return one or more initial observations and the tools.
+The `reset` function is `async` to allow for database interactions or HTTP requests.
 
 ```py
-from aviary.message import Message
-from aviary.tools import Tool
+from aviary.core import Message, Tool
 
-def reset(self) -> tuple[list[Message], list[Tool]]:
+
+async def reset(self):
     self.tools = [Tool.from_function(ExampleEnv.print_story)]
-
     start = Message(content="Write a 5 word story and call print")
-
     return [start], self.tools
 ```
 
@@ -194,10 +224,11 @@ Now we can define the `step` function which should take an action and return the
 the episode was truncated.
 
 ```py
-from aviary.message import Message
+from aviary.core import Message
 
-async def step(self, action: Message) -> tuple[list[Message], float, bool, bool]:
-    msgs: list[Message] = await self.exec_tool_calls(action, state=self.state)
+
+async def step(self, action: Message):
+    msgs = await self.exec_tool_calls(action, state=self.state)
     return msgs, self.state.reward, self.state.done, False
 ```
 
@@ -205,12 +236,14 @@ You will probably often use this specific syntax for calling the tools - calling
 
 ### Environment `export_frame` method
 
-Lastly, we can define a function to export the state for visualization or debugging purposes. This is optional.
+Optionally, we can define a function to export a snapshot of the environment
+and its state for visualization or debugging purposes.
 
 ```py
-from aviary.env import Frame
+from aviary.core import Frame
 
-def export_frame(self) -> Frame:
+
+def export_frame(self):
     return Frame(
         state={"done": self.state.done, "reward": self.state.reward},
         info={"tool_names": [t.info.name for t in self.tools]},
@@ -230,40 +263,10 @@ This will start a server that allows you to view the tools and call them, viewin
 
 ## Environments
 
-### GSM8k Environment
+Here are a few environments implemented with aviary:
 
-#### What it does
-
-The GSM8k environment allows agents to solve math word problems from the GSM8k dataset.
-
-#### Installation
-
-To install the GSM8k environment, run the following command:
-
-```bash
-pip install fhaviary[gsm8k]
-```
-
-### HotPotQA Environment
-
-#### What it does
-
-The HotPotQA environment allows agents to perform multi-hop question answering on the HotPotQA dataset.
-
-#### Installation
-
-To install the HotPotQA environment, run the following command:
-
-```bash
-pip install fhaviary[hotpotqa]
-```
-
-### PaperQA Environment
-
-#### What it does
-
-The PaperQA environment allows agents to perform question answering on the PaperQA dataset.
-
-#### Installation
-
-To install the PaperQA environment, follow the instructions in the [PaperQA repository](https://github.com/Future-House/paper-qa).
+| Environment | PyPI                                                           | Extra                | README                                                               |     |
+| ----------- | -------------------------------------------------------------- | -------------------- | -------------------------------------------------------------------- | --- |
+| GSM8k       | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)       | `fhaviary[gsm8k]`    | [`README.md`](packages/gsm8k/README.md#installation)                 |     |
+| HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation)              |     |
+| PaperQA     | [`paper-qa`](https://pypi.org/project/paper-qa/)               | `fhaviary[paperqa]`  | [`README.md`](https://github.com/Future-House/paper-qa#installation) |     |

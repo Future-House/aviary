@@ -1,6 +1,6 @@
 import pytest
 
-from aviary.tools import eval_answer
+from aviary.core import eval_answer
 
 
 @pytest.mark.vcr
@@ -21,7 +21,7 @@ from aviary.tools import eval_answer
         pytest.param(
             "Based on all factors considered, the most compelling answer is Gerald, C",
             "C",
-            "Which of the following is most likely true:\n\n A) Piggie, B) Pigeon, C) Gerald\n",
+            "Which of the following is most likely true:\n\nA) Piggie, B) Pigeon, C) Gerald\n",
             "llm",
             True,
             id="llm basic",

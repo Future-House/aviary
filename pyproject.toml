@@ -30,6 +30,27 @@ requires-python = ">=3.11"
 cloud = [
     "boto3",
 ]
+dev = [
+    "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
+    "aviary.gsm8k[typing]",
+    "aviary.hotpotqa",
+    "fhaviary[image,llm,server,typing,xml]",
+    "ipython>=8",  # Pin to keep recent
+    "mypy>=1.8",  # Pin for mutable-override
+    "pre-commit>=3.4",  # Pin to keep recent
+    "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
+    "pylint-pydantic",
+    "pylint>=3.2",  # Pin to keep recent
+    "pytest-asyncio",
+    "pytest-recording",
+    "pytest-subtests",
+    "pytest-sugar",
+    "pytest-timer[colorama]",
+    "pytest-xdist",
+    "pytest>=8",  # Pin to keep recent
+    "refurb>=2",  # Pin to keep recent
+    "typeguard",
+]
 gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]
 image = [
@@ -38,6 +59,7 @@ image = [
 llm = [
     "litellm",
 ]
+paperqa = ["paper-qa"]
 server = [
     "click",
     "cloudpickle",
@@ -284,11 +306,13 @@ extend-select = [
     "FURB148",
     "FURB152",
     "FURB154",
+    "FURB156",
     "FURB157",
     "FURB164",
     "FURB166",
     "FURB171",
     "FURB180",
+    "FURB188",
     "FURB192",
     "PLR6104",
     "PLR6201",
@@ -372,6 +396,11 @@ mypy-init-return = true
     "N802",  # Tests function names can match class names
     "PLR2004",  # Tests can have magic values
 ]
+"docs/**.ipynb" = [
+    "PLE1142",  # allow async
+    "PLR2004",  # allow magic values
+    "S307",  # allow eval
+]
 
 [tool.ruff.lint.pycodestyle]
 # The maximum line length to allow for line-length violations within
@@ -401,26 +430,7 @@ trailing_comma_inline_array = true
 
 [tool.uv]
 dev-dependencies = [
-    "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
-    "aviary.gsm8k[typing]",  # So `uv sync` pulls this in, and for type stubs
-    "aviary.hotpotqa",  # So `uv sync` pulls this in
-    "codeflash",
-    "fhaviary[image,llm,server,typing,xml]",
-    "ipython>=8",  # Pin to keep recent
-    "mypy>=1.8",  # Pin for mutable-override
-    "pre-commit>=3.4",  # Pin to keep recent
-    "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
-    "pylint-pydantic",
-    "pylint>=3.2",
-    "pytest-asyncio",
-    "pytest-recording",
-    "pytest-subtests",
-    "pytest-sugar",
-    "pytest-timer[colorama]",
-    "pytest-xdist",
-    "pytest>=8",  # Pin to keep recent
-    "refurb>=2",  # Pin to keep recent
-    "typeguard",
+    "fhaviary[dev]",
 ]
 
 [tool.uv.sources]

@@ -1,6 +1,7 @@
 # aviary.hotpotqa
 
-HotPotQA environment implemented with aviary.
+HotPotQA environment implemented with aviary,
+allowing agents to perform multi-hop question answering on the HotPotQA dataset.
 
 ## References
 

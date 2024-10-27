@@ -61,6 +61,8 @@ jobs:
           cd ../../..
           uv run refurb tests packages/gsm8k/tests packages/hotpotqa/tests
       - run: uv run pylint src packages
+      - if: matrix.python-version == '3.11' # Only need to run this on one version
+        uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.0
   test:
     runs-on: large-runner
     steps:

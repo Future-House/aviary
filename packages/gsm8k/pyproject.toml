@@ -30,4 +30,4 @@ where = ["src"]
 
 [tool.setuptools_scm]
 root = "../.."
-version_file = "src/aviary/gsm8k/version.py"
+version_file = "src/aviary/envs/gsm8k/version.py"

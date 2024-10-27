@@ -3,8 +3,8 @@ import json
 import numpy as np
 import pytest
 
-from aviary.message import Message
-from aviary.tools import (
+from aviary.core import (
+    Message,
     ToolCall,
     ToolCallFunction,
     ToolRequestMessage,
@@ -77,7 +77,10 @@ class TestMessage:
                         {"type": "image_url", "image_url": {"url": "stub_url"}},
                     ]
                 ),
-                '[{"type": "text", "text": "stub"}, {"type": "image_url", "image_url": {"url": "stub_url"}}]',
+                (
+                    '[{"type": "text", "text": "stub"}, {"type": "image_url",'
+                    ' "image_url": {"url": "stub_url"}}]'
+                ),
             ),
         ],
     )

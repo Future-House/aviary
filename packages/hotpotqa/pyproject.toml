@@ -28,4 +28,4 @@ where = ["src"]
 
 [tool.setuptools_scm]
 root = "../.."
-version_file = "src/aviary/hotpotqa/version.py"
+version_file = "src/aviary/envs/hotpotqa/version.py"
