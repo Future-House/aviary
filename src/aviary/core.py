@@ -9,7 +9,7 @@ from aviary.env import (
     TaskDataset,
 )
 from aviary.env_client import EnvironmentClient
-from aviary.message import MalformedMessageError, Message, join
+from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
 from aviary.render import Renderer
 from aviary.tools import (
     INVALID_TOOL_NAME,
@@ -38,6 +38,7 @@ __all__ = [
     "DummyEnv",
     "DummyEnvState",
     "DummyTaskDataset",
+    "EnvStateMessage",
     "Environment",
     "EnvironmentClient",
     "Frame",
