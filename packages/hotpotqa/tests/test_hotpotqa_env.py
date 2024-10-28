@@ -57,9 +57,9 @@ async def test_tool_results() -> None:
     # Check lookup return format
     match = re.match(lookup_pattern, obs4)
     assert match, "Expected lookup"
-    assert (
-        match.group(1) + "\n" in hotpotqa_env.state.page
-    ), "Expected text after the match to be a paragraph"
+    assert match.group(1) + "\n" in hotpotqa_env.state.page, (
+        "Expected text after the match to be a paragraph"
+    )
 
     obs5 = hotpotqa_env.finish("China")
 
