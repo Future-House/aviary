@@ -63,7 +63,9 @@ class HotPotQAEnvState(BaseModel):
         default=None,
         description="The answer to the question, or None if not yet answered.",
     )
-
+    last_action: str | None = Field(
+        default=None, description="The last action taken by the agent."
+    )
     last_lookup: str | None = Field(
         default=None, description="The last lookup keyword."
     )
@@ -340,6 +342,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
         self.state.answer = answer
         self.state.reward += self.calculate_reward(answer)
+        self.state.last_action = "Finish"
         return "Finished."
 
     async def search(self, entity: str) -> str:
@@ -404,6 +407,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             for s in p.split(". ")
             if s.strip()
         ]
+        self.state.last_action = "Search"
         return " ".join(obs_list[:5])
 
     def construct_lookup_list(self, keyword: str) -> str:
@@ -441,10 +445,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         if not self.state.page:
             return "Lookup failed. You have not specified a Wikipedia page yet."
 
-        if self.state.last_lookup != keyword:
+        if self.state.last_action != "Lookup" or self.state.last_lookup != keyword:
             self.state.last_lookup = keyword
             self.state.lookup_results = [
-                s.strip() + "."
+                s.strip()
                 for s in self.state.page.split("\n")
                 if s.strip() and keyword.lower() in s.lower()
             ]
@@ -458,6 +462,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             f" {self.state.lookup_results[self.state.lookup_index]}"
         )
         self.state.lookup_index += 1
+        self.state.last_action = "Lookup"
         return obs
 
 

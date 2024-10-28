@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from aviary.core import Environment, TaskDataset
@@ -27,3 +29,39 @@ def test_dataset_from_name() -> None:
 
     with pytest.raises(ValueError, match="answer"):
         TaskDataset.from_name("hotpotqa", split="test")
+
+
+@pytest.mark.asyncio
+async def test_tool_results() -> None:
+    hotpotqa_env: HotPotQAEnv = Environment.from_name(
+        "hotpotqa",
+        question=("Which country has a larger population: China or France?"),
+        correct_answer="China",
+    )
+    lookup_pattern = r"^\(Result \d+ / \d+\)\s*(.*)"
+
+    _, _ = await hotpotqa_env.reset()
+    obs1 = await hotpotqa_env.search("China")
+    obs2 = hotpotqa_env.construct_lookup_list("population")
+
+    # Check lookup return format
+    match = re.match(lookup_pattern, obs2)
+    assert match  # Starts with the right pattern
+    assert (
+        match.group(1) + "\n" in hotpotqa_env.state.page
+    )  # Everything after the pattern should be a paragraph in current page
+
+    obs3 = await hotpotqa_env.search("France")
+    obs4 = hotpotqa_env.construct_lookup_list("population")
+
+    # Check lookup return format
+    match = re.match(lookup_pattern, obs4)
+    assert match  # Starts with the right pattern
+    assert (
+        match.group(1) + "\n" in hotpotqa_env.state.page
+    )  # Everything after the pattern should be a paragraph in current page
+
+    obs5 = hotpotqa_env.finish("China")
+
+    # Ensure that the observations are different
+    assert obs1 != obs2 != obs3 != obs4 != obs5
