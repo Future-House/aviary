@@ -58,7 +58,6 @@ class HotPotQAEnvState(BaseModel):
     reward: float = Field(
         default=0.0, description="Current reward value, reset each environment step."
     )
-
     answer: str | None = Field(
         default=None,
         description="The answer to the question, or None if not yet answered.",
