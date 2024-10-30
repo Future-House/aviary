@@ -13,6 +13,7 @@ from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
 from aviary.render import Renderer
 from aviary.tools import (
     INVALID_TOOL_NAME,
+    EvalAnswerMode,
     FunctionInfo,
     Messages,
     MessagesAdapter,
@@ -41,6 +42,7 @@ __all__ = [
     "EnvStateMessage",
     "Environment",
     "EnvironmentClient",
+    "EvalAnswerMode",
     "Frame",
     "FunctionInfo",
     "MalformedMessageError",

@@ -27,9 +27,17 @@ from datasets import load_dataset
 from pydantic import BaseModel, ConfigDict, Field
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
-from aviary.env import Environment, Frame, TaskDataset
-from aviary.message import Message
-from aviary.tools import Tool, ToolRequestMessage, ToolResponseMessage
+from aviary.core import (
+    Environment,
+    EvalAnswerMode,
+    Frame,
+    Message,
+    TaskDataset,
+    Tool,
+    ToolRequestMessage,
+    ToolResponseMessage,
+    eval_answer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +85,8 @@ class HotPotQAEnvState(BaseModel):
         default=0, description="Index of the last retrieved lookup result."
     )
     page: str | None = Field(default=None, description="The current Wikipedia page.")
+
+    evaluation_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS
 
 
 def create_tool(function: Callable, name: str) -> Tool:
@@ -176,6 +186,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         correct_reward: float = 1.0,
         incorrect_reward: float = 0.0,
         tool_failure_reward: float = 0.0,
+        evaluation_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS,
         proxy: str | None = None,
     ):
         super().__init__()
@@ -186,6 +197,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         self.incorrect_reward = incorrect_reward
         self.tool_failure_reward = tool_failure_reward
         self.proxy = proxy
+        self.evaluation_mode = evaluation_mode
+
+        if evaluation_mode == EvalAnswerMode.LLM_SCORE:
+            raise ValueError(f'Evaluation mode "{evaluation_mode}" is not supported.')
 
         # Title case tool names to match third party demonstration data
         self.tools = [
@@ -198,7 +213,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
     def from_task(cls, task: str) -> "HotPotQAEnv":
         return cls(question=task, correct_answer=0.0)
 
-    def calculate_reward(self, answer: str | None) -> float:
+    async def calculate_answer_reward(self, answer: str | None) -> float:
         """Calculate the reward based on the agent's answer.
 
         Returns:
@@ -207,8 +222,17 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         """
         if answer is None:
             return self.incorrect_reward
-        pred, gt = normalize_answer(answer), self.normalized_correct_answer
-        return self.correct_reward if pred == gt else self.incorrect_reward
+        return (
+            self.correct_reward
+            if (
+                await eval_answer(
+                    normalize_answer(answer),
+                    self.normalized_correct_answer,
+                    self.evaluation_mode,
+                )
+            )
+            else self.incorrect_reward
+        )
 
     async def reset(self) -> tuple[list[Message], list[Tool]]:
         """Reset the HotPotQA environment to an initial state.
@@ -331,8 +355,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             }
         )
 
-    def finish(self, answer: str) -> str:
-        """Finish the episode.
+    async def finish(self, answer: str) -> str:
+        """Finish the task by submitting an answer to the question.
 
         Args:
             answer: The answer to the question.
@@ -342,7 +366,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             return "Finish failed. No answer provided."
 
         self.state.answer = answer
-        self.state.reward += self.calculate_reward(answer)
+        self.state.reward += await self.calculate_answer_reward(answer)
 
         self.state.last_action_is_lookup = False
         return "Finished."

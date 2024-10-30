@@ -4,6 +4,7 @@ import pytest
 
 from aviary.core import Environment, TaskDataset
 from aviary.envs.hotpotqa import HotPotQAEnv
+from aviary.tools.utils import EvalAnswerMode
 
 
 def test_env_construction() -> None:
@@ -65,3 +66,21 @@ async def test_tool_results() -> None:
 
     # Ensure that the observations are different
     assert obs1 != obs2 != obs3 != obs4 != obs5
+
+
+@pytest.mark.parametrize(
+    "evaluation_mode",
+    [EvalAnswerMode.EXACT, EvalAnswerMode.CONTAINS, EvalAnswerMode.LLM],
+)
+@pytest.mark.asyncio
+async def test_answer_evaluation_mode(evaluation_mode: EvalAnswerMode) -> None:
+    correct_answer = "Golden Gate Bridge"
+    incorrect_answer = "Bay Bridge"
+    env = HotPotQAEnv(
+        question="What is the reddest bridge in San Francisco?",
+        correct_answer=correct_answer,
+        evaluation_mode=evaluation_mode,
+    )
+
+    assert (await env.calculate_answer_reward(correct_answer)) == 1
+    assert (await env.calculate_answer_reward(incorrect_answer)) == 0

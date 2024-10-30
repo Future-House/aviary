@@ -14,10 +14,11 @@ from .base import (
     ToolsAdapter,
     wraps_doc_only,
 )
-from .utils import ToolSelector, ToolSelectorLedger, eval_answer
+from .utils import EvalAnswerMode, ToolSelector, ToolSelectorLedger, eval_answer
 
 __all__ = [
     "INVALID_TOOL_NAME",
+    "EvalAnswerMode",
     "FunctionInfo",
     "Messages",
     "MessagesAdapter",
