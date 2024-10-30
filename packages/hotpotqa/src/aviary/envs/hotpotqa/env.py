@@ -200,7 +200,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         self.evaluation_mode = evaluation_mode
 
         if evaluation_mode == EvalAnswerMode.LLM_SCORE:
-            raise ValueError(f'Evaluation mode "{evaluation_mode}" is not supported.')
+            raise ValueError(
+                f'{HotPotQAEnv.__name__} does not support "{evaluation_mode}" '
+                "since it requires binary evaluation of the answer."
+            )
 
         # Title case tool names to match third party demonstration data
         self.tools = [
