@@ -86,8 +86,6 @@ class HotPotQAEnvState(BaseModel):
     )
     page: str | None = Field(default=None, description="The current Wikipedia page.")
 
-    evaluation_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS
-
 
 def create_tool(function: Callable, name: str) -> Tool:
     """Create a Tool object from a function and set its name.
@@ -537,6 +535,8 @@ class HotPotQAEnvConfig(BaseModel):
     )
     proxy: str | None = None
 
+    evaluation_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS
+
 
 class HotPotQADataset(TaskDataset[HotPotQAEnv]):
     # SEE: https://huggingface.co/datasets/hotpotqa/hotpot_qa
@@ -604,6 +604,7 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
             correct_reward=self.config.correct_reward,
             incorrect_reward=self.config.incorrect_reward,
             tool_failure_reward=self.config.tool_failure_reward,
+            evaluation_mode=self.config.evaluation_mode,
             proxy=self.config.proxy,
         )
 
