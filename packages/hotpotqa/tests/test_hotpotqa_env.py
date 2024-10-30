@@ -4,6 +4,7 @@ import pytest
 
 from aviary.core import Environment, TaskDataset
 from aviary.envs.hotpotqa import HotPotQAEnv
+from aviary.envs.hotpotqa.env import HotPotQADataset
 from aviary.tools.utils import EvalAnswerMode
 
 
@@ -22,11 +23,16 @@ def test_dataset_from_name() -> None:
     dataset = TaskDataset.from_name("hotpotqa", split="dev")
     assert isinstance(dataset.get_new_env_by_idx(0), HotPotQAEnv)
 
-    # double-check we can load by difficulty level
+    # double-check we can load with various options
     dataset = TaskDataset.from_name(
-        "hotpotqa", split="train", difficulty_level={"easy", "hard"}
+        "hotpotqa",
+        split="train",
+        difficulty_level={"easy", "hard"},
+        evaluation_mode=EvalAnswerMode.EXACT,
     )
+    assert isinstance(dataset, HotPotQADataset)
     assert len(dataset) == 33633
+    assert dataset.config.evaluation_mode == EvalAnswerMode.EXACT
 
     with pytest.raises(ValueError, match="answer"):
         TaskDataset.from_name("hotpotqa", split="test")
