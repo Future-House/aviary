@@ -206,9 +206,9 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
         # Title case tool names to match third party demonstration data
         self.tools = [
-            create_tool(self.search, "search"),
-            create_tool(self.construct_lookup_list, "lookup"),
-            create_tool(self.submit_answer, "submit_answer"),
+            Tool.from_function(self.search),
+            Tool.from_function(self.construct_lookup_list, name="lookup"),
+            Tool.from_function(self.submit_answer),
         ]
 
     @classmethod
