@@ -109,7 +109,7 @@ class CalculatorEnv(Environment[None]):
         )
 
     def submit_answer(self, answer: str) -> tuple[bool, float, Literal[True]]:
-        """Submit the proposed answer and check if it is correct.
+        """Submit the proposed answer and check if it is correct. This action is terminal.
 
         Args:
             answer: Proposed answer.
