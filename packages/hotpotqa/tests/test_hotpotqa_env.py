@@ -51,7 +51,7 @@ async def test_tool_results() -> None:
 
     _, _ = await hotpotqa_env.reset()
     obs1 = await hotpotqa_env.search("China")
-    obs2 = hotpotqa_env.construct_lookup_list("population")
+    obs2 = hotpotqa_env.lookup("population")
 
     # Check lookup return format
     match = re.match(lookup_pattern, obs2)
@@ -61,7 +61,7 @@ async def test_tool_results() -> None:
     )  # Everything after the pattern should be a paragraph in current page
 
     obs3 = await hotpotqa_env.search("France")
-    obs4 = hotpotqa_env.construct_lookup_list("population")
+    obs4 = hotpotqa_env.lookup("population")
 
     # Check lookup return format
     match = re.match(lookup_pattern, obs4)
