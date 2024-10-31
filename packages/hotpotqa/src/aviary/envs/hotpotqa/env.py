@@ -207,7 +207,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         # Title case tool names to match third party demonstration data
         self.tools = [
             Tool.from_function(self.search),
-            Tool.from_function(self.construct_lookup_list, name="lookup"),
+            Tool.from_function(self.lookup),
             Tool.from_function(self.submit_answer),
         ]
 
@@ -438,7 +438,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         self.state.last_action_is_lookup = False
         return " ".join(obs_list[:5])
 
-    def construct_lookup_list(self, keyword: str) -> str:
+    def lookup(self, keyword: str) -> str:
         """Construct a list of sentences from the given page content that contain the specified keyword.
 
         Args:
@@ -456,7 +456,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             Kearney Zzyzwicz. Milhouse has a crush on Bart's sister, Lisa, a common plot element.")
 
             keyword = "Milhouse"
-            result = construct_lookup_list_from_page(keyword, page_content)
+            result = lookup(keyword, page_content)
             # Output: ['Milhouse Mussolini Van Houten is a recurring character in the Fox animated television series The
             Simpsons.',
             'Milhouse is Bart Simpson's best friend in Mrs. Krabappel's fourth grade class at Springfield Elementary
