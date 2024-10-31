@@ -8,9 +8,9 @@ In The Eleventh International Conference on Learning Representations. 2023
 Agents in the HotPotQA environment can perform searches and lookups to retrieve specific information.
 The environment supports 3 tools:
 
-Search[entity]: Search for a specific entity on Wikipedia and return relevant information.
-Lookup[keyword]: Find and return the next sentence containing the keyword in the current passage.
-SubmitAnswer[answer]: Submit the final answer to the question and conclude the task.
+search[entity]: Search for a specific entity on Wikipedia and return relevant information.
+lookup[keyword]: Find and return the next sentence containing the keyword in the current passage.
+submit_answer[answer]: Submit the final answer to the question and conclude the task.
 """
 
 import logging
@@ -206,9 +206,9 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
         # Title case tool names to match third party demonstration data
         self.tools = [
-            create_tool(self.search, "Search"),
-            create_tool(self.construct_lookup_list, "Lookup"),
-            create_tool(self.submit_answer, "SubmitAnswer"),
+            create_tool(self.search, "search"),
+            create_tool(self.construct_lookup_list, "lookup"),
+            create_tool(self.submit_answer, "submit_answer"),
         ]
 
     @classmethod
@@ -246,7 +246,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         Returns:
             tuple: A tuple containing:
                 - list[Message]: The initial observation wrapped in a Message object.
-                - list[Tool]: A list of tools (Search, Lookup, and SubmitAnswer) available for the agent.
+                - list[Tool]: A list of tools (search, lookup, and submit_answer) available for the agent.
 
         Example:
             >>> env = HotPotQAEnv()
@@ -254,7 +254,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             >>> print(initial_obs)
             [Message(content='Question: <question_text>')]
             >>> print(tools)
-            [<Tool: Search>, <Tool: Lookup>, <Tool: SubmitAnswer>]
+            [<Tool: search>, <Tool: lookup>, <Tool: submit_answer>]
         """
         self.state = self.State()
         return [Message(content=f"Question: {self.question}")], self.tools
@@ -365,7 +365,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         """
         self.state.done = True
         if not answer:
-            return "SubmitAnswer failed. No answer provided."
+            return "submit_answer failed. No answer provided."
 
         self.state.answer = answer
         self.state.reward += await self.calculate_answer_reward(answer)
