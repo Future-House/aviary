@@ -47,7 +47,7 @@ class CalculatorEnv(Environment[None]):
         self.config = config if config is not None else CalculatorEnvConfig()
 
         self.calc_tool = Tool.from_function(self.calculator)
-        self.check_tool = Tool.from_function(self.check_answer)
+        self.check_tool = Tool.from_function(self.submit_answer)
         self.tools = [self.calc_tool, self.check_tool]
 
     @classmethod
@@ -67,7 +67,7 @@ class CalculatorEnv(Environment[None]):
                     Message(
                         content=(
                             "Must call one of the provided tools (calculator or"
-                            " check_answer)."
+                            " submit_answer)."
                         )
                     )
                 ],
@@ -108,8 +108,8 @@ class CalculatorEnv(Environment[None]):
             False,
         )
 
-    def check_answer(self, answer: str) -> tuple[bool, float, Literal[True]]:
-        """Check if the proposed answer is correct.
+    def submit_answer(self, answer: str) -> tuple[bool, float, Literal[True]]:
+        """Submit the proposed answer and check if it is correct.
 
         Args:
             answer: Proposed answer.
