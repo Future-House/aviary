@@ -365,7 +365,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         """
         self.state.done = True
         if not answer:
-            return "submit_answer failed. No answer provided."
+            return "submit_answer failed since it was provided an empty answer."
 
         self.state.answer = answer
         self.state.reward += await self.calculate_answer_reward(answer)
