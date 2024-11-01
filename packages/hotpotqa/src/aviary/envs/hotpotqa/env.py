@@ -14,6 +14,7 @@ Finish[answer]: Submit the final answer to the question and conclude the task.
 """
 
 import logging
+import os
 import random
 import re
 import string
@@ -24,7 +25,7 @@ from typing import Any, ClassVar, cast
 import httpx
 from bs4 import BeautifulSoup
 from datasets import load_dataset
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from tenacity import retry, stop_after_attempt, wait_exponential_jitter
 
 from aviary.env import Environment, Frame, TaskDataset
@@ -482,6 +483,7 @@ class HotPotQAEnvConfig(BaseModel):
     """
 
     model_config = ConfigDict(extra="forbid")
+    PROXY_ENVIRON_VAR_NAME: ClassVar[str] = "LDP_ENV_HOTPOTQA_PROXY"
 
     shuffle_data: bool = Field(
         default=False, description="Set True to shuffle the dataset after loading."
@@ -507,7 +509,20 @@ class HotPotQAEnvConfig(BaseModel):
             "Note that not all splits have a 'level' field."
         ),
     )
-    proxy: str | None = None
+    proxy: str | None = Field(
+        default=None,
+        description=(
+            "Optional proxy URL to use, default is unused. If unspecified, the"
+            f" environment variable {PROXY_ENVIRON_VAR_NAME} will be checked."
+        ),
+    )
+
+    @field_validator("proxy")
+    @classmethod
+    def check_proxy_environ_var(cls, value: str | None) -> str | None:
+        if not value:
+            value = os.environ.get(cls.PROXY_ENVIRON_VAR_NAME, "") or None
+        return value
 
 
 class HotPotQADataset(TaskDataset[HotPotQAEnv]):
