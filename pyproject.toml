@@ -39,7 +39,6 @@ cloud = [
     "boto3",
 ]
 dev = [
-    "SQLAlchemy[aiosqlite]~=2.0",  # Match aviary dependencies
     "aviary.gsm8k[typing]",
     "aviary.hotpotqa",
     "fhaviary[image,llm,server,typing,xml]",
