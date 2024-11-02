@@ -39,9 +39,7 @@ jobs:
         with:
           enable-cache: true
       - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        run: |-
-          uv sync
-          uv pip install codeflash
+        run: uv sync --group=codeflash
       - name: Run CodeFlash on fhaviary
         if: steps.bot_check.outputs.skip_remaining_steps == 'no'
         run: uv run codeflash
