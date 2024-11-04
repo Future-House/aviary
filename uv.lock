@@ -173,7 +173,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.9.2.dev3+gb98e720"
+version = "0.9.2.dev5+g2b13aa1"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -196,7 +196,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.9.2.dev3+gb98e720"
+version = "0.9.2.dev5+g2b13aa1"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -395,12 +395,12 @@ name = "coredis"
 version = "4.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "async-timeout" },
-    { name = "deprecated" },
-    { name = "packaging" },
-    { name = "pympler" },
-    { name = "typing-extensions" },
-    { name = "wrapt" },
+    { name = "async-timeout", marker = "python_full_version < '3.13'" },
+    { name = "deprecated", marker = "python_full_version < '3.13'" },
+    { name = "packaging", marker = "python_full_version < '3.13'" },
+    { name = "pympler", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "wrapt", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ef/0c/0f2fb1cedd224666ef08e898447bb9cf4d1e98a86b03119f1c6513093ddc/coredis-4.17.0.tar.gz", hash = "sha256:04e9976e71a42004dfe19a862c648b4047bf813e15184cddfd3cb37eb704b83f", size = 243157 }
 wheels = [
@@ -456,7 +456,7 @@ name = "deprecated"
 version = "1.2.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "wrapt" },
+    { name = "wrapt", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/92/14/1e41f504a246fc224d2ac264c227975427a85caf37c3979979edb9b1b232/Deprecated-1.2.14.tar.gz", hash = "sha256:e5323eb936458dccc2582dc6f9c322c852a775a27065ff2b0c4970b9d53d01b3", size = 2974416 }
 wheels = [
@@ -542,7 +542,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.9.2.dev3+gb98e720"
+version = "0.9.2.dev5+g2b13aa1.d20241104"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -563,7 +563,8 @@ dev = [
     { name = "dicttoxml" },
     { name = "fastapi" },
     { name = "ipython" },
-    { name = "litellm" },
+    { name = "litellm", version = "1.48.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "litellm", version = "1.51.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
     { name = "mypy" },
     { name = "numpy" },
     { name = "pillow" },
@@ -594,10 +595,12 @@ image = [
     { name = "pillow" },
 ]
 llm = [
-    { name = "litellm" },
+    { name = "litellm", version = "1.48.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "litellm", version = "1.51.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
 ]
 paperqa = [
-    { name = "paper-qa" },
+    { name = "paper-qa", version = "5.0.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "paper-qa", version = "5.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
 ]
 server = [
     { name = "click" },
@@ -624,7 +627,8 @@ dev = [
     { name = "dicttoxml" },
     { name = "fastapi" },
     { name = "ipython" },
-    { name = "litellm" },
+    { name = "litellm", version = "1.48.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "litellm", version = "1.51.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
     { name = "mypy" },
     { name = "numpy" },
     { name = "pillow" },
@@ -662,7 +666,8 @@ requires-dist = [
     { name = "fhaviary", extras = ["image", "llm", "server", "typing", "xml"], marker = "extra == 'dev'", editable = "." },
     { name = "httpx" },
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
-    { name = "litellm", marker = "extra == 'llm'" },
+    { name = "litellm", marker = "python_full_version >= '3.13' and extra == 'llm'", specifier = ">=1.49.1" },
+    { name = "litellm", marker = "python_full_version < '3.13' and extra == 'llm'" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
     { name = "numpy", marker = "extra == 'typing'" },
     { name = "paper-qa", marker = "extra == 'paperqa'" },
@@ -1066,10 +1071,10 @@ name = "limits"
 version = "3.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "deprecated" },
-    { name = "importlib-resources" },
-    { name = "packaging" },
-    { name = "typing-extensions" },
+    { name = "deprecated", marker = "python_full_version < '3.13'" },
+    { name = "importlib-resources", marker = "python_full_version < '3.13'" },
+    { name = "packaging", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c4/5f/89fb5405ee37d8b172e48e357438dd79482731b0cd5db2f734ac58f019e4/limits-3.13.0.tar.gz", hash = "sha256:6571b0c567bfa175a35fed9f8a954c0c92f1c3200804282f1b8f1de4ad98a953", size = 70218 }
 wheels = [
@@ -1080,22 +1085,54 @@ wheels = [
 name = "litellm"
 version = "1.48.10"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.12' and platform_python_implementation == 'PyPy'",
+    "python_full_version < '3.12' and platform_python_implementation != 'PyPy'",
+    "python_full_version == '3.12.*' and platform_python_implementation == 'PyPy'",
+    "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy'",
+]
 dependencies = [
-    { name = "aiohttp" },
-    { name = "click" },
-    { name = "importlib-metadata" },
-    { name = "jinja2" },
-    { name = "jsonschema" },
-    { name = "openai" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "requests" },
-    { name = "tiktoken" },
-    { name = "tokenizers" },
+    { name = "aiohttp", marker = "python_full_version < '3.13'" },
+    { name = "click", marker = "python_full_version < '3.13'" },
+    { name = "importlib-metadata", marker = "python_full_version < '3.13'" },
+    { name = "jinja2", marker = "python_full_version < '3.13'" },
+    { name = "jsonschema", marker = "python_full_version < '3.13'" },
+    { name = "openai", version = "1.46.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "pydantic", marker = "python_full_version < '3.13'" },
+    { name = "python-dotenv", marker = "python_full_version < '3.13'" },
+    { name = "requests", marker = "python_full_version < '3.13'" },
+    { name = "tiktoken", marker = "python_full_version < '3.13'" },
+    { name = "tokenizers", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/8b/d7/ed47df9f2de3c1995516e309c20e750d40a0cd5f6639c11858cc3d7d0c4f/litellm-1.48.10.tar.gz", hash = "sha256:0a4ff75da78e66baeae0658ad8de498298310a5efda74c3d840ce2b013e8401d", size = 6037860 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fb/5b/b6eb2098ed289f99abb55ab966b4f318a467294c218ad846e96ba72949b0/litellm-1.48.10-py3-none-any.whl", hash = "sha256:752efd59747a0895f4695d025c66f0b2258d80a61175f7cfa41dbe4894ef95e1", size = 6238318 },
+]
+
+[[package]]
+name = "litellm"
+version = "1.51.3"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
+    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy'",
+]
+dependencies = [
+    { name = "aiohttp", marker = "python_full_version >= '3.13'" },
+    { name = "click", marker = "python_full_version >= '3.13'" },
+    { name = "importlib-metadata", marker = "python_full_version >= '3.13'" },
+    { name = "jinja2", marker = "python_full_version >= '3.13'" },
+    { name = "jsonschema", marker = "python_full_version >= '3.13'" },
+    { name = "openai", version = "1.53.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "pydantic", marker = "python_full_version >= '3.13'" },
+    { name = "python-dotenv", marker = "python_full_version >= '3.13'" },
+    { name = "requests", marker = "python_full_version >= '3.13'" },
+    { name = "tiktoken", marker = "python_full_version >= '3.13'" },
+    { name = "tokenizers", marker = "python_full_version >= '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/69/6e/b6460101ebe060ebfbc2460c66cd94c12bf81657220223c8fee5439232c6/litellm-1.51.3.tar.gz", hash = "sha256:31eff9fcbf7b058bac0fd7432c4ea0487e8555f12446a1f30e5862e33716f44d", size = 6108363 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b5/75/0a21c820ad8d519b54d2521e3e43794d1fdc46b6ef691c8963a1c9f30592/litellm-1.51.3-py3-none-any.whl", hash = "sha256:440d3c7cc5ab8eeb12cee8f4d806bff05b7db834ebc11117d7fa070a1142ced5", size = 6339183 },
 ]
 
 [[package]]
@@ -1368,19 +1405,48 @@ wheels = [
 name = "openai"
 version = "1.46.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.12' and platform_python_implementation == 'PyPy'",
+    "python_full_version < '3.12' and platform_python_implementation != 'PyPy'",
+    "python_full_version == '3.12.*' and platform_python_implementation == 'PyPy'",
+    "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy'",
+]
 dependencies = [
-    { name = "anyio" },
-    { name = "distro" },
-    { name = "httpx" },
-    { name = "jiter" },
-    { name = "pydantic" },
-    { name = "sniffio" },
-    { name = "tqdm" },
-    { name = "typing-extensions" },
+    { name = "anyio", marker = "python_full_version < '3.13'" },
+    { name = "distro", marker = "python_full_version < '3.13'" },
+    { name = "httpx", marker = "python_full_version < '3.13'" },
+    { name = "jiter", marker = "python_full_version < '3.13'" },
+    { name = "pydantic", marker = "python_full_version < '3.13'" },
+    { name = "sniffio", marker = "python_full_version < '3.13'" },
+    { name = "tqdm", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fc/6b/470673304605c4aa4ee899dbab6ea12f6a0844e3ee7970ce7ecae0c89aea/openai-1.46.1.tar.gz", hash = "sha256:e5cf7f268bf516de23686d496c9dae7f0dcdcd0e87af4d288deeab8329fcbbaf", size = 297547 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/da/14/aabc614d8c446cb32043ed397dd8536a8f4c43a92c6609c05a958be9b960/openai-1.46.1-py3-none-any.whl", hash = "sha256:7517f07117cf66012bbc55c49fd6b983eaac0f3d2a09c90cba1140d4455e4290", size = 375150 },
+]
+
+[[package]]
+name = "openai"
+version = "1.53.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
+    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy'",
+]
+dependencies = [
+    { name = "anyio", marker = "python_full_version >= '3.13'" },
+    { name = "distro", marker = "python_full_version >= '3.13'" },
+    { name = "httpx", marker = "python_full_version >= '3.13'" },
+    { name = "jiter", marker = "python_full_version >= '3.13'" },
+    { name = "pydantic", marker = "python_full_version >= '3.13'" },
+    { name = "sniffio", marker = "python_full_version >= '3.13'" },
+    { name = "tqdm", marker = "python_full_version >= '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version >= '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bc/4f/e3fdc4356769f4e6a51e07dfddcb1e895690187a07fed82cdd65638d215e/openai-1.53.1.tar.gz", hash = "sha256:04b8df362e7e2af75c8a3bcd105a5abb3837ce883e2fa3cb8d922cb8ee3515ac", size = 311146 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/f5/ffaefbbd0df4499ce1c3868b638086a9f012f0c36d18d2c3a3b512cd6187/openai-1.53.1-py3-none-any.whl", hash = "sha256:b26bc2d91eda8a9317ebecddfbd388b3698f89fa56d78672dd115a1ccc175722", size = 387470 },
 ]
 
 [[package]]
@@ -1448,28 +1514,65 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
+version = "5.0.7"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
+    "python_full_version >= '3.13' and platform_python_implementation != 'PyPy'",
+]
+dependencies = [
+    { name = "aiohttp", marker = "python_full_version >= '3.13'" },
+    { name = "anyio", marker = "python_full_version >= '3.13'" },
+    { name = "fhaviary", extra = ["llm"], marker = "python_full_version >= '3.13'" },
+    { name = "html2text", marker = "python_full_version >= '3.13'" },
+    { name = "httpx", marker = "python_full_version >= '3.13'" },
+    { name = "litellm", version = "1.51.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
+    { name = "numpy", marker = "python_full_version >= '3.13'" },
+    { name = "pybtex", marker = "python_full_version >= '3.13'" },
+    { name = "pydantic", marker = "python_full_version >= '3.13'" },
+    { name = "pydantic-settings", marker = "python_full_version >= '3.13'" },
+    { name = "pymupdf", marker = "python_full_version >= '3.13'" },
+    { name = "rich", marker = "python_full_version >= '3.13'" },
+    { name = "setuptools", marker = "python_full_version >= '3.13'" },
+    { name = "tantivy", marker = "python_full_version >= '3.13'" },
+    { name = "tenacity", marker = "python_full_version >= '3.13'" },
+    { name = "tiktoken", marker = "python_full_version >= '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/05/df/2631e79895cea99e56335e8b7e2e074d0ed0bd2d0794db6f525dd04b39a8/paper_qa-5.0.7.tar.gz", hash = "sha256:c7ed06343bbe3ccd6b13b9b93d0deaedcfaf0a814402ccca761e2f933c8e6b37", size = 2563086 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/e1/5e79599474d2c448ffb6ce22157016426a92d033d94cb2490310ee341fb5/paper_qa-5.0.7-py3-none-any.whl", hash = "sha256:a39f239cba526a7c5f80fc36820036e4c09c4e3b011cda6aa235b1bee04fbd2e", size = 500296 },
+]
+
+[[package]]
+name = "paper-qa"
 version = "5.3.2"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.12' and platform_python_implementation == 'PyPy'",
+    "python_full_version < '3.12' and platform_python_implementation != 'PyPy'",
+    "python_full_version == '3.12.*' and platform_python_implementation == 'PyPy'",
+    "python_full_version == '3.12.*' and platform_python_implementation != 'PyPy'",
+]
 dependencies = [
-    { name = "aiohttp" },
-    { name = "anyio" },
-    { name = "coredis" },
-    { name = "fhaviary", extra = ["llm"] },
-    { name = "html2text" },
-    { name = "httpx" },
-    { name = "limits" },
-    { name = "litellm" },
-    { name = "numpy" },
-    { name = "openai" },
-    { name = "pybtex" },
-    { name = "pydantic" },
-    { name = "pydantic-settings" },
-    { name = "pymupdf" },
-    { name = "rich" },
-    { name = "setuptools" },
-    { name = "tantivy" },
-    { name = "tenacity" },
-    { name = "tiktoken" },
+    { name = "aiohttp", marker = "python_full_version < '3.13'" },
+    { name = "anyio", marker = "python_full_version < '3.13'" },
+    { name = "coredis", marker = "python_full_version < '3.13'" },
+    { name = "fhaviary", extra = ["llm"], marker = "python_full_version < '3.13'" },
+    { name = "html2text", marker = "python_full_version < '3.13'" },
+    { name = "httpx", marker = "python_full_version < '3.13'" },
+    { name = "limits", marker = "python_full_version < '3.13'" },
+    { name = "litellm", version = "1.48.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "numpy", marker = "python_full_version < '3.13'" },
+    { name = "openai", version = "1.46.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "pybtex", marker = "python_full_version < '3.13'" },
+    { name = "pydantic", marker = "python_full_version < '3.13'" },
+    { name = "pydantic-settings", marker = "python_full_version < '3.13'" },
+    { name = "pymupdf", marker = "python_full_version < '3.13'" },
+    { name = "rich", marker = "python_full_version < '3.13'" },
+    { name = "setuptools", marker = "python_full_version < '3.13'" },
+    { name = "tantivy", marker = "python_full_version < '3.13'" },
+    { name = "tenacity", marker = "python_full_version < '3.13'" },
+    { name = "tiktoken", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/67/d1/5918fcf72cae7f7bda0e26197cc51d485f8892b4671d36cc396713d76b1a/paper_qa-5.3.2.tar.gz", hash = "sha256:dd0d170769f8a30dd884c0d74c08dca6794dba133a7b36fd4f5931341d0f1960", size = 2961045 }
 wheels = [
@@ -1847,7 +1950,7 @@ name = "pympler"
 version = "1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pywin32", marker = "platform_system == 'Windows'" },
+    { name = "pywin32", marker = "python_full_version < '3.13' and platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/dd/37/c384631908029676d8e7213dd956bb686af303a80db7afbc9be36bc49495/pympler-1.1.tar.gz", hash = "sha256:1eaa867cb8992c218430f1708fdaccda53df064144d1c5656b1e6f1ee6000424", size = 179954 }
 wheels = [
