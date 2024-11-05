@@ -22,7 +22,13 @@ from pydantic import (
 )
 
 from aviary.message import Message
-from aviary.tools import Tool, ToolCall, ToolRequestMessage, ToolResponseMessage
+from aviary.tools import (
+    Messages,
+    Tool,
+    ToolCall,
+    ToolRequestMessage,
+    ToolResponseMessage,
+)
 from aviary.utils import is_coroutine_callable
 
 logger = logging.getLogger(__name__)
@@ -88,7 +94,7 @@ class Environment(ABC, Generic[TEnvState]):
     @abstractmethod
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[list[Message], float, bool, bool]:
+    ) -> tuple[Messages, float, bool, bool]:
         """Take a step in the environment.
 
         Args:
@@ -101,7 +107,7 @@ class Environment(ABC, Generic[TEnvState]):
         """
 
     @abstractmethod
-    async def reset(self) -> tuple[list[Message], list[Tool]]:
+    async def reset(self) -> tuple[Messages, list[Tool]]:
         """
         Reset the environment and collect initial observation(s).
 
@@ -393,7 +399,7 @@ class TaskConfig(BaseModel):
 
 
 class DummyEnvState(BaseModel):
-    messages: list[Message]
+    messages: Messages
     reward: float = 0
     done: bool = False
 
@@ -413,12 +419,12 @@ class DummyEnv(Environment[DummyEnvState]):
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[list[Message], float, bool, bool]:
-        msgs: list[Message] = await self.exec_tool_calls(action, state=self.state)
+    ) -> tuple[Messages, float, bool, bool]:
+        msgs: Messages = await self.exec_tool_calls(action, state=self.state)
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
 
-    async def reset(self) -> tuple[list[Message], list[Tool]]:
+    async def reset(self) -> tuple[Messages, list[Tool]]:
         def print_story(story: str, state: DummyEnvState) -> None:  # noqa: ARG001
             """Print a story.
 
