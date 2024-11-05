@@ -32,6 +32,7 @@ from aviary.core import (
     EvalAnswerMode,
     Frame,
     Message,
+    Messages,
     TaskDataset,
     Tool,
     ToolRequestMessage,
@@ -236,7 +237,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             else self.incorrect_reward
         )
 
-    async def reset(self) -> tuple[list[Message], list[Tool]]:
+    async def reset(self) -> tuple[Messages, list[Tool]]:
         """Reset the HotPotQA environment to an initial state.
 
         This method resets the environment to its initial state, setting up necessary variables and tools
@@ -245,7 +246,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
         Returns:
             tuple: A tuple containing:
-                - list[Message]: The initial observation wrapped in a Message object.
+                - Messages: The initial observation wrapped in a Message object.
                 - list[Tool]: A list of tools (search, lookup, and submit_answer) available for the agent.
 
         Example:
@@ -261,7 +262,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[list[Message], float, bool, bool]:
+    ) -> tuple[Messages, float, bool, bool]:
         """Take a step in the environment. Assume only one tool at a time can be called for HotpotQA.
 
         This method processes an action message, which can be a tool request, a finish request, or an error message.
@@ -271,8 +272,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             action: Action to take.
 
         Returns:
-            Tuple[List[ToolResponseMessage], bool]: A tuple containing:
-                - list[ToolResponseMessage]: The response message(s) from the executed tool.
+            Tuple[Messages, bool]: A tuple containing:
+                - Messages: The response message(s) from the executed tool.
                 - bool: The done status indicating whether the episode is finished.
 
         Example:
@@ -310,7 +311,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         valid_action, invalid_action = self.filter_invalid_tool_calls(action)
         # NOTE: valid_action or invalid_action may have an empty list of tool calls
         response_messages = cast(
-            list[Message],
+            Messages,
             # Ordered since things like search -> lookup need to be run in order.
             # NOTE: Handling tool exceptions here keeps the trajectory going, but I don't
             # think the returned message is useful to the agent/learning. Disabling for now.

@@ -7,9 +7,16 @@ from typing import TYPE_CHECKING, ClassVar, Literal
 import datasets
 from pydantic import BaseModel, ConfigDict
 
-from aviary.env import Environment, Frame, TaskDataset
-from aviary.message import Message
-from aviary.tools import Tool, ToolRequestMessage, ToolResponseMessage
+from aviary.core import (
+    Environment,
+    Frame,
+    Message,
+    Messages,
+    TaskDataset,
+    Tool,
+    ToolRequestMessage,
+    ToolResponseMessage,
+)
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -54,13 +61,13 @@ class CalculatorEnv(Environment[None]):
     def from_task(cls, task: str) -> "CalculatorEnv":
         return cls(problem_id="task", problem=task, answer=0.0)
 
-    async def reset(self) -> tuple[list[Message], list[Tool]]:
+    async def reset(self) -> tuple[Messages, list[Tool]]:
         self.state = None  # this environment is effectively stateless
         return [Message(content=self.problem)], self.tools
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[list[Message], float, bool, bool]:
+    ) -> tuple[Messages, float, bool, bool]:
         if not action.tool_calls:
             return (
                 [
