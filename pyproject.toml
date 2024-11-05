@@ -12,6 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python",
 ]
 dependencies = [
@@ -57,9 +58,12 @@ image = [
     "Pillow",
 ]
 llm = [
-    "litellm",
+    'litellm; python_version < "3.13"',  # NOTE: paper-qa==5.3 doesn't support 3.13 yet
+    'litellm>=1.49.1; python_version >= "3.13"',  # For removal of imghdr
 ]
-paperqa = ["paper-qa"]
+paperqa = [
+    "paper-qa[ldp]>=5",  # Pin for LDP compatibility
+]
 server = [
     "click",
     "cloudpickle",
