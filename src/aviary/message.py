@@ -74,9 +74,7 @@ class Message(BaseModel):
             data["content"] = json.dumps(content)
             data["content_is_json_str"] = True
         except TypeError as e:
-            raise ValueError(
-                "Content must be a string or JSON-serializable."
-            ) from e
+            raise ValueError("Content must be a string or JSON-serializable.") from e
 
         return data
 
