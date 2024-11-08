@@ -242,7 +242,6 @@ class Environment(ABC, Generic[TEnvState]):
         call_ordering = [t.id for t in message.tool_calls]
         if handle_invalid_tool_calls:
             valid_action, invalid_action = self.filter_invalid_tool_calls(message)
-            print(valid_action)
             invalid_msgs = [
                 ToolResponseMessage.from_call(
                     tool_call, content=f"Invalid tool call: {tool_call.function.name}"
