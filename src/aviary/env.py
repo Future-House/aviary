@@ -250,7 +250,7 @@ class Environment(ABC, Generic[TEnvState]):
             ]
 
         if not ordered:
-            result = invalid_msgs + (
+            return invalid_msgs + (
                 await asyncio.gather(
                     *(
                         _exec_tool_call(tool_call)
@@ -258,11 +258,11 @@ class Environment(ABC, Generic[TEnvState]):
                     )
                 )
             )
-            return sorted(result, key=lambda x: call_ordering.index(x.tool_call_id))
 
-        return invalid_msgs + [
+        result = invalid_msgs + [
             await _exec_tool_call(tool_call) for tool_call in valid_action.tool_calls
         ]
+        return sorted(result, key=lambda x: call_ordering.index(x.tool_call_id))
 
     def export_frame(self) -> Frame:
         """
@@ -449,8 +449,7 @@ class DummyEnv(Environment[DummyEnvState]):
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
         msgs: Messages = await self.exec_tool_calls(
-            action,
-            state=self.state,
+            action, state=self.state, ordered=True
         )
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False

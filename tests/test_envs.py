@@ -195,7 +195,7 @@ async def test_multiple_calls(dummy_env: DummyEnv) -> None:
 
 @pytest.mark.asyncio
 async def test_invalid_tool_call(dummy_env: DummyEnv) -> None:
-    await dummy_env.reset()
+    _, tools = await dummy_env.reset()
 
     obs, *_ = await dummy_env.step(
         ToolRequestMessage(tool_calls=[ToolCall.from_name("invalid_tool")])
@@ -203,6 +203,18 @@ async def test_invalid_tool_call(dummy_env: DummyEnv) -> None:
     assert obs
     assert obs[0].content
     assert "Invalid tool call" in obs[0].content
+
+    # check that order is preserved even with invalid tool calls
+    tool_calls = [
+        ToolCall.from_name(tools[0].info.name, story="Hello, how are you?"),
+        ToolCall.from_name("invalid_tool"),
+        ToolCall.from_name("invalid_tool"),
+        ToolCall.from_name(tools[0].info.name, story="Hello, how are you?"),
+    ]
+    obs, *_ = await dummy_env.step(ToolRequestMessage(tool_calls=tool_calls))
+    assert obs
+    for o, t in zip(obs, tool_calls, strict=True):
+        assert o.tool_call_id == t.id
 
 
 class TestRendering:
