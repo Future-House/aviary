@@ -417,7 +417,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         if result_divs:  # mismatch
             result_titles = [clean_str(div.get_text().strip()) for div in result_divs]
             self.state.page = None
-            return f"Could not find {entity}. Similar: {result_titles[:5]}."
+            return f"Search for {entity!r} returned no results. Similar: {result_titles[:5]}."
 
         page = [p.get_text().strip() for p in soup.find_all("p") + soup.find_all("ul")]
         if any("may refer to:" in p for p in page):  # Recurse
