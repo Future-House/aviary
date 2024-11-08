@@ -65,11 +65,11 @@ class Message(BaseModel):
     def serialize_content(cls, data):
         if not (isinstance(data, dict) and "content" in data):
             return data
-        
+
         content = data["content"]
         if not content or isinstance(content, str):
             return data
-        
+
         try:
             data["content"] = json.dumps(content)
             data["content_is_json_str"] = True
