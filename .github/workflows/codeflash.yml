@@ -38,6 +38,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
+          version: 0.4.30
       - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
         run: uv sync --group=codeflash
       - name: Run CodeFlash on fhaviary
