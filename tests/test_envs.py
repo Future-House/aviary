@@ -195,7 +195,6 @@ async def test_multiple_calls(dummy_env: DummyEnv) -> None:
 
 @pytest.mark.asyncio
 async def test_invalid_tool_call(dummy_env: DummyEnv) -> None:
-    dummy_env.handle_invalid_tool_calls = True
     await dummy_env.reset()
 
     obs, *_ = await dummy_env.step(

@@ -437,11 +437,9 @@ class DummyEnv(Environment[DummyEnvState]):
         self,
         task: str | None = None,
         end_immediately: bool = True,
-        handle_invalid_tool_calls: bool = False,
     ):
         self.end_immediately = end_immediately
         self.task = task
-        self.handle_invalid_tool_calls = handle_invalid_tool_calls
 
     @classmethod
     def from_task(cls, task: str) -> DummyEnv:
@@ -453,7 +451,6 @@ class DummyEnv(Environment[DummyEnvState]):
         msgs: Messages = await self.exec_tool_calls(
             action,
             state=self.state,
-            handle_invalid_tool_calls=self.handle_invalid_tool_calls,
         )
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False

@@ -316,8 +316,6 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             await self.exec_tool_calls(
                 action,
                 ordered=True,
-                handle_tool_exc=False,
-                handle_invalid_tool_calls=True,
             ),
         )
         return response_messages, self.state.reward, self.state.done, False
