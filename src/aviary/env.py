@@ -157,7 +157,7 @@ class Environment(ABC, Generic[TEnvState]):
         message: ToolRequestMessage,
         ordered: bool = False,
         handle_tool_exc: bool = False,
-        handle_invalid_tool_calls: bool = False,
+        handle_invalid_tool_calls: bool = True,
         **function_kwargs,
     ) -> list[ToolResponseMessage]:
         """
@@ -169,7 +169,7 @@ class Environment(ABC, Generic[TEnvState]):
                 in the above message), otherwise tool calls are made concurrently.
             handle_tool_exc: Opt-in flag to suppress Exceptions and return them as a
                 ToolResponseMessage.
-            handle_invalid_tool_calls: Opt-in flag to handle invalid tool calls by returning
+            handle_invalid_tool_calls: Flag to handle invalid tool calls by returning
                 a ToolResponseMessage with a note that the tool requested doesn't exist
             **function_kwargs: Keyword arguments to pass to all tool functions.
 
@@ -239,6 +239,7 @@ class Environment(ABC, Generic[TEnvState]):
 
         invalid_msgs = []
         valid_action = message
+        call_ordering = [t.id for t in message.tool_calls]
         if handle_invalid_tool_calls:
             valid_action, invalid_action = self.filter_invalid_tool_calls(message)
             print(valid_action)
@@ -250,7 +251,7 @@ class Environment(ABC, Generic[TEnvState]):
             ]
 
         if not ordered:
-            return invalid_msgs + (
+            result = invalid_msgs + (
                 await asyncio.gather(
                     *(
                         _exec_tool_call(tool_call)
@@ -258,6 +259,8 @@ class Environment(ABC, Generic[TEnvState]):
                     )
                 )
             )
+            return sorted(result, key=lambda x: call_ordering.index(x.tool_call_id))
+
         return invalid_msgs + [
             await _exec_tool_call(tool_call) for tool_call in valid_action.tool_calls
         ]
