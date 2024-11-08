@@ -63,16 +63,21 @@ class Message(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def serialize_content(cls, data):
-        if isinstance(data, dict) and "content" in data:
-            content = data["content"]
-            if content is not None and not isinstance(content, str):
-                try:
-                    data["content"] = json.dumps(content)
-                    data["content_is_json_str"] = True
-                except TypeError as e:
-                    raise ValueError(
-                        "Content must be a string or JSON-serializable."
-                    ) from e
+        if not (isinstance(data, dict) and "content" in data):
+            return data
+        
+        content = data["content"]
+        if not content or isinstance(content, str):
+            return data
+        
+        try:
+            data["content"] = json.dumps(content)
+            data["content_is_json_str"] = True
+        except TypeError as e:
+            raise ValueError(
+                "Content must be a string or JSON-serializable."
+            ) from e
+
         return data
 
     def __str__(self) -> str:
