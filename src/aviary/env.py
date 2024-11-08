@@ -449,7 +449,9 @@ class DummyEnv(Environment[DummyEnvState]):
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
         msgs: Messages = await self.exec_tool_calls(
-            action, state=self.state, ordered=True
+            action,
+            state=self.state,
+            ordered=True,  # for unit tests
         )
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
