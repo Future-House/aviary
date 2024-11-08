@@ -56,7 +56,7 @@ class Renderer(BaseModel):
             for i, frame in enumerate(self.frames)
         }
 
-    def build(  # noqa: C901
+    def build(
         self,
         build_dir: str | os.PathLike,
         indent: int = 4,

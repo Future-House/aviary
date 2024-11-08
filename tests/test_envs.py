@@ -193,6 +193,19 @@ async def test_multiple_calls(dummy_env: DummyEnv) -> None:
     assert done
 
 
+@pytest.mark.asyncio
+async def test_invalid_tool_call(dummy_env: DummyEnv) -> None:
+    dummy_env.handle_invalid_tool_calls = True
+    await dummy_env.reset()
+
+    obs, *_ = await dummy_env.step(
+        ToolRequestMessage(tool_calls=[ToolCall.from_name("invalid_tool")])
+    )
+    assert obs
+    assert obs[0].content
+    assert "Invalid tool call" in obs[0].content
+
+
 class TestRendering:
     class SomeState(BaseModel):
         field: int
