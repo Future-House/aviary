@@ -67,7 +67,7 @@ def argref_wrapper(wrapper, wrapped, args_to_skip: set[str]):
     return wrapped_func
 
 
-def argref_by_name(  # noqa: C901, PLR0915
+def argref_by_name(  # noqa: PLR0915
     fxn_requires_state: bool = False,
     prefix: str = "",
     return_direct: bool = False,
@@ -120,8 +120,8 @@ def argref_by_name(  # noqa: C901, PLR0915
     """
     args_to_skip = (args_to_skip or set()) | {"state", "return"}
 
-    def decorator(func):  # noqa: C901, PLR0915
-        def get_call_args(*args, **kwargs):  # noqa: C901
+    def decorator(func):  # noqa: PLR0915
+        def get_call_args(*args, **kwargs):
             if "state" not in kwargs:
                 raise ValueError(
                     "argref_by_name decorated function must have a 'state' argument."
@@ -316,7 +316,7 @@ def _type_to_str(t) -> str:
     return str(t)
 
 
-def _isinstance_with_generics(obj, expected_type) -> bool:  # noqa: C901, PLR0911
+def _isinstance_with_generics(obj, expected_type) -> bool:  # noqa: PLR0911
     """Like isinstance, but with support for generics."""
     origin = get_origin(expected_type)
     if origin is None:

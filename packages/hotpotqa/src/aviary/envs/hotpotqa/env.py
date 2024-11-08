@@ -37,7 +37,6 @@ from aviary.core import (
     TaskDataset,
     Tool,
     ToolRequestMessage,
-    ToolResponseMessage,
     eval_answer,
 )
 
@@ -309,20 +308,15 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
         # We accumulate reward across all tool calls in a step
         self.state.reward = 0.0
-        valid_action, invalid_action = self.filter_invalid_tool_calls(action)
-        # NOTE: valid_action or invalid_action may have an empty list of tool calls
         response_messages = cast(
             Messages,
             # Ordered since things like search -> lookup need to be run in order.
             # NOTE: Handling tool exceptions here keeps the trajectory going, but I don't
             # think the returned message is useful to the agent/learning. Disabling for now.
             await self.exec_tool_calls(
-                valid_action, ordered=True, handle_tool_exc=False
-            )
-            + [
-                ToolResponseMessage.from_call(tool_call, content="Invalid tool call.")
-                for tool_call in invalid_action.tool_calls
-            ],
+                action,
+                ordered=True,
+            ),
         )
         return response_messages, self.state.reward, self.state.done, False
 
@@ -417,7 +411,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         if result_divs:  # mismatch
             result_titles = [clean_str(div.get_text().strip()) for div in result_divs]
             self.state.page = None
-            return f"Could not find {entity}. Similar: {result_titles[:5]}."
+            return f"Search for {entity!r} returned no results. Similar: {result_titles[:5]}."
 
         page = [p.get_text().strip() for p in soup.find_all("p") + soup.find_all("ul")]
         if any("may refer to:" in p for p in page):  # Recurse

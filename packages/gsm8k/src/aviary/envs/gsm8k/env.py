@@ -91,7 +91,12 @@ class CalculatorEnv(Environment[None]):
         ]
 
         if valid_action.tool_calls:
-            results = await self.exec_tool_calls(valid_action)
+            # TODO: Just let exec_tool_calls handle invalid tool calls
+            # once someone can take a closer look at what response, reward, done
+            # would be in that case.
+            results = await self.exec_tool_calls(
+                valid_action, handle_invalid_tool_calls=False
+            )
             response_msgs = []
             total_reward = 0.0
             any_done = False

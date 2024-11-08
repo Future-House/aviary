@@ -157,6 +157,7 @@ class Environment(ABC, Generic[TEnvState]):
         message: ToolRequestMessage,
         ordered: bool = False,
         handle_tool_exc: bool = False,
+        handle_invalid_tool_calls: bool = True,
         **function_kwargs,
     ) -> list[ToolResponseMessage]:
         """
@@ -168,6 +169,8 @@ class Environment(ABC, Generic[TEnvState]):
                 in the above message), otherwise tool calls are made concurrently.
             handle_tool_exc: Opt-in flag to suppress Exceptions and return them as a
                 ToolResponseMessage.
+            handle_invalid_tool_calls: Flag to handle invalid tool calls by returning
+                a ToolResponseMessage with a note that the tool requested doesn't exist
             **function_kwargs: Keyword arguments to pass to all tool functions.
 
         Returns:
@@ -234,11 +237,32 @@ class Environment(ABC, Generic[TEnvState]):
                 s_content = json.dumps(content)
             return ToolResponseMessage.from_call(tool_call, content=s_content)
 
+        invalid_responses = []
+        valid_action = message
+        call_ordering = [t.id for t in message.tool_calls]
+        if handle_invalid_tool_calls:
+            valid_action, invalid_action = self.filter_invalid_tool_calls(message)
+            invalid_responses = [
+                ToolResponseMessage.from_call(
+                    tool_call, content=f"Invalid tool call: {tool_call.function.name}"
+                )
+                for tool_call in invalid_action.tool_calls
+            ]
+
         if not ordered:
-            return await asyncio.gather(
-                *(_exec_tool_call(tool_call) for tool_call in message.tool_calls)
+            return invalid_responses + (
+                await asyncio.gather(
+                    *(
+                        _exec_tool_call(tool_call)
+                        for tool_call in valid_action.tool_calls
+                    )
+                )
             )
-        return [await _exec_tool_call(tool_call) for tool_call in message.tool_calls]
+
+        result = invalid_responses + [
+            await _exec_tool_call(tool_call) for tool_call in valid_action.tool_calls
+        ]
+        return sorted(result, key=lambda x: call_ordering.index(x.tool_call_id))
 
     def export_frame(self) -> Frame:
         """
@@ -409,7 +433,11 @@ class DummyEnv(Environment[DummyEnvState]):
 
     State = DummyEnvState
 
-    def __init__(self, task: str | None = None, end_immediately: bool = True):
+    def __init__(
+        self,
+        task: str | None = None,
+        end_immediately: bool = True,
+    ):
         self.end_immediately = end_immediately
         self.task = task
 
@@ -420,7 +448,11 @@ class DummyEnv(Environment[DummyEnvState]):
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
-        msgs: Messages = await self.exec_tool_calls(action, state=self.state)
+        msgs: Messages = await self.exec_tool_calls(
+            action,
+            state=self.state,
+            ordered=True,  # for unit tests
+        )
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
 

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, create_model
 from aviary.tools.base import Tool, ToolCall, ToolRequestMessage, reverse_type_map
 
 
-async def make_tool_server(  # noqa: C901, PLR0915
+async def make_tool_server(  # noqa: PLR0915
     environment_factory: Callable,
     name: str = "Aviary Tool Server",
     env_path: Path | None = None,
