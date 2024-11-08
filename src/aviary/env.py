@@ -237,12 +237,12 @@ class Environment(ABC, Generic[TEnvState]):
                 s_content = json.dumps(content)
             return ToolResponseMessage.from_call(tool_call, content=s_content)
 
-        invalid_msgs = []
+        invalid_responses = []
         valid_action = message
         call_ordering = [t.id for t in message.tool_calls]
         if handle_invalid_tool_calls:
             valid_action, invalid_action = self.filter_invalid_tool_calls(message)
-            invalid_msgs = [
+            invalid_responses = [
                 ToolResponseMessage.from_call(
                     tool_call, content=f"Invalid tool call: {tool_call.function.name}"
                 )
@@ -250,7 +250,7 @@ class Environment(ABC, Generic[TEnvState]):
             ]
 
         if not ordered:
-            return invalid_msgs + (
+            return invalid_responses + (
                 await asyncio.gather(
                     *(
                         _exec_tool_call(tool_call)
@@ -259,7 +259,7 @@ class Environment(ABC, Generic[TEnvState]):
                 )
             )
 
-        result = invalid_msgs + [
+        result = invalid_responses + [
             await _exec_tool_call(tool_call) for tool_call in valid_action.tool_calls
         ]
         return sorted(result, key=lambda x: call_ordering.index(x.tool_call_id))
