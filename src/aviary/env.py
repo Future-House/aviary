@@ -250,19 +250,17 @@ class Environment(ABC, Generic[TEnvState]):
             ]
 
         if not ordered:
-            return invalid_responses + (
-                await asyncio.gather(
-                    *(
-                        _exec_tool_call(tool_call)
-                        for tool_call in valid_action.tool_calls
-                    )
-                )
+            valid_responses = await asyncio.gather(
+                *(_exec_tool_call(tc) for tc in valid_action.tool_calls)
             )
-
-        result = invalid_responses + [
-            await _exec_tool_call(tool_call) for tool_call in valid_action.tool_calls
-        ]
-        return sorted(result, key=lambda x: call_ordering.index(x.tool_call_id))
+        else:
+            valid_responses = [
+                await _exec_tool_call(tc) for tc in valid_action.tool_calls
+            ]
+        return sorted(
+            invalid_responses + valid_responses,
+            key=lambda x: call_ordering.index(x.tool_call_id),
+        )
 
     def export_frame(self) -> Frame:
         """
