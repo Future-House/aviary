@@ -3,6 +3,7 @@ import json
 import pathlib
 import re
 import tempfile
+import time
 from typing import ClassVar
 
 import litellm
@@ -193,9 +194,19 @@ async def test_multiple_calls(dummy_env: DummyEnv) -> None:
     assert done
 
 
+@pytest.mark.parametrize("concurrent_tool_calls", [False, True])
 @pytest.mark.asyncio
-async def test_invalid_tool_call(dummy_env: DummyEnv) -> None:
+async def test_invalid_tool_call(
+    dummy_env: DummyEnv, concurrent_tool_calls: bool
+) -> None:
+    def sleep(duration: float) -> None:
+        """Sleep for the input duration in seconds."""
+        time.sleep(duration)
+
+    sleep_tool = Tool.from_function(sleep, allow_empty_param_descriptions=True)
     _, tools = await dummy_env.reset()
+    dummy_env.tools.append(sleep_tool)
+    dummy_env.concurrent_tool_calls = concurrent_tool_calls
 
     obs, *_ = await dummy_env.step(
         ToolRequestMessage(tool_calls=[ToolCall.from_name("invalid_tool")])
@@ -206,12 +217,17 @@ async def test_invalid_tool_call(dummy_env: DummyEnv) -> None:
 
     # check that order is preserved even with invalid tool calls
     tool_calls = [
-        ToolCall.from_name(tools[0].info.name, story="Hello, how are you?"),
+        ToolCall.from_tool(sleep_tool, duration=0.1),
         ToolCall.from_name("invalid_tool"),
         ToolCall.from_name("invalid_tool"),
-        ToolCall.from_name(tools[0].info.name, story="Hello, how are you?"),
+        ToolCall.from_tool(sleep_tool, duration=0.1),
     ]
+    tic = time.perf_counter()
     obs, *_ = await dummy_env.step(ToolRequestMessage(tool_calls=tool_calls))
+    if concurrent_tool_calls:
+        assert time.perf_counter() - tic < 0.15
+    else:
+        assert time.perf_counter() - tic > 0.15
     assert obs
     for o, t in zip(obs, tool_calls, strict=True):
         assert o.tool_call_id == t.id

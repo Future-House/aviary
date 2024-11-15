@@ -155,7 +155,7 @@ class Environment(ABC, Generic[TEnvState]):
     async def exec_tool_calls(
         self,
         message: ToolRequestMessage,
-        ordered: bool = False,
+        concurrency: bool = True,
         handle_tool_exc: bool = False,
         handle_invalid_tool_calls: bool = True,
         **function_kwargs,
@@ -165,8 +165,8 @@ class Environment(ABC, Generic[TEnvState]):
 
         Args:
             message: ToolRequestMessage containing the tool calls.
-            ordered: Opt-in flag for forcing sequential execution (according to order
-                in the above message), otherwise tool calls are made concurrently.
+            concurrency: Flag to set True (default) to concurrently execute tool calls,
+                otherwise set False to execute tools sequentially.
             handle_tool_exc: Opt-in flag to suppress Exceptions and return them as a
                 ToolResponseMessage.
             handle_invalid_tool_calls: Flag to handle invalid tool calls by returning
@@ -249,7 +249,7 @@ class Environment(ABC, Generic[TEnvState]):
                 for tool_call in invalid_action.tool_calls
             ]
 
-        if not ordered:
+        if concurrency:
             valid_responses = await asyncio.gather(
                 *(_exec_tool_call(tc) for tc in valid_action.tool_calls)
             )
@@ -435,9 +435,11 @@ class DummyEnv(Environment[DummyEnvState]):
         self,
         task: str | None = None,
         end_immediately: bool = True,
+        concurrent_tool_calls: bool = True,
     ):
         self.end_immediately = end_immediately
         self.task = task
+        self.concurrent_tool_calls = concurrent_tool_calls
 
     @classmethod
     def from_task(cls, task: str) -> DummyEnv:
@@ -447,9 +449,7 @@ class DummyEnv(Environment[DummyEnvState]):
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
         msgs: Messages = await self.exec_tool_calls(
-            action,
-            state=self.state,
-            ordered=True,  # for unit tests
+            action, state=self.state, concurrency=self.concurrent_tool_calls
         )
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
