@@ -130,8 +130,8 @@ class TaskDatasetServer(Generic[TEnvironment], TaskDataset[TEnvironment]):
         async def close(req: EnvRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
-                # even if env.close() fails, untrack this. the most likely
-                # situation is that the container is already down
+                # Even if env.close() fails, untrack this. It is more likely that
+                # the env crashed, not that we somehow lost track of it.
                 del self.envs[req.env_id]
 
                 with handle_exc_as_http_exc():
