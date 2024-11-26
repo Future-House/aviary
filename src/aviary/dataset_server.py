@@ -48,11 +48,7 @@ TEnvironment = TypeVar("TEnvironment", bound=Environment)
 
 
 class TaskDatasetServer(Generic[TEnvironment], TaskDataset[TEnvironment]):
-    def __init__(
-        self,
-        host: str = BIND_ALL_HOST,
-        port: int = DEFAULT_SERVER_PORT,
-    ):
+    def __init__(self, host: str = BIND_ALL_HOST, port: int = DEFAULT_SERVER_PORT):
         if FastAPI is None:
             raise ImportError(
                 "FastAPI is required to run a TaskDatasetServer. "
