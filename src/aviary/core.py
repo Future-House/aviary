@@ -1,3 +1,4 @@
+from aviary.dataset_server import TaskDatasetServer
 from aviary.env import (
     TASK_DATASET_REGISTRY,
     DummyEnv,
@@ -8,7 +9,12 @@ from aviary.env import (
     TaskConfig,
     TaskDataset,
 )
-from aviary.env_client import EnvironmentClient
+from aviary.env_client import (
+    EnvironmentClient,
+    TaskDatasetClient,
+    TaskEnvClientState,
+    TaskEnvironmentClient,
+)
 from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
 from aviary.render import Renderer
 from aviary.tools import (
@@ -53,6 +59,10 @@ __all__ = [
     "Renderer",
     "TaskConfig",
     "TaskDataset",
+    "TaskDatasetClient",
+    "TaskDatasetServer",
+    "TaskEnvClientState",
+    "TaskEnvironmentClient",
     "Tool",
     "ToolCall",
     "ToolCallFunction",

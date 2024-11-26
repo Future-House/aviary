@@ -429,22 +429,21 @@ class TestParallelism:
         assert tool_request_message.info["model"], "Expected model name"
 
 
-@pytest_asyncio.fixture
-async def server_async_client():
+@pytest_asyncio.fixture(scope="function")
+async def server_async_client() -> AsyncClient:
     server = DummyTaskDatasetServer()
-    async with AsyncClient(app=server.app, base_url="http://test") as client:
-        yield client
+    return AsyncClient(app=server.app, base_url="http://test")
 
 
 class TestDummyTaskDatasetServer:
     @pytest.mark.asyncio
-    async def test_start(self, server_async_client):
+    async def test_start(self, server_async_client: AsyncClient):
         response = await server_async_client.post("/start", json={})
         assert response.status_code == 200
         assert "env_id" in response.json()
 
     @pytest.mark.asyncio
-    async def test_reset_and_step(self, server_async_client):
+    async def test_reset_and_step(self, server_async_client: AsyncClient):
         # First, start a new environment
         start_resp = await server_async_client.post("/start", json={})
         env_id = start_resp.json()["env_id"]
@@ -475,7 +474,7 @@ class TestDummyTaskDatasetServer:
         assert isinstance(truncated, bool)
 
     @pytest.mark.asyncio
-    async def test_close(self, server_async_client):
+    async def test_close(self, server_async_client: AsyncClient):
         # Start a new environment
         start_resp = await server_async_client.post("/start", json={})
         env_id = start_resp.json()["env_id"]
@@ -486,7 +485,7 @@ class TestDummyTaskDatasetServer:
         assert response.json()["env_id"] == env_id
 
     @pytest.mark.asyncio
-    async def test_close_old_envs(self, server_async_client):
+    async def test_close_old_envs(self, server_async_client: AsyncClient):
         # Start a new environment
         await server_async_client.post("/start", json={})
 
@@ -498,7 +497,7 @@ class TestDummyTaskDatasetServer:
         assert "closed_env_ids" in response.json()
 
     @pytest.mark.asyncio
-    async def test_info(self, server_async_client):
+    async def test_info(self, server_async_client: AsyncClient):
         response = await server_async_client.get("/info")
         assert response.status_code == 200
         data = response.json()
