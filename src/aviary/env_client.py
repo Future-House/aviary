@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 TEnvState = TypeVar("TEnvState")
 
 
-class EnvironmentClient(Generic[TEnvState], Environment[TEnvState], ABC):
+class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     def __init__(
         self,
         reset_endpoint_url: str,
@@ -130,7 +130,7 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
     ):
         self.server_url = server_url
         self.request_timeout = request_timeout
-        self._len: int | None | object = UNSET_LEN
+        self._len: int | object | None = UNSET_LEN
 
     @classmethod
     async def create(cls, *args, **kwargs) -> Self:

@@ -10,7 +10,7 @@ from typing import Generic, TypeVar
 import uvicorn
 from pydantic import BaseModel, Field
 
-from aviary.env import DummyEnv, DummyTaskDataset, Environment, TaskDataset
+from aviary.env import Environment, TaskDataset
 from aviary.tools import MessagesAdapter, ToolRequestMessage, ToolsAdapter
 
 try:
@@ -47,14 +47,20 @@ BIND_ALL_HOST = "0.0.0.0"  # noqa: S104
 TEnvironment = TypeVar("TEnvironment", bound=Environment)
 
 
-class TaskDatasetServer(Generic[TEnvironment], TaskDataset[TEnvironment]):
-    def __init__(self, host: str = BIND_ALL_HOST, port: int = DEFAULT_SERVER_PORT):
+class TaskDatasetServer(Generic[TEnvironment]):
+    def __init__(
+        self,
+        dataset: TaskDataset[TEnvironment],
+        host: str = BIND_ALL_HOST,
+        port: int = DEFAULT_SERVER_PORT,
+    ):
         if FastAPI is None:
             raise ImportError(
                 "FastAPI is required to run a TaskDatasetServer. "
                 "Please `pip install aviary[server]`."
             )
 
+        self.dataset = dataset
         self.host = host
         self.port = port
 
@@ -93,9 +99,9 @@ class TaskDatasetServer(Generic[TEnvironment], TaskDataset[TEnvironment]):
         async def start(req: StartRequest):
             with handle_exc_as_http_exc():
                 if req.task is None:
-                    env = await asyncio.to_thread(self.get_new_env)
+                    env = await asyncio.to_thread(self.dataset.get_new_env)
                 else:
-                    env = await asyncio.to_thread(self.get_env_by_idx, req.task)
+                    env = await asyncio.to_thread(self.dataset.get_env_by_idx, req.task)
 
             async with self.lock:
                 env_id = str(uuid.uuid4())
@@ -168,7 +174,7 @@ class TaskDatasetServer(Generic[TEnvironment], TaskDataset[TEnvironment]):
         @self.app.get("/info")
         def info():
             try:
-                dataset_len: int | None = len(self)
+                dataset_len: int | None = len(self.dataset)
             except TypeError:
                 dataset_len = None
             return {
@@ -194,7 +200,3 @@ def handle_exc_as_http_exc():
         raise HTTPException(
             status_code=500, detail=traceback.format_exc() + "\n" + repr(e)
         ) from None
-
-
-class DummyTaskDatasetServer(TaskDatasetServer[DummyEnv], DummyTaskDataset):
-    """Used for unit tests."""

@@ -28,7 +28,7 @@ from aviary.core import (
     ToolSelector,
     ToolSelectorLedger,
 )
-from aviary.dataset_server import DummyTaskDatasetServer
+from aviary.dataset_server import TaskDatasetServer
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
@@ -431,11 +431,12 @@ class TestParallelism:
 
 @pytest_asyncio.fixture(scope="function")
 async def server_async_client() -> AsyncClient:
-    server = DummyTaskDatasetServer()
+    dataset = TaskDataset.from_name("dummy")
+    server = TaskDatasetServer[DummyEnv](dataset)
     return AsyncClient(app=server.app, base_url="http://test")
 
 
-class TestDummyTaskDatasetServer:
+class TestTaskDatasetServer:
     @pytest.mark.asyncio
     async def test_start(self, server_async_client: AsyncClient):
         response = await server_async_client.post("/start", json={})
