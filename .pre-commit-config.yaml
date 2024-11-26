@@ -19,13 +19,13 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.1
+    rev: v0.8.0
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.3.3
+    rev: v3.4.0
     hooks:
       - id: prettier
   - repo: https://github.com/Yelp/detect-secrets
@@ -48,7 +48,7 @@ repos:
         additional_dependencies: [".[toml]"]
         exclude_types: [jupyter]
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.23.1
+    rev: v0.24.2
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/jsh9/markdown-toc-creator
@@ -64,12 +64,10 @@ repos:
     hooks:
       - id: nb-clean
         args: [--preserve-cell-outputs, --remove-empty-cells]
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.22
+  - repo: https://github.com/henryiii/validate-pyproject-schema-store
+    rev: 2024.11.25
     hooks:
       - id: validate-pyproject
-        additional_dependencies:
-          - "validate-pyproject-schema-store[all]>=2024.08.19" # For Ruff renaming RUF025 to C420
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.4.29
     hooks:
