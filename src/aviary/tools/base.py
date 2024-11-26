@@ -379,7 +379,7 @@ class Tool(BaseModel):
             #    Hence, this is second in resolution order.
             field_definitions[pname] = (
                 annotations.get(pname) or parameter.annotation or type(None),
-                Field(**field_config),  # type: ignore[pydantic-field]
+                Field(**field_config),
             )
 
         json_schema = create_model(  # type: ignore[call-overload]
