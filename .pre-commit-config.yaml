@@ -64,12 +64,10 @@ repos:
     hooks:
       - id: nb-clean
         args: [--preserve-cell-outputs, --remove-empty-cells]
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.22
+  - repo: https://github.com/henryiii/validate-pyproject-schema-store
+    rev: 2024.11.25
     hooks:
       - id: validate-pyproject
-        additional_dependencies:
-          - "validate-pyproject-schema-store[all]>=2024.08.19" # For Ruff renaming RUF025 to C420
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.4.29
     hooks:
