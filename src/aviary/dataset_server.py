@@ -78,9 +78,8 @@ class TaskDatasetServer(Generic[TEnvironment]):
             raise HTTPException(
                 status_code=404, detail=f"Environment {env_id} not found"
             ) from None
-        else:
-            self.envs[env_id] = (env, time.time())
-            return env
+        self.envs[env_id] = (env, time.time())
+        return env
 
     async def close(self):
         await asyncio.gather(*[
