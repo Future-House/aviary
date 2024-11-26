@@ -462,7 +462,7 @@ class DummyEnv(Environment[DummyEnvState]):
                 story: Story to print.
                 state: Environment state.
             """
-            state.reward = 1
+            state.reward = 1.0
             state.done = self.end_immediately
 
         def cast_float(x: str) -> float:

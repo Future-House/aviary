@@ -7,6 +7,8 @@ from typing import ClassVar
 
 import litellm
 import pytest
+import pytest_asyncio
+from httpx import AsyncClient
 from pydantic import BaseModel
 from pytest_subtests import SubTests
 
@@ -26,6 +28,7 @@ from aviary.core import (
     ToolSelector,
     ToolSelectorLedger,
 )
+from aviary.dataset_server import DummyTaskDatasetServer
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
@@ -424,3 +427,82 @@ class TestParallelism:
         assert tool_request_message.info, "Expected message info"
         assert tool_request_message.info["usage"][0] > 0, "Expected prompt tokens"
         assert tool_request_message.info["model"], "Expected model name"
+
+
+@pytest_asyncio.fixture
+async def server_async_client():
+    server = DummyTaskDatasetServer()
+    async with AsyncClient(app=server.app, base_url="http://test") as client:
+        yield client
+
+
+class TestDummyTaskDatasetServer:
+    @pytest.mark.asyncio
+    async def test_start(self, server_async_client):
+        response = await server_async_client.post("/start", json={})
+        assert response.status_code == 200
+        assert "env_id" in response.json()
+
+    @pytest.mark.asyncio
+    async def test_reset_and_step(self, server_async_client):
+        # First, start a new environment
+        start_resp = await server_async_client.post("/start", json={})
+        env_id = start_resp.json()["env_id"]
+
+        # Now, reset the environment
+        response = await server_async_client.post("/reset", json={"env_id": env_id})
+        assert response.status_code == 200
+        obs, tools = response.json()
+        assert isinstance(obs, list)
+        assert isinstance(tools, list)
+
+        # Define an action
+        action = ToolRequestMessage(
+            tool_calls=[
+                ToolCall.from_name("print_story", story="Once upon a time done")
+            ]
+        )
+
+        # Perform a step
+        response = await server_async_client.post(
+            "/step", json={"env_id": env_id, "action": action.model_dump()}
+        )
+        assert response.status_code == 200
+        obs, reward, done, truncated = response.json()
+        assert isinstance(obs, list)
+        assert isinstance(reward, float)
+        assert isinstance(done, bool)
+        assert isinstance(truncated, bool)
+
+    @pytest.mark.asyncio
+    async def test_close(self, server_async_client):
+        # Start a new environment
+        start_resp = await server_async_client.post("/start", json={})
+        env_id = start_resp.json()["env_id"]
+
+        # Close the environment
+        response = await server_async_client.post("/close", json={"env_id": env_id})
+        assert response.status_code == 200
+        assert response.json()["env_id"] == env_id
+
+    @pytest.mark.asyncio
+    async def test_close_old_envs(self, server_async_client):
+        # Start a new environment
+        await server_async_client.post("/start", json={})
+
+        # Close environments not used in the last 0 seconds
+        response = await server_async_client.post(
+            "/close_old_envs", json={"last_used": 0}
+        )
+        assert response.status_code == 200
+        assert "closed_env_ids" in response.json()
+
+    @pytest.mark.asyncio
+    async def test_info(self, server_async_client):
+        response = await server_async_client.get("/info")
+        assert response.status_code == 200
+        data = response.json()
+        assert data == {
+            "dataset_size": None,
+            "running_env_ids": [],
+        }
