@@ -110,7 +110,7 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
             response = await client.post(
                 self._close_request_url,
                 json={"env_id": self.state.env_id},
-                timeout=self.short_timeout,
+                timeout=self._request_timeout,
             )
             response.raise_for_status()
             return response.json()
