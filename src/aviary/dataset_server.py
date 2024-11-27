@@ -189,6 +189,13 @@ class TaskDatasetServer(Generic[TEnvironment]):
             log_level="debug",
         )
 
+    async def astart(self):
+        config = uvicorn.Config(
+            self.app, host=self.host, port=self.port, log_level="debug"
+        )
+        server = uvicorn.Server(config)
+        await server.serve()
+
 
 @contextmanager
 def handle_exc_as_http_exc():
