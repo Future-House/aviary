@@ -87,3 +87,5 @@ repos:
           - tenacity
           - types-Pillow
           - pandas-stubs
+          - fastapi
+          - uvicorn
