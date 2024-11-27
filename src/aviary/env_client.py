@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Self, TypeVar, cast
 
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
 from aviary.message import Message
@@ -68,7 +68,9 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
 
 
 class TaskEnvClientState(BaseModel):
-    env_id: str
+    env_id: str = Field(
+        description="The ID of the environment (provided by server on start)."
+    )
 
 
 class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):

@@ -80,6 +80,7 @@ repos:
           - boto3-stubs[s3]
           - datasets
           - docstring_parser>=0.16 # Match aviary pyproject.toml
+          - fastapi
           - httpx
           - litellm
           - numpy
@@ -87,5 +88,4 @@ repos:
           - tenacity
           - types-Pillow
           - pandas-stubs
-          - fastapi
           - uvicorn
