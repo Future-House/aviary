@@ -310,13 +310,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         self.state.reward = 0.0
         response_messages = cast(
             Messages,
-            # Ordered since things like search -> lookup need to be run in order.
+            # Non-concurrent since things like search -> lookup need to be run in order.
             # NOTE: Handling tool exceptions here keeps the trajectory going, but I don't
             # think the returned message is useful to the agent/learning. Disabling for now.
-            await self.exec_tool_calls(
-                action,
-                ordered=True,
-            ),
+            await self.exec_tool_calls(action, concurrency=False),
         )
         return response_messages, self.state.reward, self.state.done, False
 
