@@ -17,7 +17,7 @@ try:
     from fastapi import FastAPI, HTTPException
 except ImportError:
     # We will raise if a TaskDatasetServer is instantiated but fastapi is not available
-    FastAPI = HTTPException = None
+    FastAPI = HTTPException = None  # type: ignore[misc,assignment]
 
 logger = logging.getLogger(__name__)
 
