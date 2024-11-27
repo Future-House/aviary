@@ -100,7 +100,9 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 if req.task is None:
                     env = await asyncio.to_thread(self.dataset.get_new_env)
                 else:
-                    env = await asyncio.to_thread(self.dataset.get_env_by_idx, req.task)
+                    env = await asyncio.to_thread(
+                        self.dataset.get_new_env_by_idx, req.task
+                    )
 
             async with self.lock:
                 env_id = str(uuid.uuid4())
