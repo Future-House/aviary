@@ -107,7 +107,7 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
         response = await self._post(
             self._close_request_url, json=self._make_post_json(self.state)
         )
-        return response.json()
+        return response.json()  # noqa: FURB184
 
     def _make_post_json(self, state: TaskEnvClientState) -> dict[str, Any]:
         return {"env_id": state.env_id}
@@ -120,18 +120,22 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
     def __init__(
         self,
         server_url: str,
-        request_timeout: float | None = None,
+        # Note that None means no timeout, which is not a good default
+        request_timeout: float | None = 300.0,
     ):
         self.server_url = server_url
         self.request_timeout = request_timeout
         self._len: int | object | None = UNSET_LEN
+
+    def get_http_client(self) -> httpx.AsyncClient:
+        return httpx.AsyncClient(base_url=self.server_url, timeout=self.request_timeout)
 
     @classmethod
     async def create(cls, *args, **kwargs) -> Self:
         # We need to make an async request to the server to get the dataset size,
         # so provide this classmethod to instantiate the client & get the size.
         client = cls(*args, **kwargs)
-        async with httpx.AsyncClient(base_url=client.server_url) as http_client:
+        async with client.get_http_client() as http_client:
             client._len = (await http_client.get("/info")).json()["dataset_size"]
         return client
 
