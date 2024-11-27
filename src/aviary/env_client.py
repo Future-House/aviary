@@ -88,7 +88,7 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self._start_request_url,
-                json={"task": self._idx},
+                json={"task_idx": self._idx},
                 timeout=self._request_timeout,
             )
             response.raise_for_status()

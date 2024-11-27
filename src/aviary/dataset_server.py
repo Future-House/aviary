@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class StartRequest(BaseModel):
-    task: int | None = None
+    task_idx: int | None = None
 
 
 class EnvRequest(BaseModel):
@@ -97,11 +97,11 @@ class TaskDatasetServer(Generic[TEnvironment]):
         @self.app.post("/start")
         async def start(req: StartRequest):
             with handle_exc_as_http_exc():
-                if req.task is None:
+                if req.task_idx is None:
                     env = await asyncio.to_thread(self.dataset.get_new_env)
                 else:
                     env = await asyncio.to_thread(
-                        self.dataset.get_new_env_by_idx, req.task
+                        self.dataset.get_new_env_by_idx, req.task_idx
                     )
 
             async with self.lock:
@@ -192,6 +192,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
         )
 
     async def astart(self):
+        """Async equivalent of start()."""
         config = uvicorn.Config(
             self.app, host=self.host, port=self.port, log_level="debug"
         )
