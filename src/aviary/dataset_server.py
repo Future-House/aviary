@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
 from aviary.tools import MessagesAdapter, ToolRequestMessage, ToolsAdapter
+from fastapi import FastAPI, HTTPException
+from time import time
 
 try:
     from fastapi import FastAPI, HTTPException
@@ -77,13 +79,14 @@ class TaskDatasetServer(Generic[TEnvironment]):
         self._setup_routes()
 
     def _get_env(self, env_id: str) -> TEnvironment:
-        try:
-            env, _ = self.envs[env_id]
-        except KeyError:
+        env_data = self.envs.get(env_id)
+        if env_data is None:
             raise HTTPException(
                 status_code=404, detail=f"Environment {env_id} not found"
-            ) from None
-        self.envs[env_id] = (env, time.time())
+            )
+
+        env, _ = env_data
+        self.envs[env_id] = (env, time())
         return env
 
     async def close(self):
@@ -207,6 +210,13 @@ class TaskDatasetServer(Generic[TEnvironment]):
         )
         server = uvicorn.Server(config)
         await server.serve()
+
+    def _setup_routes(self):
+        @self.app.get("/env/{env_id}")
+        async def read_env(env_id: str):
+            async with self.lock:
+                env = self._get_env(env_id)
+            return {"environment": str(env)}
 
 
 @contextmanager
