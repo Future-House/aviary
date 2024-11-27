@@ -30,35 +30,37 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         self._request_headers = request_headers
         self._request_timeout = request_timeout
 
-    async def reset(self) -> tuple[list[Message], list[Tool]]:
+    async def _post(self, url: str, json: dict[str, Any]) -> httpx.Response:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                self._reset_request_url,
-                json=self._make_post_json(self.state),
+                url,
+                json=json,
                 params=self._request_params,
                 headers=self._request_headers,
                 timeout=self._request_timeout,
             )
             response.raise_for_status()
-            msgs, tools = response.json()
-            return MessagesAdapter.validate_python(msgs), ToolsAdapter.validate_python(
-                tools
-            )
+            return response
+
+    async def reset(self) -> tuple[list[Message], list[Tool]]:
+        response = await self._post(
+            self._reset_request_url, json=self._make_post_json(self.state)
+        )
+        msgs, tools = response.json()
+        return (
+            MessagesAdapter.validate_python(msgs),
+            ToolsAdapter.validate_python(tools),
+        )
 
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[list[Message], float, bool, bool]:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self._step_request_url,
-                json=self._make_post_json(self.state) | {"action": action.model_dump()},
-                params=self._request_params,
-                headers=self._request_headers,
-                timeout=self._request_timeout,
-            )
-            response.raise_for_status()
-            messages, reward, done, truncated = response.json()
-            return MessagesAdapter.validate_python(messages), reward, done, truncated
+        response = await self._post(
+            self._step_request_url,
+            json=self._make_post_json(self.state) | {"action": action.model_dump()},
+        )
+        messages, reward, done, truncated = response.json()
+        return MessagesAdapter.validate_python(messages), reward, done, truncated
 
     @abstractmethod
     def _make_post_json(self, state: TEnvState) -> dict[str, Any]:
@@ -85,14 +87,10 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
         super().__init__(**kwargs)
 
     async def _start_remote_env(self) -> str:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self._start_request_url,
-                json={"task_idx": self._idx},
-                timeout=self._request_timeout,
-            )
-            response.raise_for_status()
-            return response.json()["env_id"]
+        response = await self._post(
+            self._start_request_url, json={"task_idx": self._idx}
+        )
+        return response.json()["env_id"]
 
     async def reset(self) -> tuple[list[Message], list[Tool]]:
         # defer starting to reset so we can make it async and set the state
@@ -106,14 +104,10 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
             logger.warning("Attempting to close an environment that was never started.")
             return None
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self._close_request_url,
-                json={"env_id": self.state.env_id},
-                timeout=self._request_timeout,
-            )
-            response.raise_for_status()
-            return response.json()
+        response = await self._post(
+            self._close_request_url, json=self._make_post_json(self.state)
+        )
+        return response.json()
 
     def _make_post_json(self, state: TaskEnvClientState) -> dict[str, Any]:
         return {"env_id": state.env_id}
