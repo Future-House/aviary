@@ -23,7 +23,12 @@ logger = logging.getLogger(__name__)
 
 
 class StartRequest(BaseModel):
-    task_idx: int | None = None
+    task_idx: int | None = Field(
+        default=None,
+        description="Index of the dataset to start. "
+        "If provided, will call TaskDataset.get_new_env_by_idx(); "
+        "otherwise, TaskDataset.get_new_env().",
+    )
 
 
 class EnvRequest(BaseModel):
@@ -147,7 +152,11 @@ class TaskDatasetServer(Generic[TEnvironment]):
             return {"env_id": req.env_id}
 
         @self.app.post("/close_old_envs")
-        async def close_old(req: FlushRequest):
+        async def close_old_envs(req: FlushRequest):
+            """Endpoint to close environments that have not been used in a while.
+
+            Useful for cleaning up dangling environments en masse.
+            """
             now = time.time()
 
             async def close(env_id: str, env: TEnvironment) -> str | None:
