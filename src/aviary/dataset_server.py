@@ -61,8 +61,8 @@ class TaskDatasetServer(Generic[TEnvironment]):
     ):
         if FastAPI is None:
             raise ImportError(
-                "FastAPI is required to run a TaskDatasetServer. "
-                "Please `pip install aviary[server]`."
+                "FastAPI and Uvicorn are required to run a TaskDatasetServer. "
+                "Please `pip install fhaviary[server]`."
             )
 
         self.dataset = dataset
