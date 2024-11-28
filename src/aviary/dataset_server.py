@@ -7,17 +7,17 @@ from contextlib import contextmanager
 from itertools import starmap
 from typing import Generic, TypeVar
 
-import uvicorn
 from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
 from aviary.tools import MessagesAdapter, ToolRequestMessage, ToolsAdapter
 
 try:
+    import uvicorn
     from fastapi import FastAPI, HTTPException
 except ImportError:
     # We will raise if a TaskDatasetServer is instantiated but fastapi is not available
-    FastAPI = HTTPException = None  # type: ignore[misc,assignment]
+    uvicorn = FastAPI = HTTPException = None  # type: ignore[misc,assignment]
 
 logger = logging.getLogger(__name__)
 
