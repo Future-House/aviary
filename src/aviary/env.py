@@ -6,7 +6,6 @@ import inspect
 import json
 import logging
 import random
-import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from copy import deepcopy
@@ -178,12 +177,6 @@ class Environment(ABC, Generic[TEnvState]):
             Ordered list of ToolResponseMessages, order matches the order of tool calls
                 in the input message.
         """
-        if (ordered := function_kwargs.pop("ordered", None)) is not None:
-            concurrency = not ordered
-            warnings.warn(
-                'Passing "ordered" as a keyword argument is deprecated and will be soon unsupported. ',
-                stacklevel=3,  # Make it easier to figure out which step() is causing the warning
-            )
 
         async def _exec_tool_call(tool_call: ToolCall) -> ToolResponseMessage:
             try:
