@@ -16,7 +16,7 @@ try:
     import uvicorn
     from fastapi import FastAPI, HTTPException
 except ImportError:
-    # We will raise if a TaskDatasetServer is instantiated but fastapi is not available
+    # We will raise if a TaskDatasetServer is instantiated but FastAPI/uvicorn are not available
     uvicorn = FastAPI = HTTPException = None  # type: ignore[misc,assignment]
 
 logger = logging.getLogger(__name__)
