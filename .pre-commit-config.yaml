@@ -81,7 +81,7 @@ repos:
           - datasets
           - docstring_parser>=0.16 # Match aviary pyproject.toml
           - fastapi
-          - httpx
+          - httpx < 0.28 # Match aviary pyproject.toml
           - litellm
           - numpy
           - pydantic~=2.0 # Match aviary pyproject.toml
