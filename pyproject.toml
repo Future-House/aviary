@@ -24,7 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "docstring_parser>=0.16",  # Pin for description addition
-    "httpx",
+    "httpx < 0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
     "pydantic~=2.0",
 ]
 description = "Gymnasium framework for training language model agents on constructive tasks"
