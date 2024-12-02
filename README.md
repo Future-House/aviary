@@ -14,7 +14,8 @@ Gymnasium framework for training language model agents on constructive tasks.
   - [Developer Installation](#developer-installation)
 - [Messages](#messages)
 - [Environment](#environment)
-  - [Environment subclass and state](#environment-subclass-and-state)
+- [Functional Environments](#functional-environments)
+- [Subclass Environments](#subclass-environments)
   - [Common environments](#common-environments)
   - [Tool](#tool)
     - [Advanced tool descriptions](#advanced-tool-descriptions)
@@ -88,9 +89,53 @@ to tools provided by the `reset`. The `obs_msgs` returned from the environment a
 general messages that are observations. The `reward` is a scalar value. The `done` is a boolean value. The `truncated`
 is a boolean value.
 
-Let's see a complete example for building an environment.
+## Functional Environments
 
-### Environment subclass and state
+The easiest way to create an environment is using the functional interface, which just uses functions and decorators to define environments. First, let's define what the environment looks like by defining its `start` function:
+
+```py
+from aviary import fenv
+
+
+@fenv.start()
+def my_env(topic):
+    return f"Write a story about {topic}", {"topic": topic}
+```
+
+Note that the decorator is a call (`start()`). The `start` decorator starts the definition of an environment. The function, `my_env`, can take whatever you would like and should return a tuple containing the first observation and anything you would like to store about the state of the environment (used to persist/share things between tools). The state will always automatically have an optional `reward` and a boolean `done` that indicates if the environment is complete.
+
+Now we can define some tools:
+
+```py
+@my_env.tool()
+def multiply(x: float, y: float) -> float:
+    """Multiply two numbers"""
+    return x * y
+
+
+@my_env.tool()
+def print_story(story: str | bytes, state) -> None:
+    """Print a story to user and complete task"""
+    print("A story about", state.extras["topic"])
+    print(story)
+    state.reward = 1
+    state.done = True
+```
+
+The tools will be converted into things visible for LLMs using the type hints and the variable descriptions. Thus, the type hinting can be valuable for the agent using it correctly. The docstrings are also passed to the LLM, and is the primary way (along with function name) for communicating about intended tool usage.
+
+The way to stop an environment or set a reward is via the `state` variable as shown the second tool. If the reward is not set, it is treated as zero.
+
+Now we can use our environment:
+
+```python
+env = my_env(topic="foo")
+obs, tools = await env.reset()
+```
+
+## Subclass Environments
+
+If you need more control over Environments and tools, you'll want to subclass the `Environment`
 
 First we define an environment by subclassing the `Environment` and defining a `state`. The `state` is all variables
 that change per step and we want to keep together. It will be accessible in your tools, so you can use it to store
