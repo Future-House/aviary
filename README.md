@@ -99,7 +99,9 @@ from aviary import fenv
 
 @fenv.start()
 def my_env(topic):
-    return f"Write a story about {topic}", {"chosen_topic": topic}
+    # return first observation, and the starting environment state
+    # (empty in this case)
+    return f"Write a story about {topic}", {}
 ```
 
 Note that the decorator is a call (`start()`). The `start` decorator starts the definition of an environment. The function, `my_env`, can take whatever you would like and should return a tuple containing the first observation and anything you would like to store about the state of the environment (used to persist/share things between tools). The state will always automatically have an optional `reward` and a boolean `done` that indicates if the environment is complete.
@@ -116,7 +118,6 @@ def multiply(x: float, y: float) -> float:
 @my_env.tool()
 def print_story(story: str | bytes, state) -> None:
     """Print a story to user and complete task"""
-    print("A story about", state.extras["topic"])
     print(story)
     state.reward = 1
     state.done = True
@@ -124,7 +125,9 @@ def print_story(story: str | bytes, state) -> None:
 
 The tools will be converted into things visible for LLMs using the type hints and the variable descriptions. Thus, the type hinting can be valuable for the agent using it correctly. The docstrings are also passed to the LLM, and is the primary way (along with function name) for communicating about intended tool usage.
 
-The way to stop an environment or set a reward is via the `state` variable as shown the second tool. If the reward is not set, it is treated as zero.
+You can access the `state` variable in tools, which will have any fields you passed in the return tuple of `start()`. For example, if you returned `{'foo': 'bar'}`, then you could access `state.foo` in the tools.
+
+Stop an environment or set a reward via the `state` variable as shown the second tool. If the reward is not set, it is treated as zero.
 
 Now we can use our environment:
 

@@ -139,7 +139,7 @@ class fenv:  # noqa: N801
         Example:
             @fenv.start()
             def my_env(topic: str):
-                return f"Write a story about {topic}", {"topic": topic}
+                return f"Write a story about {topic}", {"chosen_topic": topic}
 
             @my_env.tool()
             def print_story(story: str, state) -> None:
@@ -161,7 +161,7 @@ class fenv:  # noqa: N801
             - The state dict returned by the decorated function will automatically include
             'reward' (float) and 'done' (bool) fields that can be modified by tools
             - Tools can access the state dict via an optional 'state' parameter
-            - The environment implements the standard Gymnasium interface with async
+            - The environment implements the standard Aviary interface with async
             reset() and step() methods
         """
 
