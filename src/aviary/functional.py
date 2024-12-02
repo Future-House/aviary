@@ -4,8 +4,9 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .core import Environment, Frame, Message, Tool
-from .tools import Messages, ToolRequestMessage
+from .env import Environment, Frame
+from .message import Message
+from .tools import Messages, Tool, ToolRequestMessage
 from .utils import is_coroutine_callable
 
 
@@ -58,7 +59,7 @@ class FunctionalEnvironment(Environment[DynamicState]):
     async def reset(self) -> tuple[Messages, list[Tool]]:
         obs, extras = await self._call_start()
         self.state = DynamicState.from_extras(extras)
-        return [Message(content=str(obs), role="user")], self.tools
+        return [Message(content=obs, role="user")], self.tools
 
     async def step(
         self, action: ToolRequestMessage
