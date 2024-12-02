@@ -7,7 +7,10 @@ codeflash = [
     "codeflash>=0.7",  # Pin to keep recent
     "fhaviary[dev]",
 ]
-dev = ["fhaviary[dev]"]
+dev = [
+    "fhaviary[dev]",
+    "httpx < 0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
+]
 
 [project]
 authors = [
@@ -24,7 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "docstring_parser>=0.16",  # Pin for description addition
-    "httpx < 0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
+    "httpx",
     "pydantic~=2.0",
 ]
 description = "Gymnasium framework for training language model agents on constructive tasks"

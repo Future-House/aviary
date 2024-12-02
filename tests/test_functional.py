@@ -6,7 +6,6 @@ from aviary.core import ToolCall, ToolRequestMessage, fenv
 from aviary.functional import FunctionalEnvironment
 
 
-# Fixtures
 @pytest.fixture
 def basic_env():
     @fenv.start()
@@ -110,7 +109,7 @@ async def test_invalid_start_function():
 async def test_invalid_state_dict():
     @fenv.start()
     def invalid_env():
-        return "Test", "not_a_dict"  # Should be a dict
+        return "Test", "not_a_dict"  # second arg should be a dict
 
     env = invalid_env()
     with pytest.raises(TypeError):

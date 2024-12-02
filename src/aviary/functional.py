@@ -2,7 +2,7 @@ from collections.abc import Callable
 from functools import update_wrapper
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from aviary.env import Environment, Frame
 from aviary.message import Message
@@ -11,34 +11,37 @@ from aviary.utils import is_coroutine_callable
 
 
 class DynamicState(BaseModel):
-    """Dynamic state model that adapts to provided extras."""
+    """Dynamic env state model that adapts to provided extras."""
 
     reward: float = 0
     done: bool = False
-    extras: dict[str, Any] = {}
-
-    @classmethod
-    def from_extras(cls, extras: dict[str, Any]) -> "DynamicState":
-        """Create a state instance with the given extras."""
-        return cls(extras=extras)
+    extras: dict[str, Any] = Field(default_factory=dict)
 
     def __getattr__(self, name: str):
         """Allow direct access to extras as attributes."""
         if name in self.extras:
             return self.extras[name]
-        raise AttributeError(f"'State' has no attribute '{name}'")
+        raise AttributeError(f"'State' has no attribute {name!r}")
 
 
 class FunctionalEnvironment(Environment[DynamicState]):
     """Environment class for function-based environments."""
 
-    def __init__(self, start_fn: Callable, tools: list[Tool], *args, **kwargs):
+    def __init__(
+        self,
+        start_fn: Callable,
+        tools: list[Tool],
+        allow_concurrency: bool,
+        *args,
+        **kwargs,
+    ):
         super().__init__()
         self.start_fn = start_fn
         self.tools = tools
         self.args = args
         self.kwargs = kwargs
         self.state = DynamicState()
+        self.allow_concurrency = allow_concurrency
 
     async def _call_start(self) -> tuple[str, dict[str, Any]]:
         """Call start_fn handling both sync and async cases."""
@@ -58,15 +61,15 @@ class FunctionalEnvironment(Environment[DynamicState]):
 
     async def reset(self) -> tuple[Messages, list[Tool]]:
         obs, extras = await self._call_start()
-        self.state = DynamicState.from_extras(extras)
-        return [Message(content=obs, role="user")], self.tools
+        self.state = DynamicState(extras=extras)
+        return [Message(content=obs)], self.tools
 
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
-        # just assume no concurrent to avoid user bugs
-        # TODO: could take config arguments in start() to enable concurrency
-        msgs = await self.exec_tool_calls(action, state=self.state, concurrency=False)
+        msgs = await self.exec_tool_calls(
+            action, state=self.state, concurrency=self.allow_concurrency
+        )
         return msgs, self.state.reward, self.state.done, False
 
     def export_frame(self) -> Frame:
@@ -77,24 +80,24 @@ class FunctionalEnvironment(Environment[DynamicState]):
                 "reward": self.state.reward,
                 "extras": self.state.extras,
             },
-            info={
-                "tool_names": [t.info.name for t in self.tools],
-                "num_tools": len(self.tools),
-            },
+            info={"tool_names": [t.info.name for t in self.tools]},
         )
 
 
 class EnvironmentBuilder:
     """Builder class for constructing functional environments."""
 
-    def __init__(self, start_fn: Callable):
+    def __init__(self, start_fn: Callable, allow_concurrency: bool):
         self.start_fn = start_fn
         self.tools: list[Tool] = []
+        self.allow_concurrency = allow_concurrency
         update_wrapper(self, start_fn)
 
     def __call__(self, *args, **kwargs):
         """Create a new environment instance."""
-        return FunctionalEnvironment(self.start_fn, self.tools.copy(), *args, **kwargs)
+        return FunctionalEnvironment(
+            self.start_fn, self.tools.copy(), self.allow_concurrency, *args, **kwargs
+        )
 
     def tool(self, **tool_kwargs):
         """Decorator to add tools to the environment."""
@@ -116,7 +119,7 @@ class fenv:  # noqa: N801
     """Factory class for creating functional environments."""
 
     @staticmethod
-    def start():
+    def start(allow_concurrency: bool = False):
         """Initialize a new functional environment definition.
 
         This decorator marks the starting point for defining a functional environment.
@@ -128,6 +131,10 @@ class fenv:  # noqa: N801
         the environment instance. It must return a tuple containing:
         1. The initial observation message (str)
         2. A dict of any state variables to persist between steps
+
+        Args:
+            allow_concurrency (bool, optional): Whether to allow concurrent tool calls.
+            Defaults to False.
 
         Example:
             @fenv.start()
@@ -161,6 +168,6 @@ class fenv:  # noqa: N801
         def decorator(func: Callable) -> EnvironmentBuilder:
             if not callable(func):
                 raise TypeError("Decorator must be applied to a function")
-            return EnvironmentBuilder(func)
+            return EnvironmentBuilder(func, allow_concurrency=allow_concurrency)
 
         return decorator
