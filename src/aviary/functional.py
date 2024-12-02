@@ -133,7 +133,7 @@ class fenv:  # noqa: N801
         2. A dict of any state variables to persist between steps
 
         Args:
-            allow_concurrency (bool, optional): Whether to allow concurrent tool calls.
+            allow_concurrency (optional): Whether to allow concurrent tool calls.
             Defaults to False.
 
         Example:
