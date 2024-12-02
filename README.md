@@ -99,7 +99,7 @@ from aviary import fenv
 
 @fenv.start()
 def my_env(topic):
-    return f"Write a story about {topic}", {"topic": topic}
+    return f"Write a story about {topic}", {"chosen_topic": topic}
 ```
 
 Note that the decorator is a call (`start()`). The `start` decorator starts the definition of an environment. The function, `my_env`, can take whatever you would like and should return a tuple containing the first observation and anything you would like to store about the state of the environment (used to persist/share things between tools). The state will always automatically have an optional `reward` and a boolean `done` that indicates if the environment is complete.
