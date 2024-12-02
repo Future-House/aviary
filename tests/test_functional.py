@@ -2,8 +2,8 @@ import asyncio
 
 import pytest
 
-from aviary.core import ToolCall, ToolRequestMessage
-from aviary.functional import FunctionalEnvironment, fenv
+from aviary.core import ToolCall, ToolRequestMessage, fenv
+from aviary.functional import FunctionalEnvironment
 
 
 # Fixtures
