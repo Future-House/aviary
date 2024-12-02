@@ -1,0 +1,164 @@
+from collections.abc import Callable
+from functools import update_wrapper
+from typing import Any
+
+from pydantic import BaseModel
+
+from .core import Environment, Frame, Message, Tool
+from .tools import Messages, ToolRequestMessage
+from .utils import is_coroutine_callable
+
+
+class DynamicState(BaseModel):
+    """Dynamic state model that adapts to provided extras."""
+
+    reward: float = 0
+    done: bool = False
+    extras: dict[str, Any] = {}
+
+    @classmethod
+    def from_extras(cls, extras: dict[str, Any]) -> "DynamicState":
+        """Create a state instance with the given extras."""
+        return cls(extras=extras)
+
+    def __getattr__(self, name: str):
+        """Allow direct access to extras as attributes."""
+        if name in self.extras:
+            return self.extras[name]
+        raise AttributeError(f"'State' has no attribute '{name}'")
+
+
+class FunctionalEnvironment(Environment[DynamicState]):
+    """Environment class for function-based environments."""
+
+    def __init__(self, start_fn: Callable, tools: list[Tool], *args, **kwargs):
+        super().__init__()
+        self.start_fn = start_fn
+        self.tools = tools
+        self.args = args
+        self.kwargs = kwargs
+        self.state = DynamicState()
+
+    async def _call_start(self) -> tuple[str, dict[str, Any]]:
+        """Call start_fn handling both sync and async cases."""
+        if is_coroutine_callable(self.start_fn):
+            result = await self.start_fn(*self.args, **self.kwargs)
+        else:
+            result = self.start_fn(*self.args, **self.kwargs)
+
+        if not isinstance(result, tuple) or len(result) != 2:  # noqa: PLR2004
+            raise TypeError("Start function must return (observation, state_dict)")
+
+        obs, state_dict = result
+        if not isinstance(state_dict, dict):
+            raise TypeError("State must be a dictionary")
+
+        return obs, state_dict
+
+    async def reset(self) -> tuple[Messages, list[Tool]]:
+        obs, extras = await self._call_start()
+        self.state = DynamicState.from_extras(extras)
+        return [Message(content=str(obs), role="user")], self.tools
+
+    async def step(
+        self, action: ToolRequestMessage
+    ) -> tuple[Messages, float, bool, bool]:
+        # just assume no concurrent to avoid user bugs
+        msgs = await self.exec_tool_calls(action, state=self.state, concurrency=False)
+        return msgs, self.state.reward, self.state.done, False
+
+    def export_frame(self) -> Frame:
+        """Export the current state of the environment."""
+        return Frame(
+            state={
+                "done": self.state.done,
+                "reward": self.state.reward,
+                "extras": self.state.extras,
+            },
+            info={
+                "tool_names": [t.info.name for t in self.tools],
+                "num_tools": len(self.tools),
+            },
+        )
+
+
+class EnvironmentBuilder:
+    """Builder class for constructing functional environments."""
+
+    def __init__(self, start_fn: Callable):
+        self.start_fn = start_fn
+        self.tools: list[Tool] = []
+        update_wrapper(self, start_fn)
+
+    def __call__(self, *args, **kwargs):
+        """Create a new environment instance."""
+        return FunctionalEnvironment(self.start_fn, self.tools.copy(), *args, **kwargs)
+
+    def tool(self, **tool_kwargs):
+        """Decorator to add tools to the environment."""
+
+        def decorator(func: Callable):
+            tool = Tool.from_function(
+                func, **tool_kwargs, allow_empty_param_descriptions=True
+            )
+            # Check for name conflicts
+            if any(t.info.name == tool.info.name for t in self.tools):
+                raise RuntimeError(f"Tool with name '{tool.info.name}' already exists")
+            self.tools.append(tool)
+            return func
+
+        return decorator
+
+
+class fenv:  # noqa: N801
+    """Factory class for creating functional environments."""
+
+    @staticmethod
+    def start():
+        """Initialize a new functional environment definition.
+
+        This decorator marks the starting point for defining a functional environment.
+        It should be applied to a function that sets up the initial state and first
+        observation for the environment. The decorated function will serve as the
+        base for adding tools via the .tool() decorator.
+
+        The decorated function should accept any desired parameters that configure
+        the environment instance. It must return a tuple containing:
+        1. The initial observation message (str)
+        2. A dict of any state variables to persist between steps
+
+        Example:
+            @fenv.start()
+            def my_env(topic: str):
+                return f"Write a story about {topic}", {"topic": topic}
+
+            @my_env.tool()
+            def print_story(story: str, state) -> None:
+                '''Print the story and complete the task'''
+                print(story)
+                state.reward = 1
+                state.done = True
+
+            # Usage
+            env = my_env(topic="space")
+            obs, tools = await env.reset()
+
+        Returns:
+            callable: A decorator function that transforms the decorated function into
+            an environment builder. The returned environment builder provides a .tool()
+            decorator for adding tools to the environment.
+
+        Notes:
+            - The state dict returned by the decorated function will automatically include
+            'reward' (float) and 'done' (bool) fields that can be modified by tools
+            - Tools can access the state dict via an optional 'state' parameter
+            - The environment implements the standard Gymnasium interface with async
+            reset() and step() methods
+        """
+
+        def decorator(func: Callable) -> EnvironmentBuilder:
+            if not callable(func):
+                raise TypeError("Decorator must be applied to a function")
+            return EnvironmentBuilder(func)
+
+        return decorator
