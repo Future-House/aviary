@@ -64,6 +64,7 @@ class FunctionalEnvironment(Environment[DynamicState]):
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
         # just assume no concurrent to avoid user bugs
+        # TODO: could take config arguments in start() to enable concurrency
         msgs = await self.exec_tool_calls(action, state=self.state, concurrency=False)
         return msgs, self.state.reward, self.state.done, False
 
