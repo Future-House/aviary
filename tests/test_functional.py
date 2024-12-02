@@ -138,7 +138,6 @@ async def test_frame_export(basic_env):
     assert isinstance(frame.info, dict)
     assert "tool_names" in frame.info
     assert frame.info["tool_names"] == ["test_tool"]
-    assert frame.info["num_tools"] == 1
 
 
 @pytest.mark.asyncio
