@@ -111,13 +111,13 @@ Now we can define some tools:
 ```py
 @my_env.tool()
 def multiply(x: float, y: float) -> float:
-    """Multiply two numbers"""
+    """Multiply two numbers."""
     return x * y
 
 
 @my_env.tool()
 def print_story(story: str | bytes, state) -> None:
-    """Print a story to user and complete task"""
+    """Print a story to user and complete task."""
     print(story)
     state.reward = 1
     state.done = True
