@@ -30,7 +30,10 @@ class DynamicState(BaseModel):
 
 
 class FunctionalEnvironment(Environment[DynamicState]):
-    """Environment class for function-based environments."""
+    """Environment class for function-based environments.
+
+    See @fenv.start() decorator for complete usage details.
+    """
 
     def __init__(
         self,
@@ -172,6 +175,7 @@ class fenv:  # noqa: N801
             - The state dict returned by the decorated function will automatically include
             'reward' (float) and 'done' (bool) fields that can be modified by tools
             - Tools can access the state dict via an optional 'state' parameter
+            - The environment should be done/conclude by setting 'state.done = True'
             - The environment implements the standard Aviary interface with async
             reset() and step() methods
         """
