@@ -15,7 +15,7 @@ from aviary.env_client import (
     TaskEnvClientState,
     TaskEnvironmentClient,
 )
-from aviary.functional import fenv
+from aviary.functional import DynamicState, fenv
 from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
 from aviary.render import Renderer
 from aviary.tools import (
@@ -46,6 +46,7 @@ __all__ = [
     "DummyEnv",
     "DummyEnvState",
     "DummyTaskDataset",
+    "DynamicState",
     "EnvStateMessage",
     "Environment",
     "EnvironmentClient",

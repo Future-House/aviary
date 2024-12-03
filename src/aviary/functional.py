@@ -15,7 +15,12 @@ class DynamicState(BaseModel):
 
     reward: float = 0
     done: bool = False
-    extras: dict[str, Any] = Field(default_factory=dict)
+    # we do not use ConfigDict extras because we cannot get getattr
+    # which is nice.
+    extras: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Extra state variables to persist between steps",
+    )
 
     def __getattr__(self, name: str):
         """Allow direct access to extras as attributes."""
@@ -89,7 +94,11 @@ class FunctionalEnvironment(Environment[DynamicState]):
 class EnvironmentBuilder:
     """Builder class for constructing functional environments."""
 
-    def __init__(self, start_fn: Callable, allow_concurrency: bool):
+    def __init__(
+        self,
+        start_fn: Callable[..., tuple[str, dict[str, Any]]],
+        allow_concurrency: bool,
+    ):
         self.start_fn = start_fn
         self.tools: list[Tool] = []
         self.allow_concurrency = allow_concurrency
@@ -98,7 +107,7 @@ class EnvironmentBuilder:
     def __call__(self, *args, **kwargs):
         """Create a new environment instance."""
         return FunctionalEnvironment(
-            self.start_fn, self.tools.copy(), self.allow_concurrency, *args, **kwargs
+            self.start_fn, self.tools, self.allow_concurrency, *args, **kwargs
         )
 
     def tool(self, **tool_kwargs):

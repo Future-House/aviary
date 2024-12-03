@@ -44,7 +44,7 @@ def test_environment_creation(basic_env):
 
 
 @pytest.mark.asyncio
-async def test_sync_env_reset(basic_env):
+async def test_basic_env_reset(basic_env):
     env = basic_env("test_param")
     obs, tools = await env.reset()
 
