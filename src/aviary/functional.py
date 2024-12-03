@@ -43,7 +43,7 @@ class FunctionalEnvironment(Environment[DynamicState]):
         self.state = DynamicState()
         self.allow_concurrency = allow_concurrency
 
-    async def _call_start(self) -> tuple[str, dict[str, Any]]:
+    async def _call_start_fn(self) -> tuple[str, DynamicState]:
         """Call start_fn handling both sync and async cases."""
         if is_coroutine_callable(self.start_fn):
             result = await self.start_fn(*self.args, **self.kwargs)
@@ -57,18 +57,20 @@ class FunctionalEnvironment(Environment[DynamicState]):
         if not isinstance(state_dict, dict):
             raise TypeError("State must be a dictionary")
 
-        return obs, state_dict
+        return obs, DynamicState(extras=state_dict)
 
     async def reset(self) -> tuple[Messages, list[Tool]]:
-        obs, extras = await self._call_start()
-        self.state = DynamicState(extras=extras)
+        obs, self.state = await self._call_start_fn()
         return [Message(content=obs)], self.tools
 
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
         msgs = await self.exec_tool_calls(
-            action, state=self.state, concurrency=self.allow_concurrency
+            action,
+            state=self.state,
+            concurrency=self.allow_concurrency,
+            handle_tool_exc=True,
         )
         return msgs, self.state.reward, self.state.done, False
 
