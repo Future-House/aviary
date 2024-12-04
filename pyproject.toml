@@ -4,7 +4,7 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [dependency-groups]
 codeflash = [
-    "codeflash>=0.7",  # Pin to keep recent
+    "codeflash>=0.8",  # Pin for --verify-setup checking formatter-cmds
     "fhaviary[dev]",
 ]
 dev = [

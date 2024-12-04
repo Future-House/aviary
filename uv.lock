@@ -177,7 +177,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.11.1.dev3+g469d286"
+version = "0.11.1.dev3+gef1e2d5.d20241204"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -200,7 +200,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.11.1.dev3+g469d286"
+version = "0.11.1.dev3+gef1e2d5.d20241204"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -825,7 +825,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.11.1.dev3+g469d286"
+version = "0.11.1.dev4+g1e8ea27.d20241204"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -899,11 +899,65 @@ xml = [
 
 [package.dev-dependencies]
 codeflash = [
+    { name = "aviary-gsm8k", extra = ["typing"] },
+    { name = "aviary-hotpotqa" },
+    { name = "boto3-stubs", extra = ["s3"] },
+    { name = "click" },
+    { name = "cloudpickle" },
     { name = "codeflash" },
-    { name = "fhaviary", extra = ["dev"] },
+    { name = "dicttoxml" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "ipython" },
+    { name = "litellm" },
+    { name = "mypy" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pre-commit" },
+    { name = "pydantic" },
+    { name = "pylint" },
+    { name = "pylint-pydantic" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-recording" },
+    { name = "pytest-subtests" },
+    { name = "pytest-sugar" },
+    { name = "pytest-timer", extra = ["colorama"] },
+    { name = "pytest-xdist" },
+    { name = "refurb" },
+    { name = "typeguard" },
+    { name = "types-pillow" },
+    { name = "uvicorn" },
 ]
 dev = [
-    { name = "fhaviary", extra = ["dev"] },
+    { name = "aviary-gsm8k", extra = ["typing"] },
+    { name = "aviary-hotpotqa" },
+    { name = "boto3-stubs", extra = ["s3"] },
+    { name = "click" },
+    { name = "cloudpickle" },
+    { name = "dicttoxml" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "ipython" },
+    { name = "litellm" },
+    { name = "mypy" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "pre-commit" },
+    { name = "pydantic" },
+    { name = "pylint" },
+    { name = "pylint-pydantic" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-recording" },
+    { name = "pytest-subtests" },
+    { name = "pytest-sugar" },
+    { name = "pytest-timer", extra = ["colorama"] },
+    { name = "pytest-xdist" },
+    { name = "refurb" },
+    { name = "typeguard" },
+    { name = "types-pillow" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -949,7 +1003,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 codeflash = [
-    { name = "codeflash", specifier = ">=0.7" },
+    { name = "codeflash", specifier = ">=0.8" },
     { name = "fhaviary", extras = ["dev"], editable = "." },
 ]
 dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]
