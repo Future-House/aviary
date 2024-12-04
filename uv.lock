@@ -3218,27 +3218,27 @@ sdist = { url = "https://files.pythonhosted.org/packages/80/f8/0802dd14c58b5d3d7
 
 [[package]]
 name = "tokenizers"
-version = "0.20.4"
+version = "0.21.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "huggingface-hub" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/98/0df883ea6201e35e286a97f5fb2a601bfb5b52e4165f7688a76e4553eeec/tokenizers-0.20.4.tar.gz", hash = "sha256:db50ac15e92981227f499268541306824f49e97dbeec05d118ebdc7c2d22322c", size = 343020 }
+sdist = { url = "https://files.pythonhosted.org/packages/20/41/c2be10975ca37f6ec40d7abd7e98a5213bb04f284b869c1a24e6504fd94d/tokenizers-0.21.0.tar.gz", hash = "sha256:ee0894bf311b75b0c03079f33859ae4b2334d675d4e93f5a4132e1eae2834fe4", size = 343021 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/a1/c8285e835dd185307f40bc4a308224dc357ee4d25f3fd83ef013101a5060/tokenizers-0.20.4-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:25f59ebc5b79e7bbafe86bfec62696468016627157d8a9ceba5092486796a156", size = 2649933 },
-    { url = "https://files.pythonhosted.org/packages/bb/26/a4b8dfe37c92205a4ba267d35ed7a6ca0ae1cbb2a1ed8acf84813cf48704/tokenizers-0.20.4-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:f41df992797ad0ff9472e8a2c7a3ef7178667935d984639b73da7d19b33ea4e2", size = 2568327 },
-    { url = "https://files.pythonhosted.org/packages/66/aa/70de5a7c96621c1962e8399245efac6d6ab3bbe873457b9beb26c406c4f0/tokenizers-0.20.4-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7786004e180fab72e6e873e982ccd18b3cfa31521d397b6c024cc19175abf91b", size = 2907735 },
-    { url = "https://files.pythonhosted.org/packages/b7/d1/e70b4497da0e97111ef75eba32526a98bf04268ce2a7388d9759ec89acdb/tokenizers-0.20.4-cp39-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:075635cd7e6936cc4b3a13901c1a05690d5b533ce3d0f035dee21117dd4f04ae", size = 2807025 },
-    { url = "https://files.pythonhosted.org/packages/d0/29/8dff1d57d1d1bcae5f0d701759ca3f503ca31ecd443f75571d6ef3083043/tokenizers-0.20.4-cp39-abi3-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:aa392bae7f0a36e4c97ad43100390ad84f2a1bfff6742604774210f7d7a4fa13", size = 3095142 },
-    { url = "https://files.pythonhosted.org/packages/65/49/e4647d5e496e64f2f639aeba9df134f59b648822a90d63ceb7b4b309ba4a/tokenizers-0.20.4-cp39-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:eee647ccba9cbd36b5ec4e8e73d25dbd586ec06de7a43ff83a3dad9fec466a29", size = 3117482 },
-    { url = "https://files.pythonhosted.org/packages/f6/c9/34c6a304529a0b3375533e0ccc4ffd4bcfa401cb57cdab5997efaf9836fc/tokenizers-0.20.4-cp39-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:735ffc9bba65d20f8ab5f82dfbab262bb066afc7dee3684c5e5435e7a5da445d", size = 3405409 },
-    { url = "https://files.pythonhosted.org/packages/b9/1c/cc1ca0c4e4c5763b2d872935de7149633765d158f0d1a46b48d73f3a9c58/tokenizers-0.20.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:05c2bab579c1f31292b48bb79b6334b5346c1ec87dac81089e6098b8a20b2fd4", size = 3008371 },
-    { url = "https://files.pythonhosted.org/packages/ef/bf/135de1cf1c10f53a10c8db5f067e7cf71adebd79ed2b5cf5729eded209af/tokenizers-0.20.4-cp39-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:3e960ad5c467a95e5665e518151ed9024e7aa111d2c54ff1938162cc7c2b8959", size = 8976494 },
-    { url = "https://files.pythonhosted.org/packages/24/56/61b8c0cd217a5be05c4206263afdfa937848796696fee7cc14fab6c94a49/tokenizers-0.20.4-cp39-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:e59a405459ed31b73426b364752c2e7c73f4a94210a63fd7acd161a774af7bd2", size = 8916105 },
-    { url = "https://files.pythonhosted.org/packages/94/08/2d541e0e437e87e5cae903c55fc832fd032812c85e095bb7833d5fe65dfd/tokenizers-0.20.4-cp39-abi3-musllinux_1_2_i686.whl", hash = "sha256:84bf8b4a7bbf1c6bb78775ae309a5c69d08dadf7b88125d6d19ccb4738a87350", size = 9162400 },
-    { url = "https://files.pythonhosted.org/packages/9e/62/41dc66bda0b1d45f36f324d01a3c4389caac0526d4b4ccc2d2006c7722b1/tokenizers-0.20.4-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:a6d392a20ca70692aaba8a636677b57f6c67655879773ba2b6be8cb4a19ce6b8", size = 9357955 },
-    { url = "https://files.pythonhosted.org/packages/a1/1c/0c9ebd40b4e6bb51b178cff6b148e985a728fc899d12f4a6ebe49044d4e2/tokenizers-0.20.4-cp39-abi3-win32.whl", hash = "sha256:60ea37c885a9bb8efa53b7542ea83561cd00eb3ffb47a77f5ae622d9f7f66ffe", size = 2202648 },
-    { url = "https://files.pythonhosted.org/packages/e0/e3/c7e4adf727ddcdefc1831945bf95fe07dd6b4b879613a62b5719be539ce4/tokenizers-0.20.4-cp39-abi3-win_amd64.whl", hash = "sha256:6cba92b87969ddf5a7e2f2293577c30129d8c22c6f68e8c626d3e76b8d52412c", size = 2393731 },
+    { url = "https://files.pythonhosted.org/packages/b0/5c/8b09607b37e996dc47e70d6a7b6f4bdd4e4d5ab22fe49d7374565c7fefaf/tokenizers-0.21.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:3c4c93eae637e7d2aaae3d376f06085164e1660f89304c0ab2b1d08a406636b2", size = 2647461 },
+    { url = "https://files.pythonhosted.org/packages/22/7a/88e58bb297c22633ed1c9d16029316e5b5ac5ee44012164c2edede599a5e/tokenizers-0.21.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:f53ea537c925422a2e0e92a24cce96f6bc5046bbef24a1652a5edc8ba975f62e", size = 2563639 },
+    { url = "https://files.pythonhosted.org/packages/f7/14/83429177c19364df27d22bc096d4c2e431e0ba43e56c525434f1f9b0fd00/tokenizers-0.21.0-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6b177fb54c4702ef611de0c069d9169f0004233890e0c4c5bd5508ae05abf193", size = 2903304 },
+    { url = "https://files.pythonhosted.org/packages/7e/db/3433eab42347e0dc5452d8fcc8da03f638c9accffefe5a7c78146666964a/tokenizers-0.21.0-cp39-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:6b43779a269f4629bebb114e19c3fca0223296ae9fea8bb9a7a6c6fb0657ff8e", size = 2804378 },
+    { url = "https://files.pythonhosted.org/packages/57/8b/7da5e6f89736c2ade02816b4733983fca1c226b0c42980b1ae9dc8fcf5cc/tokenizers-0.21.0-cp39-abi3-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:9aeb255802be90acfd363626753fda0064a8df06031012fe7d52fd9a905eb00e", size = 3095488 },
+    { url = "https://files.pythonhosted.org/packages/4d/f6/5ed6711093dc2c04a4e03f6461798b12669bc5a17c8be7cce1240e0b5ce8/tokenizers-0.21.0-cp39-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d8b09dbeb7a8d73ee204a70f94fc06ea0f17dcf0844f16102b9f414f0b7463ba", size = 3121410 },
+    { url = "https://files.pythonhosted.org/packages/81/42/07600892d48950c5e80505b81411044a2d969368cdc0d929b1c847bf6697/tokenizers-0.21.0-cp39-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:400832c0904f77ce87c40f1a8a27493071282f785724ae62144324f171377273", size = 3388821 },
+    { url = "https://files.pythonhosted.org/packages/22/06/69d7ce374747edaf1695a4f61b83570d91cc8bbfc51ccfecf76f56ab4aac/tokenizers-0.21.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e84ca973b3a96894d1707e189c14a774b701596d579ffc7e69debfc036a61a04", size = 3008868 },
+    { url = "https://files.pythonhosted.org/packages/c8/69/54a0aee4d576045b49a0eb8bffdc495634309c823bf886042e6f46b80058/tokenizers-0.21.0-cp39-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:eb7202d231b273c34ec67767378cd04c767e967fda12d4a9e36208a34e2f137e", size = 8975831 },
+    { url = "https://files.pythonhosted.org/packages/f7/f3/b776061e4f3ebf2905ba1a25d90380aafd10c02d406437a8ba22d1724d76/tokenizers-0.21.0-cp39-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:089d56db6782a73a27fd8abf3ba21779f5b85d4a9f35e3b493c7bbcbbf0d539b", size = 8920746 },
+    { url = "https://files.pythonhosted.org/packages/d8/ee/ce83d5ec8b6844ad4c3ecfe3333d58ecc1adc61f0878b323a15355bcab24/tokenizers-0.21.0-cp39-abi3-musllinux_1_2_i686.whl", hash = "sha256:c87ca3dc48b9b1222d984b6b7490355a6fdb411a2d810f6f05977258400ddb74", size = 9161814 },
+    { url = "https://files.pythonhosted.org/packages/18/07/3e88e65c0ed28fa93aa0c4d264988428eef3df2764c3126dc83e243cb36f/tokenizers-0.21.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:4145505a973116f91bc3ac45988a92e618a6f83eb458f49ea0790df94ee243ff", size = 9357138 },
+    { url = "https://files.pythonhosted.org/packages/15/b0/dc4572ca61555fc482ebc933f26cb407c6aceb3dc19c301c68184f8cad03/tokenizers-0.21.0-cp39-abi3-win32.whl", hash = "sha256:eb1702c2f27d25d9dd5b389cc1f2f51813e99f8ca30d9e25348db6585a97e24a", size = 2202266 },
+    { url = "https://files.pythonhosted.org/packages/44/69/d21eb253fa91622da25585d362a874fa4710be600f0ea9446d8d0217cec1/tokenizers-0.21.0-cp39-abi3-win_amd64.whl", hash = "sha256:87841da5a25a3a5f70c102de371db120f41873b854ba65e52bccd57df5a3780c", size = 2389192 },
 ]
 
 [[package]]
