@@ -44,7 +44,7 @@ dev = [
     "aviary.gsm8k[typing]",
     "aviary.hotpotqa",
     "fhaviary[image,llm,server,typing,xml]",
-    "httpx < 0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
+    "httpx <0.29",  # Pin until we remove app argument in clients that was deprecated in 0.28
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
     "pre-commit>=3.4",  # Pin to keep recent

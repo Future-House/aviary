@@ -180,7 +180,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.8.3.dev25+g2d8dd7b"
+version = "0.11.1.dev0+g4381ee3.d20241204"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -203,7 +203,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.8.3.dev25+g2d8dd7b"
+version = "0.11.1.dev0+g4381ee3.d20241204"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -728,7 +728,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.8.3.dev47+gceff482.d20241202"
+version = "0.11.1.dev0+g4381ee3.d20241204"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -805,67 +805,11 @@ xml = [
 
 [package.dev-dependencies]
 codeflash = [
-    { name = "aviary-gsm8k", extra = ["typing"] },
-    { name = "aviary-hotpotqa" },
-    { name = "boto3-stubs", extra = ["s3"] },
-    { name = "click" },
-    { name = "cloudpickle" },
     { name = "codeflash" },
-    { name = "dicttoxml" },
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "ipython" },
-    { name = "litellm", version = "1.48.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
-    { name = "litellm", version = "1.52.16", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
-    { name = "mypy" },
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "pre-commit" },
-    { name = "pydantic" },
-    { name = "pylint" },
-    { name = "pylint-pydantic" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-recording" },
-    { name = "pytest-subtests" },
-    { name = "pytest-sugar" },
-    { name = "pytest-timer", extra = ["colorama"] },
-    { name = "pytest-xdist" },
-    { name = "refurb" },
-    { name = "typeguard" },
-    { name = "types-pillow" },
-    { name = "uvicorn" },
+    { name = "fhaviary", extra = ["dev"] },
 ]
 dev = [
-    { name = "aviary-gsm8k", extra = ["typing"] },
-    { name = "aviary-hotpotqa" },
-    { name = "boto3-stubs", extra = ["s3"] },
-    { name = "click" },
-    { name = "cloudpickle" },
-    { name = "dicttoxml" },
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "ipython" },
-    { name = "litellm", version = "1.48.10", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
-    { name = "litellm", version = "1.52.16", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13'" },
-    { name = "mypy" },
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "pre-commit" },
-    { name = "pydantic" },
-    { name = "pylint" },
-    { name = "pylint-pydantic" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-recording" },
-    { name = "pytest-subtests" },
-    { name = "pytest-sugar" },
-    { name = "pytest-timer", extra = ["colorama"] },
-    { name = "pytest-xdist" },
-    { name = "refurb" },
-    { name = "typeguard" },
-    { name = "types-pillow" },
-    { name = "uvicorn" },
+    { name = "fhaviary", extra = ["dev"] },
 ]
 
 [package.metadata]
@@ -883,7 +827,7 @@ requires-dist = [
     { name = "fastapi", marker = "extra == 'server'" },
     { name = "fhaviary", extras = ["image", "llm", "server", "typing", "xml"], marker = "extra == 'dev'", editable = "." },
     { name = "httpx" },
-    { name = "httpx", marker = "extra == 'dev'", specifier = "<0.28" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = "<0.29" },
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "litellm", marker = "python_full_version >= '3.13' and extra == 'llm'", specifier = ">=1.49.1" },
     { name = "litellm", marker = "python_full_version < '3.13' and extra == 'llm'" },
