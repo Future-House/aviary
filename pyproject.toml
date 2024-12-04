@@ -101,7 +101,7 @@ preview = true
 [tool.codeflash]
 disable-imports-sorting = true
 disable-telemetry = true
-formatter-cmds = ["ruff check --exit-zero --fix $file", "ruff format $file"]
+formatter-cmds = ["uv tool run ruff check --exit-zero --fix $file", "uv tool run ruff format $file"]
 module-root = "src/aviary"
 test-framework = "pytest"
 tests-root = "tests"
