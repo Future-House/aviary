@@ -7,9 +7,9 @@ import json
 import logging
 import random
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
+from collections.abc import Awaitable, Iterator
 from copy import deepcopy
-from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
+from typing import Annotated, Any, Generic, Self, TypeAlias, TypeVar, cast
 
 from pydantic import (
     BaseModel,
@@ -37,6 +37,13 @@ logger = logging.getLogger(__name__)
 # NOTE: can't use pydantic.JsonValue here because it will deep copy all the way
 # down JSON, and we want to support shallow copying capability
 Serializable: TypeAlias = dict | list | int | float | str | bool | BaseModel
+
+
+async def maybe_wait_for(future: Awaitable, timeout: float | None) -> Any:
+    """Apply a timeout to an awaitable if one is provided, otherwise await indefinitely."""
+    if timeout is None:
+        return await future
+    return await asyncio.wait_for(future, timeout)
 
 
 class Frame(BaseModel):
@@ -158,6 +165,7 @@ class Environment(ABC, Generic[TEnvState]):
         concurrency: bool = True,
         handle_tool_exc: bool = False,
         handle_invalid_tool_calls: bool = True,
+        exec_timeout: float | None = None,
         **function_kwargs,
     ) -> list[ToolResponseMessage]:
         """
@@ -171,6 +179,8 @@ class Environment(ABC, Generic[TEnvState]):
                 ToolResponseMessage.
             handle_invalid_tool_calls: Flag to handle invalid tool calls by returning
                 a ToolResponseMessage with a note that the tool requested doesn't exist
+            exec_timeout: Timeout for each tool call in seconds. If None, no timeout.
+                Note that handle_tool_exec can be used to catch TimeoutErrors.
             **function_kwargs: Keyword arguments to pass to all tool functions.
 
         Returns:
@@ -203,15 +213,21 @@ class Environment(ABC, Generic[TEnvState]):
             tool_exc: Exception | None = None
             try:
                 if is_coroutine_callable(tool._tool_fn):
-                    content = await tool._tool_fn(
-                        **tool_call.function.arguments, **filtered_kwargs
+                    content = await maybe_wait_for(
+                        tool._tool_fn(
+                            **tool_call.function.arguments, **filtered_kwargs
+                        ),
+                        exec_timeout,
                     )
                 else:
                     # If the function is synchronous, run on a thread
-                    content = await asyncio.to_thread(
-                        tool._tool_fn,
-                        **tool_call.function.arguments,
-                        **filtered_kwargs,
+                    content = await maybe_wait_for(
+                        asyncio.to_thread(
+                            tool._tool_fn,
+                            **tool_call.function.arguments,
+                            **filtered_kwargs,
+                        ),
+                        exec_timeout,
                     )
             except Exception as exc:
                 if not handle_tool_exc:
