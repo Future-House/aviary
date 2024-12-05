@@ -229,11 +229,9 @@ class FunctionInfo(BaseModel):
             resolved_subschemas = [FunctionInfo.resolve_schema(s) for s in subschemas]
 
             if key == "allOf":
-                # Merge everything from all subschemas
                 for subschema in resolved_subschemas:
                     merged_schema.update(subschema)
             elif key == "anyOf":
-                # Collect types and descriptions
                 types = []
                 descriptions = []
                 for subschema in resolved_subschemas:
@@ -241,7 +239,7 @@ class FunctionInfo(BaseModel):
                         types.append(subschema["type"])
                     if "description" in subschema:
                         descriptions.append(subschema["description"])
-                # Merge types into a union string
+                # union
                 if types:
                     merged_schema["type"] = " | ".join(types)
                 # Combine descriptions if needed
@@ -271,20 +269,6 @@ class FunctionInfo(BaseModel):
         return None
 
     def describe_str(self) -> str:
-        def indent_lines(text: str, prefix: str = " " * 4) -> str:
-            return "\n".join(prefix + line if line else "" for line in text.split("\n"))
-
-        def format_parameters(properties: dict) -> str:
-            lines = []
-            for name, arg in properties.items():
-                resolved_arg = FunctionInfo.resolve_schema(arg)
-                arg_type = resolved_arg.get("type", "unknown")
-                arg_description = resolved_arg.get(
-                    "description", "No description provided."
-                )
-                lines.append(f"    {name} ({arg_type}): {arg_description}")
-            return "PARAMETERS:\n" + "\n".join(lines) + "\n"
-
         # Build the prototype line
         param_str = ", ".join(
             f"{FunctionInfo.resolve_schema(arg).get('type', 'unknown')} {name}"
@@ -292,9 +276,23 @@ class FunctionInfo(BaseModel):
         )
         prototype = f"{self.name}({param_str})"
 
-        # Description and parameters
-        description_block = f"DESCRIPTION:\n{indent_lines(self.description)}\n"
-        params_description = format_parameters(self.parameters.properties)
+        description_block = (
+            "DESCRIPTION:\n"
+            + "\n".join(
+                "    " + line if line else "" for line in self.description.split("\n")
+            )
+            + "\n"
+        )
+
+        params_lines = []
+        for name, arg in self.parameters.properties.items():
+            resolved_arg = FunctionInfo.resolve_schema(arg)
+            arg_type = resolved_arg.get("type", "unknown")
+            arg_description = resolved_arg.get(
+                "description", "No description provided."
+            )
+            params_lines.append(f"    {name} ({arg_type}): {arg_description}")
+        params_description = "PARAMETERS:\n" + "\n".join(params_lines) + "\n"
 
         return (
             f"NAME: {self.name}\n\n"
