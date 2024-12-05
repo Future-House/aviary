@@ -393,6 +393,9 @@ PARAMETERS:
         with subtests.test("Test describe_json is callable"):
             assert tool.info.describe_json()
 
+        with subtests.test("Test describe_str is callable"):
+            assert tool.info.describe_str()
+
     def test_serialization_manual(self) -> None:
         # make one manually
         tool = Tool(
