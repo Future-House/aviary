@@ -219,39 +219,85 @@ class FunctionInfo(BaseModel):
     # SEE: https://github.com/openai/openai-openapi/blob/0f5de60a3d2b263dc2ac362371673f7a21811874/openapi.yaml#L7567-L7570
     parameters: Parameters
 
+    @staticmethod
+    def resolve_schema(schema):
+        def merge_subschemas(schema, key):
+            merged_schema = {}
+            subschemas = schema[key]
+
+            # Recursively resolve each subschema
+            resolved_subschemas = [FunctionInfo.resolve_schema(s) for s in subschemas]
+
+            if key == "allOf":
+                for subschema in resolved_subschemas:
+                    merged_schema.update(subschema)
+            elif key == "anyOf":
+                types = []
+                descriptions = []
+                for subschema in resolved_subschemas:
+                    if "type" in subschema:
+                        types.append(subschema["type"])
+                    if "description" in subschema:
+                        descriptions.append(subschema["description"])
+                # union
+                if types:
+                    merged_schema["type"] = " | ".join(types)
+                # Combine descriptions if needed
+                if descriptions:
+                    merged_schema["description"] = " / ".join(descriptions)
+
+            # Include other properties from the original schema
+            # use this one-liner for PERF403
+            merged_schema.update({k: v for k, v in schema.items() if k != key})
+
+            # Remove the original key
+            if key in merged_schema:
+                del merged_schema[key]
+
+            return merged_schema
+
+        # Base case: no allOf or anyOf
+        if "allOf" not in schema and "anyOf" not in schema:
+            return schema
+
+        if "allOf" in schema:
+            return merge_subschemas(schema, "allOf")
+
+        if "anyOf" in schema:
+            return merge_subschemas(schema, "anyOf")
+
+        return None
+
     def describe_str(self) -> str:
-        for value in self.parameters.properties.values():
-            if value.get("allOf") or not value.get("type"):
-                raise NotImplementedError(
-                    f"Complex types are not yet supported. Failed on: {self!r}"
-                )
-        # Start with the function prototype
-        prototype = f"{self.name}("
-        prototype += ", ".join([
-            f"{arg['type']} {name}" for name, arg in self.parameters.properties.items()
-        ])
-        prototype += ")"
+        # Build the prototype line
+        param_str = ", ".join(
+            f"{FunctionInfo.resolve_schema(arg).get('type', 'unknown')} {name}"
+            for name, arg in self.parameters.properties.items()
+        )
+        prototype = f"{self.name}({param_str})"
 
-        # Function description
-        indented_description_lines = "\n".join([
-            f"    {line}" if line else "" for line in self.description.split("\n")
-        ])
-        description = f"DESCRIPTION:\n{indented_description_lines}\n"
-
-        # Parameters description
-        params_description = "PARAMETERS:\n"
-        for name, arg in self.parameters.properties.items():
-            param_desc = (
-                f"    {name} ({arg['type']}):"
-                f" {arg.get('description') or 'No description provided.'}\n"
+        description_block = (
+            "DESCRIPTION:\n"
+            + "\n".join(
+                "    " + line if line else "" for line in self.description.split("\n")
             )
-            params_description += param_desc
+            + "\n"
+        )
 
-        # Constructing the full man page
+        params_lines = []
+        for name, arg in self.parameters.properties.items():
+            resolved_arg = FunctionInfo.resolve_schema(arg)
+            arg_type = resolved_arg.get("type", "unknown")
+            arg_description = resolved_arg.get(
+                "description", "No description provided."
+            )
+            params_lines.append(f"    {name} ({arg_type}): {arg_description}")
+        params_description = "PARAMETERS:\n" + "\n".join(params_lines) + "\n"
+
         return (
             f"NAME: {self.name}\n\n"
             f"SYNOPSIS:\n    {prototype}\n\n"
-            f"{description}\n{params_description}"
+            f"{description_block}\n{params_description}"
         )
 
     def describe_xml(self) -> str:

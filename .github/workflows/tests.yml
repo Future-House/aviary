@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: pre-commit/action@v3.0.1
-      - uses: pre-commit-ci/lite-action@v1.0.3
+      - uses: pre-commit-ci/lite-action@v1.1.0
         if: always()
   lint:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # For setuptools-scm, replace with fetch-tags after https://github.com/actions/checkout/issues/1471
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
       - run: uv python pin ${{ matrix.python-version }}
@@ -66,14 +66,14 @@ jobs:
           uv run refurb tests packages/gsm8k/tests packages/hotpotqa/tests
       - run: uv run pylint src packages
       - if: matrix.python-version == '3.11' # Only need to run this on one version
-        uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.0
+        uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.1
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # For setuptools-scm, replace with fetch-tags after https://github.com/actions/checkout/issues/1471
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
       - run: uv sync

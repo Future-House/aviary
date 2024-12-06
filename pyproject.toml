@@ -4,7 +4,7 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [dependency-groups]
 codeflash = [
-    "codeflash>=0.7",  # Pin to keep recent
+    "codeflash>=0.8",  # Pin for --verify-setup checking formatter-cmds
     "fhaviary[dev]",
 ]
 dev = [
@@ -44,7 +44,7 @@ dev = [
     "aviary.gsm8k[typing]",
     "aviary.hotpotqa",
     "fhaviary[image,llm,server,typing,xml]",
-    "httpx < 0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
+    "httpx<0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
     "pre-commit>=3.4",  # Pin to keep recent
@@ -101,7 +101,7 @@ preview = true
 [tool.codeflash]
 disable-imports-sorting = true
 disable-telemetry = true
-formatter-cmds = ["ruff check --exit-zero --fix $file", "ruff format $file"]
+formatter-cmds = ["uv tool run ruff check --exit-zero --fix $file", "uv tool run ruff format $file"]
 module-root = "src/aviary"
 test-framework = "pytest"
 tests-root = "tests"

@@ -385,13 +385,16 @@ PARAMETERS:
 
     def test_describe(self, subtests: SubTests) -> None:
         """Test that describe_xyz functions for FunctionInfo are reasonable."""
-        tool = Tool.from_function(example_fxn)
+        tool = Tool.from_function(many_edge_cases)
 
         with subtests.test("Test describe_xml is callable"):
             assert tool.info.describe_xml()
 
         with subtests.test("Test describe_json is callable"):
             assert tool.info.describe_json()
+
+        with subtests.test("Test describe_str is callable"):
+            assert tool.info.describe_str()
 
     def test_serialization_manual(self) -> None:
         # make one manually

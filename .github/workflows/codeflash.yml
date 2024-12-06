@@ -35,7 +35,7 @@ jobs:
         with:
           fetch-depth: 0
       - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
       - if: steps.bot_check.outputs.skip_remaining_steps == 'no'
