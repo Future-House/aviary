@@ -30,6 +30,7 @@ from aviary.core import (
     ToolSelectorLedger,
 )
 from aviary.dataset_server import TaskDatasetServer
+from aviary.tools import Messages
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
@@ -234,6 +235,38 @@ async def test_invalid_tool_call(
     assert obs
     for o, t in zip(obs, tool_calls, strict=True):
         assert o.tool_call_id == t.id
+
+
+class SlowEnv(Environment[None]):
+    async def reset(self) -> tuple[list[Message], list[Tool]]:
+        async def aslow_tool() -> None:
+            """I am very slow."""
+            await asyncio.sleep(0.1)
+
+        def slow_tool() -> None:
+            """I am very slow."""
+            time.sleep(0.1)
+
+        self.tools = [Tool.from_function(slow_tool), Tool.from_function(aslow_tool)]
+        return [], self.tools
+
+    async def step(
+        self, action: ToolRequestMessage
+    ) -> tuple[Messages, float, bool, bool]:
+        await self.exec_tool_calls(action, exec_timeout=0.0001)
+
+        return [], 0.0, False, False
+
+
+@pytest.mark.asyncio
+async def test_tool_exec_timeout() -> None:
+    env = SlowEnv()
+    _, tools = await env.reset()
+
+    for tool in tools:
+        action = ToolRequestMessage(tool_calls=[ToolCall.from_tool(tool)])
+        with pytest.raises(asyncio.TimeoutError):
+            await env.step(action)
 
 
 class TestRendering:
