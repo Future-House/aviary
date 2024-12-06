@@ -20,7 +20,6 @@ from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
 from aviary.render import Renderer
 from aviary.tools import (
     INVALID_TOOL_NAME,
-    EvalAnswerMode,
     FunctionInfo,
     Messages,
     MessagesAdapter,
@@ -35,10 +34,15 @@ from aviary.tools import (
     ToolSelector,
     ToolSelectorLedger,
     argref_by_name,
-    eval_answer,
     wraps_doc_only,
 )
-from aviary.utils import encode_image_to_base64, is_coroutine_callable, partial_format
+from aviary.utils import (
+    EvalAnswerMode,
+    encode_image_to_base64,
+    eval_answer,
+    is_coroutine_callable,
+    partial_format,
+)
 
 __all__ = [
     "INVALID_TOOL_NAME",
@@ -76,6 +80,7 @@ __all__ = [
     "ToolsAdapter",
     "argref_by_name",
     "encode_image_to_base64",
+    "eval_answer",
     "eval_answer",
     "fenv",
     "is_coroutine_callable",
