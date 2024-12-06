@@ -9,7 +9,7 @@ import random
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator
 from copy import deepcopy
-from typing import Annotated, Any, Generic, Self, TypeAlias, TypeVar, cast
+from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
 
 from pydantic import (
     BaseModel,
@@ -39,7 +39,10 @@ logger = logging.getLogger(__name__)
 Serializable: TypeAlias = dict | list | int | float | str | bool | BaseModel
 
 
-async def maybe_wait_for(future: Awaitable, timeout: float | None) -> Any:
+_T = TypeVar("_T")
+
+
+async def maybe_wait_for(future: Awaitable[_T], timeout: float | None) -> _T:
     """Apply a timeout to an awaitable if one is provided, otherwise await indefinitely."""
     if timeout is None:
         return await future
