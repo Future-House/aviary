@@ -2,6 +2,7 @@ import base64
 import contextlib
 import inspect
 import io
+from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, cast
 
@@ -79,17 +80,30 @@ def is_coroutine_callable(obj) -> bool:
     return False
 
 
-async def eval_answer(
+async def eval_answer(  # noqa: PLR0911
     proposed: str,
     correct: str,
     question: str | None = None,
-    eval_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS,
+    eval_mode: EvalAnswerMode | Sequence[EvalAnswerMode] = EvalAnswerMode.CONTAINS,
     llm_eval_config: dict | None = None,
 ) -> float:
     """Evaluate a proposed answer against a correct answer.
 
     Will return 0 or 1, except for llm-score which should be between 0 and 1
+
+    If a sequence of modes is provided, we will return the first non-zero result.
+    Can be used to try a fast (e.g. EM) mode and fall back to a slow (e.g. LLM) mode.
     """
+    if not isinstance(eval_mode, EvalAnswerMode):
+        # Note we cannot check isinstance(..., Sequence) since StrEnums are sequences.
+        for mode in eval_mode:
+            result = await eval_answer(
+                proposed, correct, question, mode, llm_eval_config
+            )
+            if result:
+                return result
+        return 0.0
+
     if eval_mode in {EvalAnswerMode.LLM, EvalAnswerMode.LLM_SCORE}:
         try:
             from litellm import acompletion
