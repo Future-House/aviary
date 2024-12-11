@@ -25,7 +25,6 @@ LLM_EVAL_CONFIG = {
 LLM_EXTRACT_CONFIG = {
     "prompt": (
         "You are evaluating answers for a test which has fixed options. "
-        "Here are the fixed options and a proposed answer. "
         "Repeat back which option the proposed answer matches. "
         "GIVE ONLY THE VERBATIM TEXT OF A FIXED OPTION. "
         "If the proposed answer is empty, invalid, or ambiguous, "
