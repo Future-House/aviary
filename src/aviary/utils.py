@@ -118,7 +118,6 @@ async def extract_answer_llm(
         proposed_answer=proposed,
     )
 
-    print("prompt", prompt)
     response = await acompletion(
         model=config["model"],
         temperature=config["temperature"],
@@ -126,7 +125,6 @@ async def extract_answer_llm(
     )
 
     extracted = response.choices[0].message.content.strip()
-    print("here it is", extracted)
     for option in options:
         if extracted.casefold() == option.casefold().strip():
             return option
