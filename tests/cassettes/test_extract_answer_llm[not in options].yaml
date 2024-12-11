@@ -2,11 +2,10 @@ interactions:
   - request:
       body:
         '{"messages": [{"content": "You are evaluating answers for a test which
-        has fixed options. Here are the fixed options and a proposed answer. Repeat
-        back which option the proposed answer matches. GIVE ONLY THE VERBATIM TEXT OF
-        A FIXED OPTION. If the proposed answer is empty, invalid, or ambiguous, return
-        an empty string.\n\nOptions:\nB\nC\n\nProposed answer: F", "role": "user"}],
-        "model": "gpt-4o-mini", "temperature": 0}'
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\nB\nC\n\nProposed answer:
+        F", "role": "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -15,7 +14,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "422"
+          - "372"
         content-type:
           - application/json
         host:
@@ -45,18 +44,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAA4xSTU8CMRS8769o3pk1sIvycTPxoDHoDU2M2XTbx26129e0xYCE/266IAsBEy89
-          zLyZzrx2kzAGSsKUgah5EI3V6a18nL0+PD+t58N5PtA0n62+X/idzO7t9Rf0ooLKDxThV3UlqLEa
-          gyKzo4VDHjC6DkZ5PslvhtmkJRqSqKOssiEdUtooo9Ksnw3T/igdjPfqmpRAD1P2ljDG2KY9Y04j
-          cQVT1u/9Ig16zyuE6WGIMXCkIwLce+UDNwF6HSnIBDRt9GPY4WLpeYxmllrv8e3hHk2VdVT6PX/A
-          F8ooXxcOuScTPX0gCy27TRh7b/ssTyKCddTYUAT6RBMNR5OdHXRb7Mh9VQgUuL6gOTErJAautD9a
-          BwguapRnhowBX0pFR0RyVPk8yyXvXW1lqv/Yd4QQaAPKwjqUSlzs25rHL/bX2GHFbWDwax+wKRbK
-          VOisU7sHXtiiLHkuxjjql5Bskx8AAAD//wMAztjv0e4CAAA=
+          H4sIAAAAAAAAA4xSy2rDMBC8+yvEnuPiPO3kVtLSQik9pT2UYhRp7aiRJSHJkAf59yLbzYOk0IsO
+          MzujmZX2ESEgOMwIsBX1rDIyvucvbwa3T7vieT5JkvVm/lgv3hcPH8Pdq4FeUOjlNzL/q7pjujIS
+          vdCqpZlF6jG49tPhcDqcjNN+Q1Saowyy0vh4pONKKBEPksEoTtK4n3XqlRYMHczIZ0QIIfvmDDkV
+          xw3MSNL7RSp0jpYIs+MQIWC1DAhQ54TzVHnonUimlUfVRD+HLRa1oyGaqqXs8MPxHqlLY/XSdfwR
+          L4QSbpVbpE6r4Om8NtCwh4iQr6ZPfRERjNWV8bnXa1TBcDJt7eC0xRPZVQWvPZU3NBdmOUdPhXRn
+          6wBG2Qr5lSEhQGsu9BkRnVW+znLLu60tVPkf+xPBGBqPPDcWuWA3+zbm4Yv9NXZccRMY3NZ5rPJC
+          qBKtsaJ94MLkWT9jg2yUpGOIDtEPAAAA//8DAPFLi1buAgAA
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f0707f8196a7ad6-SJC
+          - 8f070b74a8f296d2-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,14 +63,14 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 11 Dec 2024 17:00:29 GMT
+          - Wed, 11 Dec 2024 17:02:51 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=rcc8uJSoYq4Sbo_GUuI7O04sMAoaQ0vy.vIgnWH.Nv8-1733936429-1.0.1.1-XbksLC1b8zqp8quutgJYFvxYvYPvO82TaSkdFap094o8_1.HBMP.3TwDmpx36yIipRy5bJBnSaDXLegbPaTwEg;
-            path=/; expires=Wed, 11-Dec-24 17:30:29 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=cPN3yGhPdDhm..__K3xNc3MOLUBlr1oNqkhiHU7tJZ4-1733936571-1.0.1.1-MtqJwEyFDgd8Vni.ynFHGXcJPXLffNE5vA844QFRzo.pM.7HV8F4xT54VCeWBp2zImYM6SMGBKTeaixHDUg9Ng;
+            path=/; expires=Wed, 11-Dec-24 17:32:51 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=WkmDGCsakb0rOihw3PqRfbieMakXTIGQdIGD7BKSG5k-1733936429180-0.0.1.1-604800000;
+          - _cfuvid=guVLBTPXR9itj1suHbM9nVSWOWIE5OU2MTh7PlMzNK0-1733936571897-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
@@ -84,7 +83,7 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "243"
+          - "155"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
@@ -96,13 +95,13 @@ interactions:
         x-ratelimit-remaining-requests:
           - "29999"
         x-ratelimit-remaining-tokens:
-          - "149999901"
+          - "149999913"
         x-ratelimit-reset-requests:
           - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_fdcfe4f30d07daf21fc88414f0358901
+          - req_daa6490ff2cc82dbb9cea5befb1d758d
       status:
         code: 200
         message: OK

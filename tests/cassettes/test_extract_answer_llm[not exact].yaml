@@ -2,11 +2,10 @@ interactions:
   - request:
       body:
         '{"messages": [{"content": "You are evaluating answers for a test which
-        has fixed options. Here are the fixed options and a proposed answer. Repeat
-        back which option the proposed answer matches. GIVE ONLY THE VERBATIM TEXT OF
-        A FIXED OPTION. If the proposed answer is empty, invalid, or ambiguous, return
-        an empty string.\n\nOptions:\nA\nB\nC\n\nProposed answer: A or B", "role": "user"}],
-        "model": "gpt-4o-mini", "temperature": 0}'
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\nA\nB\nC\n\nProposed answer:
+        A or B", "role": "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -15,7 +14,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "430"
+          - "380"
         content-type:
           - application/json
         host:
@@ -45,18 +44,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jFLLasMwELz7K8Se4+LEaV63XBJK6TmlpRhZ2thqZK2QZGgI+fci501S
-          6EWHmZ3RzEq7hDFQEmYMRM2DaKxO5/L17X25Eh/L+cpl/VG74P3nxZa29eJlA72ooPIbRTipngQ1
-          VmNQZA60cMgDRtf+OM+n+Wg4mHZEQxJ1lFU2pENKG2VUOsgGwzQbp/3JUV2TEuhhxj4TxhjbdWfM
-          aST+wIxlvRPSoPe8QpidhxgDRzoiwL1XPnAToHchBZmApot+DTtct57HaKbV+ojvz/doqqyj0h/5
-          M75WRvm6cMg9mejpA1no2H3C2FfXp72JCNZRY0MRaIMmGk7ygx1ctnghj1UhUOD6gebGrJAYuNL+
-          ah0guKhR3hkyBryViq6I5KryfZZH3ofaylT/sb8QQqANKAvrUCrxsG9nHr/YX2PnFXeBwW99wKZY
-          K1Ohs04dHnhti7LkuZjgOCsh2Se/AAAA//8DAI7MQKjuAgAA
+          H4sIAAAAAAAAA4xSy07DMBC85yusPTcobVpCe0PigARSOSEkhCLH3iYGxzb2FlGq/jty+krVInHx
+          YWZnPLP2OmEMlIQZA9FwEq3T6a18mH/OH5ufVRVoNZk+PRfmXovs5e4rz2EQFbZ6R0F71ZWwrdNI
+          ypotLTxywug6LPJ8ml9PilFHtFaijrLaUTq2aauMSkfZaJxmRTq82akbqwQGmLHXhDHG1t0ZcxqJ
+          3zBj2WCPtBgCrxFmhyHGwFsdEeAhqEDcEAyOpLCG0HTR+7DHxTLwGM0std7hm8M92tbO2yrs+AO+
+          UEaFpvTIgzXRM5B10LGbhLG3rs/yJCI4b1tHJdkPNNGwyLd2cNzikdxVBbLE9QXNiVkpkbjSobcO
+          EFw0KM8MGQO+lMr2iKRX+TzLJe9tbWXq/9gfCSHQEcrSeZRKXOzbmccv9tfYYcVdYAirQNiWC2Vq
+          9M6r7QMvXFlVPBc3WGQVJJvkFwAA//8DABYKnlruAgAA
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f0707fdccb9ed3b-SJC
+          - 8f070b799eb5679d-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,7 +63,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 11 Dec 2024 17:00:30 GMT
+          - Wed, 11 Dec 2024 17:02:52 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -78,7 +77,7 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "187"
+          - "193"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
@@ -90,13 +89,13 @@ interactions:
         x-ratelimit-remaining-requests:
           - "29999"
         x-ratelimit-remaining-tokens:
-          - "149999898"
+          - "149999912"
         x-ratelimit-reset-requests:
           - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_6096d9659ea5fa164eceaca3c0ff9fbb
+          - req_24d3312a6ad717a657fe3e693bd24613
       status:
         code: 200
         message: OK

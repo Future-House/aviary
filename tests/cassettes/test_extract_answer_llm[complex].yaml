@@ -2,17 +2,17 @@ interactions:
   - request:
       body:
         '{"messages": [{"content": "You are evaluating answers for a test which
-        has fixed options. Here are the fixed options and a proposed answer. Repeat
-        back which option the proposed answer matches. GIVE ONLY THE VERBATIM TEXT OF
-        A FIXED OPTION. If the proposed answer is empty, invalid, or ambiguous, return
-        an empty string.\n\nOptions:\nEconomic factors\nSocial unrest\nPolitical corruption\n\nProposed
-        answer: Based on the context given, Serif et al. (2026) claim that the overwhelming
-        cause of regime collapse arises from economic factors. Yet, most other scholars
-        (Gerald and Robinson for example) believe the collapse was due to social unrest
-        because of the prolonged epidemic of 2025. I tend to agree with the majority
-        - although I can see both sides. Thus my response is that the social unrest
-        was the significant factor in the collapse of the regime.", "role": "user"}],
-        "model": "gpt-4o-mini", "temperature": 0}'
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\nEconomic factors\nSocial
+        unrest\nPolitical corruption\n\nProposed answer: Based on the context given,
+        Serif et al. (2026) claim that the overwhelming cause of regime collapse arises
+        from economic factors. Yet, most other scholars (Gerald and Robinson for example)
+        believe the collapse was due to social unrest because of the prolonged epidemic
+        of 2025. I tend to agree with the majority - although I can see both sides.
+        Thus my response is that the social unrest was the significant factor in the
+        collapse of the regime.", "role": "user"}], "model": "gpt-4o-mini", "temperature":
+        0}'
       headers:
         accept:
           - application/json
@@ -21,7 +21,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "916"
+          - "866"
         content-type:
           - application/json
         host:
@@ -51,18 +51,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jFLBThsxFLzvV1g+Z1HIBgK5wQkVAVJ7oUJo5bVfdt3Yfpbf2yoF5d+r
-          dUI2EVTqxYc3b8YzY78XQkhr5FJI3SnWPrryxtw//Pz+m+82T99md+v15vHt/tY+dz5Q8nIyMLD5
-          BZo/WGcafXTAFsMO1gkUw6B6vqiq6+pyXk0z4NGAG2ht5HKOpbfBlrPpbF5OF+X51Z7dodVAcile
-          CiGEeM/n4DMY2MilyFp54oFItSCXhyUhZEI3TKQissQqsJyMoMbAELL1H6itcqIPCehkJ8GqJzX4
-          DL1z+/n2cKnDNiZsaI8f5isbLHV1AkUYhguIMcqMbgshXnO4/sSvjAl95JpxDYFyXxc7PTl2OqKz
-          PcbIyh2TFpMv5GoDrKyjo3akVroDM1LHKlVvLB4BxVHoz2a+0t4Ft6H9H/kR0Boig6ljAmP1aeBx
-          LcHw4/61dig5G5b0hxh8vbKhhRST3b33KtZNoyp9BYtpI4tt8RcAAP//AwC+Pd9w/QIAAA==
+          H4sIAAAAAAAAAwAAAP//jJJBTwIxEIXv+yuanlkDLLDITT140OiBxJgYs+m2w1Lpdpp2ViGE/266
+          IAsREy89zDfv9c2024QxrhWfMS6XgmTtTHqjHp59/YQyyLn6vJ28Klo/ipfNF6zu7nkvKrD8AEk/
+          qiuJtTNAGu0eSw+CILoO8iy7zibjPGtBjQpMlFWO0hGmtbY6HfaHo7Sfp4PpQb1ELSHwGXtLGGNs
+          254xp1Ww5jPW7/1UaghBVMBnxybGuEcTK1yEoAMJS7zXQYmWwLbR5yi1MKyxHsJZj4dFE0TMaRtj
+          DvXd8VKDlfNYhgM/1hfa6rAsPIiANl4QCB1v6S5h7L0drjnLy53H2lFBuAIbDQeT8d6Pdzvt6PDA
+          CEmYU1Heu2BXKCChTTjZDpdCLkF10m6VolEaT0ByMvTvMJe894NrW/3HvgNSgiNQhfOgtDwfuGvz
+          EH/cX23HJbeBedgEgrpYaFuBd17v33vhirIUmZxC3i95sku+AQAA//8DAAcy6K79AgAA
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f0708028d4067b3-SJC
+          - 8f070b7e9be306ad-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -70,7 +70,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 11 Dec 2024 17:00:30 GMT
+          - Wed, 11 Dec 2024 17:02:53 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -84,7 +84,7 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "219"
+          - "244"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
@@ -96,13 +96,13 @@ interactions:
         x-ratelimit-remaining-requests:
           - "29999"
         x-ratelimit-remaining-tokens:
-          - "149999777"
+          - "149999790"
         x-ratelimit-reset-requests:
           - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_f1ad9fa4f694c6f3fa43b1e22e47a6e7
+          - req_e8f3bb69f3add846e2a40af6c0982db6
       status:
         code: 200
         message: OK
