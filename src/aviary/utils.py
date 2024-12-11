@@ -22,6 +22,22 @@ LLM_EVAL_CONFIG = {
     "temperature": 0,
 }
 
+LLM_EXTRACT_CONFIG = {
+    "prompt": (
+        "You are evaluating answers for a test which has fixed options. "
+        "Here are the fixed options and a proposed answer. "
+        "Repeat back which option the proposed answer matches. "
+        "GIVE ONLY THE VERBATIM TEXT OF A FIXED OPTION. "
+        "If the proposed answer is empty, invalid, or ambiguous, "
+        "return an empty string."
+        "\n\nOptions:\n{options}"
+        "\n\nProposed answer: {proposed_answer}"
+    ),
+    "model": "gpt-4o-mini",
+    "temperature": 0,
+}
+
+
 LLM_SCORE_EVAL_CONFIG = {
     "prompt": (
         "Here is a question, the correct answer to the question, and a rubric for"
@@ -77,6 +93,46 @@ def is_coroutine_callable(obj) -> bool:
     if callable(obj):
         return inspect.iscoroutinefunction(obj.__call__)
     return False
+
+
+async def extract_answer_llm(
+    proposed: str,
+    options: list[str],
+) -> str | None:
+    """Extract the answer from a proposed answer and a list of options."""
+    if not proposed:
+        return None
+    for option in options:
+        if proposed.strip().casefold() == option.casefold().strip():
+            return option
+
+    try:
+        from litellm import acompletion
+    except ImportError as e:
+        raise ImportError(
+            "eval_answer requires the 'llm' extra for 'litellm'. Please:"
+            " `pip install aviary[llm]`."
+        ) from e
+    config = LLM_EXTRACT_CONFIG
+    prompt = cast(str, config["prompt"]).format(
+        options="\n".join(options),
+        proposed_answer=proposed,
+    )
+
+    print("prompt", prompt)
+    response = await acompletion(
+        model=config["model"],
+        temperature=config["temperature"],
+        messages=[{"content": prompt, "role": "user"}],
+    )
+
+    extracted = response.choices[0].message.content.strip()
+    print("here it is", extracted)
+    for option in options:
+        if extracted.casefold() == option.casefold().strip():
+            return option
+
+    return None
 
 
 async def eval_answer(
