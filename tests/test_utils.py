@@ -7,24 +7,32 @@ from aviary.core import eval_answer
 @pytest.mark.parametrize(
     ("proposed", "correct", "question", "eval_mode", "expected"),
     [
-        pytest.param("\n\n250", "250", None, "exact", True, id="exact"),
+        pytest.param("\n\n250", "250", None, "exact", 1.0, id="exact"),
         pytest.param(
-            "Answer:\n\n250", "250", None, "exact", False, id="exact with noise"
+            "Answer:\n\n250", "250", None, "exact", 0.0, id="exact with noise"
         ),
         pytest.param(
-            "Answer\n\n: 250", "250", None, "contains", True, id="contains with noise"
+            "Answer\n\n: 250", "250", None, "contains", 1.0, id="contains with noise"
         ),
-        pytest.param("A)", "A", None, "contains", True, id="contains multiple choice"),
+        pytest.param("A)", "A", None, "contains", 1.0, id="contains multiple choice"),
         pytest.param(
-            "The answer is C", "D", None, "contains", False, id="contains wrong answer"
+            "The answer is C", "D", None, "contains", 0.0, id="contains wrong answer"
         ),
         pytest.param(
             "Based on all factors considered, the most compelling answer is Gerald, C",
             "C",
             "Which of the following is most likely true:\n\nA) Piggie, B) Pigeon, C) Gerald\n",
             "llm",
-            True,
+            1.0,
             id="llm basic",
+        ),
+        pytest.param(
+            "Answer\n\n: 250",
+            "250",
+            None,
+            ["exact", "contains"],
+            1.0,
+            id="exact then contains",
         ),
     ],
 )

@@ -84,7 +84,9 @@ async def eval_answer(  # noqa: PLR0911
     proposed: str,
     correct: str,
     question: str | None = None,
-    eval_mode: EvalAnswerMode | Sequence[EvalAnswerMode] = EvalAnswerMode.CONTAINS,
+    eval_mode: str
+    | EvalAnswerMode
+    | Sequence[str | EvalAnswerMode] = EvalAnswerMode.CONTAINS,
     llm_eval_config: dict | None = None,
 ) -> float:
     """Evaluate a proposed answer against a correct answer.
@@ -94,6 +96,9 @@ async def eval_answer(  # noqa: PLR0911
     If a sequence of modes is provided, we will return the first non-zero result.
     Can be used to try a fast (e.g. EM) mode and fall back to a slow (e.g. LLM) mode.
     """
+    if isinstance(eval_mode, str):
+        eval_mode = EvalAnswerMode(eval_mode)
+
     if not isinstance(eval_mode, EvalAnswerMode):
         # Note we cannot check isinstance(..., Sequence) since StrEnums are sequences.
         for mode in eval_mode:
