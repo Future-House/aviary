@@ -94,7 +94,7 @@ is a boolean value.
 The easiest way to create an environment is using the functional interface, which just uses functions and decorators to define environments. First, let's define what the environment looks like by defining its `start` function:
 
 ```py
-from aviary import fenv
+from aviary.core import fenv
 
 
 @fenv.start()
