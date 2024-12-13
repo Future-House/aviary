@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar, Self
 import numpy as np
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from aviary.utils import encode_image_to_base64
+from aviary.utils import check_if_valid_base64, encode_image_to_base64
 
 if TYPE_CHECKING:
     from logging import LogRecord
@@ -123,11 +123,13 @@ class Message(BaseModel):
         cls,
         role: str = DEFAULT_ROLE,
         text: str | None = None,
-        images: list[np.ndarray | str] | None = None,
+        images: list[np.ndarray | str] | str | np.ndarray | None = None,
     ) -> Self:
         # Assume no images, and update to images if present
         content: str | list[dict] | None = text
         if images is not None:
+            if isinstance(images, str | np.ndarray):
+                images = [images]
             content = [
                 {
                     "type": "image_url",
@@ -135,7 +137,7 @@ class Message(BaseModel):
                         "url": encode_image_to_base64(image)
                         # If image is a string, assume it's already a base64 encoded image
                         if isinstance(image, np.ndarray)
-                        else image
+                        else check_if_valid_base64(image)
                     },
                 }
                 for image in images

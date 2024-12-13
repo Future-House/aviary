@@ -70,6 +70,16 @@ def encode_image_to_base64(img: "np.ndarray") -> str:
     )
 
 
+def check_if_valid_base64(image: str) -> str:
+    """Check if the input string is a valid base64 encoded image."""
+    try:
+        base64.b64decode(image)
+    except Exception as err:
+        raise ValueError("Invalid base64 encoded image") from err
+    else:
+        return image
+
+
 def is_coroutine_callable(obj) -> bool:
     """Get if the input object is awaitable."""
     if inspect.isfunction(obj) or inspect.ismethod(obj):
