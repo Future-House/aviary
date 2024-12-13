@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 import json
-import numpy as np
-
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
+import numpy as np
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from aviary.utils import encode_image_to_base64
 
 if TYPE_CHECKING:
     from logging import LogRecord
-
 
 
 class Message(BaseModel):
