@@ -76,8 +76,7 @@ def check_if_valid_base64(image: str) -> str:
         base64.b64decode(image)
     except Exception as err:
         raise ValueError("Invalid base64 encoded image") from err
-    else:
-        return image
+    return image
 
 
 def is_coroutine_callable(obj) -> bool:
