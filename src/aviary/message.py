@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import numpy as np
+
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
@@ -11,7 +13,6 @@ from aviary.utils import encode_image_to_base64
 if TYPE_CHECKING:
     from logging import LogRecord
 
-    import numpy as np
 
 
 class Message(BaseModel):
@@ -124,16 +125,22 @@ class Message(BaseModel):
         cls,
         role: str = DEFAULT_ROLE,
         text: str | None = None,
-        image: np.ndarray | None = None,
+        images: list[np.ndarray | str] | None = None,
     ) -> Self:
-        # Assume no image, and update to image if present
+        # Assume no images, and update to images if present
         content: str | list[dict] | None = text
-        if image is not None:
+        if images is not None:
             content = [
                 {
                     "type": "image_url",
-                    "image_url": {"url": encode_image_to_base64(image)},
+                    "image_url": {
+                        "url": encode_image_to_base64(image)
+                        # If image is a string, assume it's already a base64 encoded image
+                        if isinstance(image, np.ndarray)
+                        else image
+                    },
                 }
+                for image in images
             ]
             if text is not None:
                 content.append({"type": "text", "text": text})

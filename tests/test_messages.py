@@ -114,18 +114,44 @@ class TestMessage:
 
     def test_image_message(self) -> None:
         # An RGB image of a red square
-        image = np.zeros((32, 32, 3), dtype=np.uint8)
-        image[:] = [255, 0, 0]  # (255 red, 0 green, 0 blue) is maximum red in RGB
-        message_text = "What color is this square? Respond only with the color name."
-        message_with_image = Message.create_message(text=message_text, image=image)
-        assert message_with_image.content
-        specialized_content = json.loads(message_with_image.content)
-        assert len(specialized_content) == 2
-        text_idx, image_idx = (
-            (0, 1) if specialized_content[0]["type"] == "text" else (1, 0)
+        red_square = np.zeros((32, 32, 3), dtype=np.uint8)
+        red_square[:] = [255, 0, 0]  # (255 red, 0 green, 0 blue) is maximum red in RGB
+        
+        # A pre-encoded base64 image (simulated)
+        encoded_image = "data:image/jpeg;base64,fake_base64_content"
+        
+        message_text = "What color are these squares? List each color."
+        message_with_images = Message.create_message(
+            text=message_text, 
+            images=[red_square, encoded_image]
         )
+        
+        assert message_with_images.content
+        specialized_content = json.loads(message_with_images.content)
+        assert len(specialized_content) == 3  # 2 images + 1 text
+        
+        # Find indices of each content type
+        image_indices = []
+        text_idx = None
+        for i, content in enumerate(specialized_content):
+            if content["type"] == "image_url":
+                image_indices.append(i)
+            else:
+                text_idx = i
+        
+        assert len(image_indices) == 2
+        assert text_idx is not None
         assert specialized_content[text_idx]["text"] == message_text
-        assert "image_url" in specialized_content[image_idx]
+        
+        # Check both images are properly formatted
+        for idx in image_indices:
+            assert "image_url" in specialized_content[idx]
+            assert "url" in specialized_content[idx]["image_url"]
+            # First image should be base64 encoded, second should be the raw string
+            if idx == image_indices[0]:
+                assert specialized_content[idx]["image_url"]["url"].startswith("data:image/")
+            else:
+                assert specialized_content[idx]["image_url"]["url"] == encoded_image
 
 
 class TestToolRequestMessage:
