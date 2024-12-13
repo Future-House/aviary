@@ -125,6 +125,18 @@ class Message(BaseModel):
         text: str | None = None,
         images: list[np.ndarray | str] | str | np.ndarray | None = None,
     ) -> Self:
+        """Create a message with optional text and images.
+
+        Args:
+            role: The role of the message.
+            text: The text of the message.
+            images: The images to include in the message. This can be a single image or
+                a list of images. Images can be a numpy array or a base64 encoded image
+                string (str).
+
+        Returns:
+            The created message.
+        """
         # Assume no images, and update to images if present
         content: str | list[dict] | None = text
         if images is not None:
