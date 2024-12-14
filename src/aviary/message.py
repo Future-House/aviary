@@ -4,13 +4,14 @@ import json
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
-import numpy as np
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from aviary.utils import check_if_valid_base64, encode_image_to_base64
 
 if TYPE_CHECKING:
     from logging import LogRecord
+
+    import numpy as np
 
 
 class Message(BaseModel):
@@ -140,7 +141,7 @@ class Message(BaseModel):
         # Assume no images, and update to images if present
         content: str | list[dict] | None = text
         if images is not None:
-            if isinstance(images, str | np.ndarray):
+            if not isinstance(images, list):
                 images = [images]
             content = [
                 {
