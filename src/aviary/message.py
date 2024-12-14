@@ -146,10 +146,10 @@ class Message(BaseModel):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": encode_image_to_base64(image)
+                        "url": check_if_valid_base64(image)
                         # If image is a string, assume it's already a base64 encoded image
-                        if isinstance(image, np.ndarray)
-                        else check_if_valid_base64(image)
+                        if isinstance(image, str)
+                        else encode_image_to_base64(image)
                     },
                 }
                 for image in images

@@ -825,12 +825,11 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.12.1.dev10+g29bdd09.d20241213"
+version = "0.12.1.dev12+gdc32b54.d20241214"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
     { name = "httpx" },
-    { name = "numpy" },
     { name = "pydantic" },
 ]
 
@@ -981,7 +980,6 @@ requires-dist = [
     { name = "litellm", marker = "python_full_version >= '3.13' and extra == 'llm'", specifier = ">=1.49.1" },
     { name = "litellm", marker = "python_full_version < '3.13' and extra == 'llm'" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
-    { name = "numpy" },
     { name = "numpy", marker = "extra == 'typing'" },
     { name = "paper-qa", extras = ["ldp"], marker = "extra == 'paperqa'", specifier = ">=5" },
     { name = "pillow", marker = "extra == 'image'" },
