@@ -156,6 +156,13 @@ class TestMessage:
                 None,
                 2,  # 1 image + 1 text
             ),
+            # Case 5: A PNG image should be converted to a base64 encoded image
+            (
+                load_base64_image("sample_png_image.b64"),
+                "What color is this square?",
+                None,
+                2,  # 1 image + 1 text
+            ),
         ],
     )
     def test_image_message(

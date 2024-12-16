@@ -73,7 +73,9 @@ def encode_image_to_base64(img: "np.ndarray") -> str:
 def check_if_valid_base64(image: str) -> str:
     """Check if the input string is a valid base64 encoded image."""
     try:
-        base64.b64decode(image)
+        # Support for inclusion of the data:image/ url prefix
+        test_image = image.split(",")[1] if image.startswith("data:image/") else image
+        base64.b64decode(test_image)
     except Exception as err:
         raise ValueError("Invalid base64 encoded image") from err
     return image

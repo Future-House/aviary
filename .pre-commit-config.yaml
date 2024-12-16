@@ -47,6 +47,7 @@ repos:
       - id: codespell
         additional_dependencies: [".[toml]"]
         exclude_types: [jupyter]
+        exclude: '.*\.b64$'
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.2
     hooks:
