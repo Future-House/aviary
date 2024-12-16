@@ -136,7 +136,7 @@ class TestMessage:
             (
                 [
                     np.zeros((32, 32, 3), dtype=np.uint8),  # red square
-                    load_base64_image("sample_image1.b64"),
+                    load_base64_image("sample_jpeg_image.b64"),
                 ],
                 "What color are these squares? List each color.",
                 None,
@@ -151,7 +151,7 @@ class TestMessage:
             ),
             # Case 4: A string should be converted to a base64 encoded image
             (
-                load_base64_image("sample_image1.b64"),
+                load_base64_image("sample_jpeg_image.b64"),
                 "What color is this square?",
                 None,
                 2,  # 1 image + 1 text
