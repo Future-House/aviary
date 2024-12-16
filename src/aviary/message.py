@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, ClassVar, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from aviary.utils import check_if_valid_base64, encode_image_to_base64
+from aviary.utils import encode_image_to_base64, validate_base64_image
 
 if TYPE_CHECKING:
     from logging import LogRecord
@@ -147,7 +147,7 @@ class Message(BaseModel):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": check_if_valid_base64(image)
+                        "url": validate_base64_image(image)
                         # If image is a string, assume it's already a base64 encoded image
                         if isinstance(image, str)
                         else encode_image_to_base64(image)

@@ -70,8 +70,8 @@ def encode_image_to_base64(img: "np.ndarray") -> str:
     )
 
 
-def check_if_valid_base64(image: str) -> str:
-    """Check if the input string is a valid base64 encoded image."""
+def validate_base64_image(image: str) -> str:
+    """Validate if the input string is a valid base64 encoded image and if it is, return the image."""
     try:
         # Support for inclusion of the data:image/ url prefix
         test_image = image.split(",")[1] if image.startswith("data:image/") else image
