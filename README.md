@@ -73,7 +73,10 @@ except for `tool` which has a special meaning in aviary.
 | user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
 | tool      | Result of tool run in the environment            | Some number crunching program's output                           |
 
-The `content` is a string that can be anything, or a null value.
+The `content` is a string with the text, a JSON serializable list of dict, or a null value.
+A list of dicts is used to encode multi-modal content.
+
+```py
 
 ## Environment
 
