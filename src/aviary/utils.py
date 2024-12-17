@@ -92,13 +92,14 @@ async def eval_answer(
     proposed: str,
     correct: str,
     question: str | None = None,
-    eval_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS,
+    eval_mode: str | EvalAnswerMode = EvalAnswerMode.CONTAINS,
     llm_eval_config: dict | None = None,
 ) -> float:
     """Evaluate a proposed answer against a correct answer.
 
     Will return 0 or 1, except for llm-score which should be between 0 and 1
     """
+    eval_mode = EvalAnswerMode(eval_mode)
     if eval_mode in {EvalAnswerMode.LLM, EvalAnswerMode.LLM_SCORE}:
         try:
             from litellm import acompletion
