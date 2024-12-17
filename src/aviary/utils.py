@@ -5,10 +5,16 @@ import io
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, cast
 
+try:
+    from litellm import acompletion
+except ImportError:
+    acompletion = None
+
 if TYPE_CHECKING:
     import numpy as np
 
 
+DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
 LLM_BOOL_EVAL_CONFIG = {
     "prompt": (
         "Here is a question, the correct answer to the question, and a proposed answer"
@@ -18,7 +24,7 @@ LLM_BOOL_EVAL_CONFIG = {
         "\n\nCorrect answer: {correct_answer}"
         "\n\nProposed answer: {proposed_answer}"
     ),
-    "model": "gpt-4o-mini",
+    "model": DEFAULT_EVAL_MODEL_NAME,
     "temperature": 0,
 }
 
@@ -95,6 +101,23 @@ def is_coroutine_callable(obj) -> bool:
     return False
 
 
+async def run_prompt(
+    prompt: str, model: str = DEFAULT_EVAL_MODEL_NAME, temperature: float | None = None
+) -> str:
+    try:
+        response = await acompletion(
+            model=model,
+            temperature=temperature,
+            messages=[{"content": prompt, "role": "user"}],
+        )
+    except TypeError:
+        raise ImportError(
+            "Answer evaluation requires the 'llm' extra for 'litellm'. Please:"
+            " `pip install aviary[llm]`."
+        ) from None
+    return response.choices[0].message.content
+
+
 async def eval_answer(
     proposed: str,
     correct: str,
@@ -108,13 +131,6 @@ async def eval_answer(
     """
     eval_mode = EvalAnswerMode(eval_mode)
     if eval_mode in {EvalAnswerMode.LLM, EvalAnswerMode.LLM_SCORE}:
-        try:
-            from litellm import acompletion
-        except ImportError as e:
-            raise ImportError(
-                "eval_answer requires the 'llm' extra for 'litellm'. Please:"
-                " `pip install aviary[llm]`."
-            ) from e
         if question is None:
             raise ValueError("Question must be provided for LLM evaluation mode.")
         default_config = eval_mode.get_default_config()
@@ -124,19 +140,17 @@ async def eval_answer(
             correct_answer=correct,
             proposed_answer=proposed,
         )
-        response = await acompletion(
+        response_msg = await run_prompt(
+            prompt,
             model=config.get("model", default_config["model"]),
             temperature=config.get("temperature", default_config["temperature"]),
-            messages=[{"content": prompt, "role": "user"}],
         )
         if eval_mode == EvalAnswerMode.LLM:
             return await eval_answer(
-                response.choices[0].message.content.strip().casefold(),
-                "yes",
-                eval_mode=EvalAnswerMode.EXACT,
+                response_msg.strip().casefold(), "yes", eval_mode=EvalAnswerMode.EXACT
             )
         try:
-            return float(response.choices[0].content.strip()) / float(
+            return float(response_msg.strip()) / float(
                 config.get("max_score", default_config["max_score"])
             )
         except ValueError:
