@@ -2,8 +2,15 @@ import base64
 import contextlib
 import inspect
 import io
+import random
+import re
+import string
+from ast import literal_eval
+from collections.abc import Awaitable, Callable, Sequence
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast
+
+from pydantic import BaseModel, Field, model_validator
 
 try:
     from litellm import acompletion
@@ -14,7 +21,7 @@ if TYPE_CHECKING:
     import numpy as np
 
 
-DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
+DEFAULT_EVAL_MODEL_NAME = "gpt-4o"
 LLM_BOOL_EVAL_CONFIG = {
     "prompt": (
         "Here is a question, the correct answer to the question, and a proposed answer"
@@ -166,3 +173,182 @@ async def eval_answer(
         return float(gt in pred)
 
     raise RuntimeError(f"Invalid evaluation mode: {eval_mode}")
+
+
+_CAPITAL_A_INDEX = ord("A")
+
+
+class MultipleChoiceQuestion(BaseModel):
+    QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}\n\nOptions:\n{options}"
+    # TODO: combine with above eval_answer and its prompts
+    EVALUATION_PROMPT_TEMPLATE: ClassVar[str] = (
+        "Given the following question and a proposed answer to the question, return the"
+        " single-letter choice in the question that matches the proposed answer."
+        " If the proposed answer is blank or an empty string,"
+        " or multiple options are matched, respond with '0'."
+        "\n\nQuestion: {qa_prompt}"
+        "\n\nProposed Answer: {qa_answer}"
+        "\n\nSingle Letter Answer:"
+    )
+    DEFAULT_UNSURE_OPTION: ClassVar[str] = (
+        "Insufficient information to answer this question"
+    )
+    SEED_USING_QUESTION: ClassVar[Literal["SEED_USING_QUESTION"]] = (
+        "SEED_USING_QUESTION"
+    )
+
+    question: str = Field(
+        description="Question to answer (without multiple choice options)."
+    )
+    options: Sequence[str] = Field(description="All multiple choice options.")
+    ideal_answer: str = Field(
+        description=(
+            "Desired ideal answer. If not one of the provided options, it will be"
+            " automatically added."
+        )
+    )
+    unsure_answer: str | None = Field(
+        default=DEFAULT_UNSURE_OPTION,
+        description=(
+            "Unsure answer text. If not one of the provided options, it will be"
+            " automatically added."
+        ),
+    )
+    shuffle_seed: int | Literal["SEED_USING_QUESTION"] | None = Field(
+        default=None,
+        description=(
+            "Optional seed to use in randomization of options, where seeding is not"
+            " global (e.g. no `random.seed`). Optionally pass in the string literal"
+            " 'SEED_USING_QUESTION' to hash the question for the seed"
+        ),
+    )
+
+    @model_validator(mode="after")
+    def add_answers_and_shuffle(self) -> Self:
+        if self.ideal_answer not in self.options:
+            self.options = [*self.options, self.ideal_answer]
+        if self.unsure_answer and self.unsure_answer not in self.options:
+            self.options = [*self.options, self.unsure_answer]
+        if len(self.options) > len(string.ascii_lowercase):
+            raise NotImplementedError(
+                "Didn't handle more multiple choice options than letters, options were"
+                f" {self.options}."
+            )
+        if self.shuffle_seed == self.SEED_USING_QUESTION:
+            self.shuffle_seed = hash(self.question)
+        if self.shuffle_seed is not None:
+            self.options = random.Random(self.shuffle_seed).sample(
+                self.options, k=len(self.options)
+            )
+            # Ensure deserialization doesn't re-shuffle
+            self.shuffle_seed = None
+        return self
+
+    @property
+    def ideal_answer_index(self) -> int:
+        return self.options.index(self.ideal_answer)
+
+    @property
+    def unsure_answer_index(self) -> int | None:
+        if self.unsure_answer is None:
+            return None
+        return self.options.index(self.unsure_answer)
+
+    @property
+    def question_prompt(self) -> str:
+        return self.QUESTION_PROMPT_TEMPLATE.format(
+            question=self.question,
+            options="\n".join([
+                f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
+            ]),
+        )
+
+    @staticmethod
+    def split_options(options: str) -> list[str]:
+        """Split options string into a list of options.
+
+        Examples:
+            >>> MultipleChoiceQuestion.split_options("apples, mangos")
+            ['apples', 'mangos']
+        """
+        try:
+            split_options = literal_eval(options)
+            if not isinstance(split_options, list):
+                raise TypeError("Need split_options to be a list.")  # noqa: TRY301
+        except (ValueError, SyntaxError, TypeError):
+            split_options = [d.strip("'[ ]\"") for d in options.split(",")]
+        return split_options
+
+    async def grade(
+        self, answer: str, prompt_runner: Callable[[str], Awaitable[str]] | None = None
+    ) -> "tuple[MultipleChoiceEvaluation, str, str]":
+        if prompt_runner is None:
+            prompt_runner = run_prompt
+        eval_prompt = self.EVALUATION_PROMPT_TEMPLATE.format(
+            qa_prompt=self.question_prompt, qa_answer=answer
+        )
+        raw_evaluation = await prompt_runner(eval_prompt)
+        evaluation, parsed_answer = MultipleChoiceEvaluation.from_answer(
+            raw_evaluation, self
+        )
+        return evaluation, raw_evaluation, parsed_answer
+
+
+class MultipleChoiceEvaluation(StrEnum):
+    CORRECT = "correct"
+    INCORRECT = "incorrect"
+    UNSURE = "unsure"  # May be irrelevant if no unsure option provided
+
+    @classmethod
+    def calculate_accuracy_precision(
+        cls, evaluations: Sequence[Self | str]
+    ) -> tuple[float, float]:
+        """
+        Calculate QA-specific accuracy and precision metrics upon evaluations.
+
+        Raises:
+            ZeroDivisionError: if an empty input.
+
+        Returns:
+            Two-tuple of accuracy = (num correct) / (num questions) and
+                precision = (num correct) / ((num questions) - (num unsure)).
+        """
+        evaluations = [e if isinstance(e, cls) else cls(e) for e in evaluations]
+        num_correct = sum(e == cls.CORRECT for e in evaluations)
+        accuracy = num_correct / len(evaluations)
+        precision = num_correct / sum(
+            e in {cls.CORRECT, cls.INCORRECT} for e in evaluations
+        )
+        return accuracy, precision
+
+    @classmethod
+    def from_answer(
+        cls, answer: str, question: MultipleChoiceQuestion
+    ) -> "tuple[MultipleChoiceEvaluation, str]":
+        """Make an evaluation from the input answer and multiple choice question.
+
+        Returns:
+            Two-tuple of answer enum and the raw answer extracted from the input answer.
+        """
+        # SEE: https://regex101.com/r/vcE9Hb/1
+        letter_search = re.search(r"([A-Z])\)?", answer, re.DOTALL)
+        # Get the letter answer, or fail over to the first non-whitespace char
+        answer_char = (
+            letter_search.group(1)
+            if letter_search is not None
+            else answer.split()[0][0].upper()
+        )
+        answer_letter_index = ord(answer_char[0]) - _CAPITAL_A_INDEX
+        if answer_letter_index < 0 or answer_letter_index > len(question.options):
+            # The result extracted was not in the options (e.g. '0')
+            return cls.INCORRECT, answer_char
+        # From here, if we don't match either the ideal or the unsure multiple choice
+        # options then we declare the answer as incorrect.
+        if (
+            question.unsure_answer_index is not None
+            and answer_letter_index == question.unsure_answer_index
+        ):
+            return cls.UNSURE, cast(str, question.unsure_answer)
+        if answer_letter_index == question.ideal_answer_index:
+            return cls.CORRECT, question.ideal_answer
+        return cls.INCORRECT, question.options[answer_letter_index]

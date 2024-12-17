@@ -5,9 +5,9 @@ interactions:
         question, and a proposed answer to the question. Please tell me if the proposed
         answer is correct, given the correct answer. ONLY SAY ''YES'' OR ''NO''. No
         other output is permitted.\n\nQuestion: Which of the following is most likely
-        true:\n\n A) Piggie, B) Pigeon, C) Gerald\n \n\nCorrect answer: C \n\nProposed
+        true:\n\nA) Piggie, B) Pigeon, C) Gerald\n\n\nCorrect answer: C\n\nProposed
         answer: Based on all factors considered, the most compelling answer is Gerald,
-        C", "role": "user"}], "model": "gpt-4o-mini", "temperature": 0}'
+        C", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -16,13 +16,13 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "524"
+          - "516"
         content-type:
           - application/json
         host:
           - api.openai.com
         user-agent:
-          - AsyncOpenAI/Python 1.48.0
+          - AsyncOpenAI/Python 1.57.4
         x-stainless-arch:
           - arm64
         x-stainless-async:
@@ -32,7 +32,7 @@ interactions:
         x-stainless-os:
           - MacOS
         x-stainless-package-version:
-          - 1.48.0
+          - 1.57.4
         x-stainless-raw-response:
           - "true"
         x-stainless-retry-count:
@@ -40,23 +40,24 @@ interactions:
         x-stainless-runtime:
           - CPython
         x-stainless-runtime-version:
-          - 3.12.5
+          - 3.12.7
       method: POST
       uri: https://api.openai.com/v1/chat/completions
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAA3SQzW6DMBCE7zyFtedQASVQuKVqTlErtekhVVUhYxbi1tgWdtSfKO9eGQihh158
-          mG9nPLtHjxDgFeQE2J5a1mrhr26f6yx8SjaP6y3fyfjnQS7p/Se73qx2d7BwDlW+I7Nn1xVTrRZo
-          uZIDZh1Siy41TKM0ym6ybNmDVlUonK3R1o+V33LJ/SiIYj9I/fBmdO8VZ2ggJ68eIYQc+9f1lBV+
-          QU6CxVlp0RjaIOTTECHQKeEUoMZwY6m0sLhApqRF2Vd/WW/npMP6YKhrJw9CjPpp+kqoRneqNCOf
-          9JpLbvZFh9Qo6WKNVRp6evIIeetXOvxpCbpTrbaFVR8oXWAYLIc8uFxyRkdmlaVibkr+MxUVWsqF
-          md0FhoJcNpeEYGrZrwnm21hsi5rLBjvd8eFMtS7CsoyTMEnrDLyT9wsAAP//AwDs99+sNAIAAA==
+          H4sIAAAAAAAAAwAAAP//jJI/b8IwEMX3fArLM6kCpPzbGDpQVahSh4pWVWTsS+Li+CzbkaCI7145
+          AZKqVOri4X73nt+dfYwIoVLQBaG8ZJ5XRsXL/G09e3zePyX1YbxZrhzuynKTi9WXW7/SQVDg9hO4
+          v6juOFZGgZeoW8wtMA/BdTgdp+k0mc5GDahQgAqywvg4xXiUjNI4mcXJ5CwsUXJwdEHeI0IIOTZn
+          iKgF7OmCJINLpQLnWAF0cW0ihFpUoUKZc9J5pj0ddJCj9qCb1JuHlz6xkNeOhWC6VupcP12vUlgY
+          i1t35td6LrV0ZWaBOdTB1nk0tKGniJCPZqT6R0pqLFbGZx53oIPhMLlv/Wi3xB49M4+eqb5oMrhh
+          lwnwTCrX2wnljJcgOmm3QFYLiT0Q9Yb+HeaWdzu41MV/7DvAORgPIjMWhOQ/B+7aLIQv9lfbdclN
+          YOoOzkOV5VIXYI2V7SvnJpvnbMvmeTKe0egUfQMAAP//AwAWS34s7gIAAA==
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8c8e093e1c03cf61-SJC
+          - 8f39fdb5cae1158a-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,14 +65,14 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 25 Sep 2024 21:16:35 GMT
+          - Tue, 17 Dec 2024 21:26:22 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=yrnktGfLlTro_mHAi1eDs07tPAi.UO9vu4j2ZH79Tpg-1727298995-1.0.1.1-P4rF_tY6JKwj5f7PAq_pHP4sB0tH4oW2cKEw9s49GhjJh7xBzJvGDdQhTjpCmBpHQxeJgCvh8dFCe3ZZU6JlqA;
-            path=/; expires=Wed, 25-Sep-24 21:46:35 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=lVkT7i5qloNOJW3VW5kf8Ohm6U080WiPUv6XirXCoFk-1734470782-1.0.1.1-nAgxt2GizSWkF.auEc_j1tv3Erjbd74Lsh9WJmMaZa_E8fpVuEZ8SsBIqLBHICQDV0sfwSjHgP9mTBHQujl_XA;
+            path=/; expires=Tue, 17-Dec-24 21:56:22 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=NDOCPHgoZ2Ov2vByfj1bojq4LnSC2lXMWDthSvh6SdE-1727298995191-0.0.1.1-604800000;
+          - _cfuvid=YCWb3aZdtzEmsWTuiPgC.gchnL7jvJLEWh9yvJqAiAw-1734470782603-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
@@ -84,25 +85,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "92"
+          - "124"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "30000"
+          - "10000"
         x-ratelimit-limit-tokens:
-          - "150000000"
+          - "30000000"
         x-ratelimit-remaining-requests:
-          - "29999"
+          - "9999"
         x-ratelimit-remaining-tokens:
-          - "149999876"
+          - "29999876"
         x-ratelimit-reset-requests:
-          - 2ms
+          - 6ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_782956501d1cbc9f3e44b8c9ceee21ec
+          - req_84a9ec4746765b74e4d84610ebc880ad
       status:
         code: 200
         message: OK
