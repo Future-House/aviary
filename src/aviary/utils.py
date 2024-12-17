@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     import numpy as np
 
 
-LLM_EVAL_CONFIG = {
+LLM_BOOL_EVAL_CONFIG = {
     "prompt": (
         "Here is a question, the correct answer to the question, and a proposed answer"
         " to the question. Please tell me if the proposed answer is correct, given the"
@@ -22,7 +22,7 @@ LLM_EVAL_CONFIG = {
     "temperature": 0,
 }
 
-LLM_SCORE_EVAL_CONFIG = LLM_EVAL_CONFIG | {
+LLM_SCORE_EVAL_CONFIG = LLM_BOOL_EVAL_CONFIG | {
     "prompt": (
         "Here is a question, the correct answer to the question, and a rubric for"
         " evaluating the question. Judge the proposed answer based on the given rubric."
@@ -40,6 +40,13 @@ class EvalAnswerMode(StrEnum):
     CONTAINS = "contains"  # the correct answer is contained in the supplied answer
     LLM = "llm"  # Ask an LLM to evaluate
     LLM_SCORE = "llm-score"  # Ask an LLM to evaluate and return the score (normalized)
+
+    def get_default_config(self) -> dict[str, Any]:
+        if self == EvalAnswerMode.LLM:
+            return LLM_BOOL_EVAL_CONFIG
+        if self == EvalAnswerMode.LLM_SCORE:
+            return LLM_SCORE_EVAL_CONFIG
+        return {}
 
 
 def partial_format(value: str, **formats: dict[str, Any]) -> str:
@@ -110,11 +117,7 @@ async def eval_answer(
             ) from e
         if question is None:
             raise ValueError("Question must be provided for LLM evaluation mode.")
-        default_config = (
-            LLM_EVAL_CONFIG
-            if eval_mode == EvalAnswerMode.LLM
-            else LLM_SCORE_EVAL_CONFIG
-        )
+        default_config = eval_mode.get_default_config()
         config = llm_eval_config or default_config
         prompt = cast(str, config.get("prompt", default_config["prompt"])).format(
             question=question,
@@ -134,7 +137,7 @@ async def eval_answer(
             )
         try:
             return float(response.choices[0].content.strip()) / float(
-                config.get("max_score", default_config["max_score"])  # type: ignore[arg-type]
+                config.get("max_score", default_config["max_score"])
             )
         except ValueError:
             return 0
