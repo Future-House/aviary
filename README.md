@@ -62,7 +62,7 @@ Messages have two attributes:
 msg = Message(content="Hello, world!", role="assistant")
 ```
 
-The `content` is a string with a text, a JSON serializable list of dict, or a null value.
+The `content` is a string with a text, a JSON serializable list of `dict`s, or a null value.
 A list of dicts is used to encode multi-modal content. The method `create_message` can be used to create a message with images:
 
 ```py
@@ -77,17 +77,11 @@ msg = Message.create_message(role="user", text="Hello, world!", images=[img_arra
 
 `create_message` supports images as numpy array or base64 encoded images. In this case, `content` will be a list of dictionaries with the keys `text` and `image_url`.
 
-``` py
+```py
 {
-    {
-        "type": "text",
-        "text": "Hello World!"
-    },
-    {
-        "text": "image_url",
-        "image_url": "data:image/png;base64,{base64_image}"
-    }
-}   
+    {"type": "text", "text": "Hello World!"},
+    {"text": "image_url", "image_url": "data:image/png;base64,{base64_image}"},
+}
 ```
 
 We follow the structure adopted by [OpenAI](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images).
