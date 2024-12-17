@@ -75,6 +75,7 @@ except for `tool` which has a special meaning in aviary.
 
 The `content` is a string with a text, a JSON serializable list of dict, or a null value.
 A list of dicts is used to encode multi-modal content.
+`Message` is extended in `ToolRequestMessage` and `ToolResponseMessage` to include the relevant tool name and arguments for the environment.
 
 ```py
 
