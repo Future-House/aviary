@@ -22,7 +22,7 @@ LLM_EVAL_CONFIG = {
     "temperature": 0,
 }
 
-LLM_SCORE_EVAL_CONFIG = {
+LLM_SCORE_EVAL_CONFIG = LLM_EVAL_CONFIG | {
     "prompt": (
         "Here is a question, the correct answer to the question, and a rubric for"
         " evaluating the question. Judge the proposed answer based on the given rubric."
@@ -31,8 +31,6 @@ LLM_SCORE_EVAL_CONFIG = {
         "\n\nRubric: {correct_answer}"
         "\n\nProposed answer: {proposed_answer}"
     ),
-    "model": "gpt-4o-mini",
-    "temperature": 0,
     "max_score": 10,
 }
 
