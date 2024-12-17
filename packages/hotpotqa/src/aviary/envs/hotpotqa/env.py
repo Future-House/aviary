@@ -317,7 +317,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         )
         return response_messages, self.state.reward, self.state.done, False
 
-    def export_frame(self) -> Frame:
+    async def export_frame(self) -> Frame:
         """Export the current state of the environment as a Frame object.
 
         This method creates and returns a Frame object that captures the current state and additional

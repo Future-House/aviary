@@ -172,7 +172,7 @@ class CalculatorEnv(Environment[None]):
             )
         return result, self.config.tool_success_reward, False
 
-    def export_frame(self) -> Frame:
+    async def export_frame(self) -> Frame:
         return Frame(
             state={
                 "problem_id": self.problem_id,

@@ -82,7 +82,7 @@ class FunctionalEnvironment(Environment[DynamicState]):
         )
         return msgs, self.state.reward, self.state.done, False
 
-    def export_frame(self) -> Frame:
+    async def export_frame(self) -> Frame:
         """Export the current state of the environment."""
         return Frame(
             state={

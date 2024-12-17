@@ -133,7 +133,7 @@ async def test_frame_export(basic_env):
     env = basic_env("test")
     await env.reset()
 
-    frame = env.export_frame()
+    frame = await env.export_frame()
     assert isinstance(frame.state, dict)
     assert isinstance(frame.info, dict)
     assert "tool_names" in frame.info

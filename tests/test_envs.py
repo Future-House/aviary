@@ -300,12 +300,13 @@ class TestRendering:
         mutable_state[0].append("bar")
         assert deep_copy.model_dump()["state"] == [["foo"]]
 
-    def test_rendering(self, dummy_env: DummyEnv) -> None:
+    @pytest.mark.asyncio
+    async def test_rendering(self, dummy_env: DummyEnv) -> None:
         # Reset to add state
-        asyncio.run(dummy_env.reset())
+        await dummy_env.reset()
 
         renderer = Renderer(name="Name", prefix="test")
-        renderer.append(dummy_env.export_frame())
+        renderer.append(await dummy_env.export_frame())
         with tempfile.TemporaryDirectory() as tmpdir:
             build_dir = pathlib.Path(tmpdir)
             renderer.build(build_dir)

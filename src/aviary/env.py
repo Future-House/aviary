@@ -281,7 +281,7 @@ class Environment(ABC, Generic[TEnvState]):
             key=lambda x: call_ordering.index(x.tool_call_id),
         )
 
-    def export_frame(self) -> Frame:
+    async def export_frame(self) -> Frame:
         """
         Export a snapshot of the environment as a Frame for visualization or debugging.
 
@@ -507,7 +507,7 @@ class DummyEnv(Environment[DummyEnvState]):
         )
         return self.state.messages, self.tools
 
-    def export_frame(self) -> Frame:
+    async def export_frame(self) -> Frame:
         return Frame(
             state={"messages": [m.content for m in self.state.messages]},
             info={
