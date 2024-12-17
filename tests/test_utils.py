@@ -30,7 +30,7 @@ from aviary.core import eval_answer
 )
 @pytest.mark.asyncio
 async def test_eval_answer(
-    proposed: str, correct: str, question: str | None, eval_mode: str, expected: bool
+    proposed: str, correct: str, question: str | None, eval_mode: str, expected: float
 ) -> None:
     assert await eval_answer(proposed, correct, question, eval_mode) == expected
 
