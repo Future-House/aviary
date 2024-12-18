@@ -137,7 +137,7 @@ class TestLitQAEvaluation:
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "the answer is 14004",
                 MultipleChoiceEvaluation.INCORRECT,
-                "0",
+                None,
                 id="didnt-match-and-no-llm-innate-knowledge",
             ),
             pytest.param(
@@ -158,35 +158,35 @@ class TestLitQAEvaluation:
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "the answer is 94106 or 94107",
                 MultipleChoiceEvaluation.INCORRECT,
-                "0",
+                None,
                 id="matched-several-options",
             ),
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "",
                 MultipleChoiceEvaluation.INCORRECT,
-                "0",
+                None,
                 id="empty-answer1",
             ),
             pytest.param(
                 *MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS,
                 "14",
                 MultipleChoiceEvaluation.INCORRECT,
-                "0",
+                None,
                 id="didnt-match-and-llm-has-innate-knowledge",
             ),
             pytest.param(
                 *MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS,
                 "",
                 MultipleChoiceEvaluation.INCORRECT,
-                "0",
+                None,
                 id="empty-answer2",
             ),
             pytest.param(
                 *LITQA2_QUESTION_IDEAL_DISTRACTORS,
                 "",
                 MultipleChoiceEvaluation.INCORRECT,
-                "0",
+                None,
                 id="empty-answer3",
             ),
         ],
@@ -198,7 +198,7 @@ class TestLitQAEvaluation:
         distractors: str | list[str],
         actual_answer: str,
         expected_eval: MultipleChoiceEvaluation,
-        expected_extracted_answer: str,
+        expected_extracted_answer: str | None,
     ) -> None:
         """Tests that we can create a multiple choice question and evaluate answers."""
         mc_question = MultipleChoiceQuestion(
@@ -208,7 +208,7 @@ class TestLitQAEvaluation:
             shuffle_seed=42,  # Seed for VCR cassette
         )
         self._assert_prompt_is_valid(mc_question, question, ideal_answer, distractors)
-        evaluation, _, graded_answer = await mc_question.grade(actual_answer)
+        evaluation, graded_answer = await mc_question.grade(actual_answer)
         assert evaluation == expected_eval
         if evaluation == MultipleChoiceEvaluation.CORRECT:
             assert graded_answer == ideal_answer

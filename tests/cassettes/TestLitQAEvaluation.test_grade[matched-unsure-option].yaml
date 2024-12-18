@@ -1,13 +1,12 @@
 interactions:
   - request:
       body:
-        '{"messages": [{"content": "Given the following question and a proposed
-        answer to the question, return the single-letter choice in the question that
-        matches the proposed answer. If the proposed answer is blank or an empty string,
-        or multiple options are matched, respond with ''0''.\n\nQuestion: Q: What is
-        my office''s zip code?\n\nOptions:\nA) -8\nB) Insufficient information to answer
-        this question\nC) cheesecake\nD) 94106\nE) 94107\n\nProposed Answer: Insufficient
-        information\n\nSingle Letter Answer:", "role": "user"}], "model": "gpt-4o"}'
+        '{"messages": [{"content": "You are evaluating answers for a test which
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\n-8\nInsufficient information
+        to answer this question\ncheesecake\n94106\n94107\n\nProposed answer: Insufficient
+        information", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -16,7 +15,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "541"
+          - "464"
         content-type:
           - application/json
         host:
@@ -46,18 +45,19 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJJLb4MwEITv/ArLZ6gIoDy4pS+lPeRWVWpVIWMWcGNsyzZSqyj/vTIQ
-          IGoq9cJhvp1hduHoIYRZgVOEaU0sbRQPtuXb/u4pP7w0z69kt3+I6221q/fN/SOJNPadQ+afQO3Z
-          dUNlozhYJkWPqQZiwaUuVnGSrMLVetmBRhbAna1SNkhkEIVREoTrIFwOxloyCgan6N1DCKFj93QV
-          RQFfOEWhf1YaMIZUgNNxCCGsJXcKJsYwY4mw2J8glcKC6FrfznUNZWuIqyVazgf9NL6Iy0ppmZuB
-          j3rJBDN1poEYKVyosVLhjp48hD66hdqLjlhp2SibWXkA4QIXi6jPw9MJZ3RgVlrC56bYvxKXFWAJ
-          42Z2EUwJraGYrNP5SFswOQPebOnfZa5l94szUf0nfgKUgrJQZEpDwejlwtOYBveD/TU2HrkrjM23
-          sdBkJRMVaKVZ/41LlW1KkpNNGcZr7J28HwAAAP//AwBPQ8gX7AIAAA==
+          H4sIAAAAAAAAAwAAAP//jFLLbtswELzrKwiercJO/JB9cwOk7aHXXopCYMilxIbiMtxV4iLwvxeU
+          bclBUqAXHmZ2hjOLfS2EkM7InZC6Vay76Mu9fakO62Z/f9duH5+rz+tKfz18WS/2P56+P8tZVuDD
+          b9B8UX3S2EUP7DCcaJ1AMWTXxeZ2uVpVt4vVQHRowGdZE7lcYnkzv1mW86qcr8/CFp0GkjvxsxBC
+          iNfhzRGDgYPcifnsgnRApBqQu3FICJnQZ0QqIkesAsvZRGoMDGFI/S1Qb63TDgILFyymTuX4glGo
+          QC+QBLeOxFMPNNa6/AG2J5VbhN77M34cc3lsYsIHOvMjbl1w1NYJFGHIGYgxyoE9FkL8Gvr3byrJ
+          mLCLXDM+QsiGVXWyk9PCJ3Jz5hhZ+QnermYfmNUGWDlPV+uTWukWzKScdq164/CKKK4qv8/ykfep
+          tgvN/9hPhNYQGUwdExin3/adxhLka/zX2LjiIbCkP8TQ1daFBlJM7nQQNtZqszWVUXphZXEs/gIA
+          AP//AwDr0DopGQMAAA==
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f39fdd11ed0175e-SJC
+          - 8f4256aaff33ce5c-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -65,7 +65,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Tue, 17 Dec 2024 21:26:27 GMT
+          - Wed, 18 Dec 2024 21:45:16 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -79,7 +79,7 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "196"
+          - "1096"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
@@ -91,13 +91,13 @@ interactions:
         x-ratelimit-remaining-requests:
           - "9999"
         x-ratelimit-remaining-tokens:
-          - "29999867"
+          - "29999890"
         x-ratelimit-reset-requests:
           - 6ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_9dd0f40823dceb910336a862f0513c68
+          - req_d492552c2043885324019334103f08d1
       status:
         code: 200
         message: OK

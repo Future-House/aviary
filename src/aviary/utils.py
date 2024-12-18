@@ -3,10 +3,9 @@ import contextlib
 import inspect
 import io
 import random
-import re
 import string
 from ast import literal_eval
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast
 
@@ -217,16 +216,6 @@ _CAPITAL_A_INDEX = ord("A")
 
 class MultipleChoiceQuestion(BaseModel):
     QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}\n\nOptions:\n{options}"
-    # TODO: combine with above eval_answer and its prompts
-    EVALUATION_PROMPT_TEMPLATE: ClassVar[str] = (
-        "Given the following question and a proposed answer to the question, return the"
-        " single-letter choice in the question that matches the proposed answer."
-        " If the proposed answer is blank or an empty string,"
-        " or multiple options are matched, respond with '0'."
-        "\n\nQuestion: {qa_prompt}"
-        "\n\nProposed Answer: {qa_answer}"
-        "\n\nSingle Letter Answer:"
-    )
     DEFAULT_UNSURE_OPTION: ClassVar[str] = (
         "Insufficient information to answer this question"
     )
@@ -317,18 +306,14 @@ class MultipleChoiceQuestion(BaseModel):
         return split_options
 
     async def grade(
-        self, answer: str, prompt_runner: Callable[[str], Awaitable[str]] | None = None
-    ) -> "tuple[MultipleChoiceEvaluation, str, str]":
-        if prompt_runner is None:
-            prompt_runner = run_prompt
-        eval_prompt = self.EVALUATION_PROMPT_TEMPLATE.format(
-            qa_prompt=self.question_prompt, qa_answer=answer
+        self, proposed_answer: str
+    ) -> "tuple[MultipleChoiceEvaluation, str | None]":
+        extracted_answer = await extract_answer(
+            proposed_answer=proposed_answer, options=self.options
         )
-        raw_evaluation = await prompt_runner(eval_prompt)
-        evaluation, parsed_answer = MultipleChoiceEvaluation.from_answer(
-            raw_evaluation, self
-        )
-        return evaluation, raw_evaluation, parsed_answer
+        return MultipleChoiceEvaluation.from_answer(
+            extracted_answer, self
+        ), extracted_answer
 
 
 class MultipleChoiceEvaluation(StrEnum):
@@ -360,32 +345,19 @@ class MultipleChoiceEvaluation(StrEnum):
 
     @classmethod
     def from_answer(
-        cls, answer: str, question: MultipleChoiceQuestion
-    ) -> "tuple[MultipleChoiceEvaluation, str]":
+        cls, extracted_answer: str | None, question: MultipleChoiceQuestion
+    ) -> "MultipleChoiceEvaluation":
         """Make an evaluation from the input answer and multiple choice question.
 
         Returns:
-            Two-tuple of answer enum and the raw answer extracted from the input answer.
+            Evaluation corresponding to the parsed answer.
         """
-        # SEE: https://regex101.com/r/vcE9Hb/1
-        letter_search = re.search(r"([A-Z])\)?", answer, re.DOTALL)
-        # Get the letter answer, or fail over to the first non-whitespace char
-        answer_char = (
-            letter_search.group(1)
-            if letter_search is not None
-            else answer.split()[0][0].upper()
-        )
-        answer_letter_index = ord(answer_char[0]) - _CAPITAL_A_INDEX
-        if answer_letter_index < 0 or answer_letter_index > len(question.options):
-            # The result extracted was not in the options (e.g. '0')
-            return cls.INCORRECT, answer_char
+        if extracted_answer is None:
+            return MultipleChoiceEvaluation.INCORRECT
         # From here, if we don't match either the ideal or the unsure multiple choice
         # options then we declare the answer as incorrect.
-        if (
-            question.unsure_answer_index is not None
-            and answer_letter_index == question.unsure_answer_index
-        ):
-            return cls.UNSURE, cast(str, question.unsure_answer)
-        if answer_letter_index == question.ideal_answer_index:
-            return cls.CORRECT, question.ideal_answer
-        return cls.INCORRECT, question.options[answer_letter_index]
+        if extracted_answer == question.ideal_answer:
+            return MultipleChoiceEvaluation.CORRECT
+        if question.unsure_answer and extracted_answer == question.unsure_answer:
+            return MultipleChoiceEvaluation.UNSURE
+        return MultipleChoiceEvaluation.INCORRECT

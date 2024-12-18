@@ -1,13 +1,12 @@
 interactions:
   - request:
       body:
-        '{"messages": [{"content": "Given the following question and a proposed
-        answer to the question, return the single-letter choice in the question that
-        matches the proposed answer. If the proposed answer is blank or an empty string,
-        or multiple options are matched, respond with ''0''.\n\nQuestion: Q: What is
-        my office''s zip code?\n\nOptions:\nA) -8\nB) Insufficient information to answer
-        this question\nC) cheesecake\nD) 94106\nE) 94107\n\nProposed Answer: the answer
-        is 94107\n\nSingle Letter Answer:", "role": "user"}], "model": "gpt-4o"}'
+        '{"messages": [{"content": "You are evaluating answers for a test which
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\n-8\nInsufficient information
+        to answer this question\ncheesecake\n94106\n94107\n\nProposed answer: the answer
+        is 94107", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -16,7 +15,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "536"
+          - "459"
         content-type:
           - application/json
         host:
@@ -36,7 +35,7 @@ interactions:
         x-stainless-raw-response:
           - "true"
         x-stainless-retry-count:
-          - "1"
+          - "0"
         x-stainless-runtime:
           - CPython
         x-stainless-runtime-version:
@@ -46,18 +45,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJJLb4MwEITv/ArLZ6ggoXlwyyGKcql6Sx+qkLEXcGtsyzZSoyj/vTKQ
-          QNRU6oXDfDvD7MIpQAhzhjOEaU0cbbSINuXb02Z73L287ndH1ias2C8k3a0OB1Y949A7VPEJ1F1c
-          D1Q1WoDjSvaYGiAOfGqynKfpMl6u0g40ioHwtkq7KFXRLJ6lUbyK4sVgrBWnYHGG3gOEEDp1T19R
-          MvjGGYrDi9KAtaQCnF2HEMJGCa9gYi23jkiHwxFSJR3IrvV2qhsoW0t8LdkKMejn64uEqrRRhR34
-          VS+55LbODRCrpA+1Tmnc0XOA0Ee3UHvTEWujGu1yp75A+sAkeezz8HjCCR2YU46IqWkR3onLGTjC
-          hZ1cBFNCa2CjdTwfaRlXExBMlv5d5l52vziX1X/iR0ApaAcs1wYYp7cLj2MG/A/219j1yF1hbI/W
-          QZOXXFZgtOH9Ny51vi5JQdZlPF/h4Bz8AAAA//8DAKuPA4PsAgAA
+          H4sIAAAAAAAAAwAAAP//jJLLTsMwEEX3+QrL6wSlL9pkx4KHVLFDdIFQ5DiTxOB4LNtRgar/jpyG
+          JBVFYuPFnLnXd8Y+BIRQUdCUUF4zxxsto5tyvzHPt1X5uJvva51v758g2d09oNx+tTT0CszfgLsf
+          1RXHRktwAtUJcwPMgXedrRfL1WqziJMONFiA9LJKu2iJ0TyeL6N4E8XXvbBGwcHSlLwEhBBy6E4f
+          URXwQVMShz+VBqxlFdB0aCKEGpS+Qpm1wjqmHA1HyFE5UF3qZDmL11NmoGwt89FUK2VfPw6XSay0
+          wdz2fKiXQglbZwaYReWNrUNNO3oMCHnthmrPclJtsNEuc/gOyhsms5MdHbc4wnnPHDomJ5pFeMEs
+          K8AxIe1kJ5QzXkMxKscFsrYQOAHBZOTfWS55n8YWqvqP/Qg4B+2gyLSBQvDzecc2A/6L/dU2rLgL
+          TO2nddBkpVAVGG3E6ZVLnSUly1lSxosNDY7BNwAAAP//AwBPnKtg7gIAAA==
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f39fdc06b78cf26-SJC
+          - 8f42569a694415a4-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -65,9 +64,15 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Tue, 17 Dec 2024 21:26:24 GMT
+          - Wed, 18 Dec 2024 21:45:09 GMT
         Server:
           - cloudflare
+        Set-Cookie:
+          - __cf_bm=VhM7SMRUwaYcBGPmD54eZozV9ZASFwCpD2uUzfcbygQ-1734558309-1.0.1.1-PO0cbnzYww6YCdbMGHLbwDXTjy0s_I50cJaqd7OUcIUnT7C0j_EJ9CBwZm8nRmzrv2FivdnDcss9GtsBOjjypw;
+            path=/; expires=Wed, 18-Dec-24 22:15:09 GMT; domain=.api.openai.com; HttpOnly;
+            Secure; SameSite=None
+          - _cfuvid=tUjQ_WfZ7MP0T2BILMqKk0y_GuM5NWbc6M_7vifNjIU-1734558309829-0.0.1.1-604800000;
+            path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
         X-Content-Type-Options:
@@ -79,7 +84,7 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "291"
+          - "215"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
@@ -91,13 +96,13 @@ interactions:
         x-ratelimit-remaining-requests:
           - "9999"
         x-ratelimit-remaining-tokens:
-          - "29999868"
+          - "29999890"
         x-ratelimit-reset-requests:
           - 6ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_89e3d88c7f12861d7e774e452300b36d
+          - req_9990262c4eaef569ab37ffc7cf363319
       status:
         code: 200
         message: OK
