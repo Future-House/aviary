@@ -40,6 +40,7 @@ from aviary.utils import (
     EvalAnswerMode,
     encode_image_to_base64,
     eval_answer,
+    extract_answer,
     is_coroutine_callable,
     partial_format,
 )
@@ -82,6 +83,7 @@ __all__ = [
     "encode_image_to_base64",
     "eval_answer",
     "eval_answer",
+    "extract_answer",
     "fenv",
     "is_coroutine_callable",
     "join",

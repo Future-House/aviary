@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 
 DEFAULT_EVAL_MODEL_NAME = "gpt-4o"
-LLM_BOOL_EVAL_CONFIG = {
+LLM_BOOL_EVAL_CONFIG: dict[str, Any] = {
     "prompt": (
         "Here is a question, the correct answer to the question, and a proposed answer"
         " to the question. Please tell me if the proposed answer is correct, given the"
@@ -33,6 +33,18 @@ LLM_BOOL_EVAL_CONFIG = {
     ),
     "model": DEFAULT_EVAL_MODEL_NAME,
     "temperature": 0,
+}
+
+LLM_EXTRACT_CONFIG = LLM_BOOL_EVAL_CONFIG | {
+    "prompt": (
+        "You are evaluating answers for a test which has fixed options. "
+        "Repeat back which option the proposed answer matches. "
+        "GIVE ONLY THE VERBATIM TEXT OF A FIXED OPTION. "
+        "If the proposed answer is empty, invalid, or ambiguous, "
+        "return an empty string."
+        "\n\nOptions:\n{options}"
+        "\n\nProposed answer: {proposed_answer}"
+    )
 }
 
 LLM_SCORE_EVAL_CONFIG = LLM_BOOL_EVAL_CONFIG | {
@@ -173,6 +185,31 @@ async def eval_answer(
         return float(gt in pred)
 
     raise RuntimeError(f"Invalid evaluation mode: {eval_mode}")
+
+
+async def extract_answer(
+    proposed_answer: str, options: Sequence[str], llm_eval_config: dict | None = None
+) -> str | None:
+    """Extract the answer matching a proposal from a list of options using an LLM."""
+    for option in options:
+        if proposed_answer.strip().casefold() == option.strip().casefold():
+            return option
+
+    default_config = LLM_EXTRACT_CONFIG
+    config = llm_eval_config or default_config
+    response_msg = await run_prompt(
+        prompt=config.get("prompt", default_config["prompt"]).format(
+            options="\n".join(options),
+            proposed_answer=proposed_answer,
+        ),
+        model=config.get("model", default_config["model"]),
+        temperature=config.get("temperature", default_config["temperature"]),
+    )
+    answer = response_msg.strip().casefold()  # noqa: FURB184
+    for option in options:
+        if answer == option.strip().casefold():
+            return option
+    return None
 
 
 _CAPITAL_A_INDEX = ord("A")

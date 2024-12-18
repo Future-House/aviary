@@ -1,0 +1,109 @@
+interactions:
+  - request:
+      body:
+        '{"messages": [{"content": "You are evaluating answers for a test which
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\nEconomic factors\nSocial
+        unrest\nPolitical corruption\n\nProposed answer: Based on the context given,
+        Serif et al. (2026) claim that the overwhelming cause of regime collapse arises
+        from economic factors. Yet, most other scholars (Gerald and Robinson for example)
+        believe the collapse was due to social unrest because of the prolonged epidemic
+        of 2025. I tend to agree with the majority - although I can see both sides.
+        Thus my response is that the social unrest was the significant factor in the
+        collapse of the regime.", "role": "user"}], "model": "gpt-4o", "temperature":
+        0}'
+      headers:
+        accept:
+          - application/json
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        content-length:
+          - "861"
+        content-type:
+          - application/json
+        host:
+          - api.openai.com
+        user-agent:
+          - AsyncOpenAI/Python 1.57.4
+        x-stainless-arch:
+          - arm64
+        x-stainless-async:
+          - async:asyncio
+        x-stainless-lang:
+          - python
+        x-stainless-os:
+          - MacOS
+        x-stainless-package-version:
+          - 1.57.4
+        x-stainless-raw-response:
+          - "true"
+        x-stainless-retry-count:
+          - "1"
+        x-stainless-runtime:
+          - CPython
+        x-stainless-runtime-version:
+          - 3.12.7
+      method: POST
+      uri: https://api.openai.com/v1/chat/completions
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAAwAAAP//jJI/T8MwEMX3fArLc4Oa9E9KtrJ1REyAUOTal8TF8RnbgaKq3x05TZNW
+          FInFw/3uPb87+xARQqWgOaG8Zp43RsXr8nP/9VCtNKzbGuYvJSab3cdj+rySiw2dBAVud8D9WXXH
+          sTEKvER9wtwC8xBck2w2Xyyy5SztQIMCVJBVxsdzjNNpOo+nq3i67IU1Sg6O5uQ1IoSQQ3eGiFrA
+          nuZkOjlXGnCOVUDzoYkQalGFCmXOSeeZ9nQyQo7ag+5SPyGXTJFWW3BXPRbK1rEQUbdK9fXjcKnC
+          yljcup4P9VJq6erCAnOowwXOo6EdPUaEvHXDtVd5qbHYGF94fAcdDJPl4uRHx3WONO2ZR8/UpSib
+          3LArBHgmlbvYDuWM1yBG6bhK1gqJFyC6GPp3mFvep8Glrv5jPwLOwXgQhbEgJL8eeGyzED7bX23D
+          krvA1H07D01RSl2BNVae3rs0BcvuxUownpQ0OkY/AAAA//8DAOEzla34AgAA
+      headers:
+        CF-Cache-Status:
+          - DYNAMIC
+        CF-RAY:
+          - 8f42461018c5eb29-SJC
+        Connection:
+          - keep-alive
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json
+        Date:
+          - Wed, 18 Dec 2024 21:33:52 GMT
+        Server:
+          - cloudflare
+        Transfer-Encoding:
+          - chunked
+        X-Content-Type-Options:
+          - nosniff
+        access-control-expose-headers:
+          - X-Request-ID
+        alt-svc:
+          - h3=":443"; ma=86400
+        openai-organization:
+          - future-house-xr4tdh
+        openai-processing-ms:
+          - "235"
+        openai-version:
+          - "2020-10-01"
+        strict-transport-security:
+          - max-age=31536000; includeSubDomains; preload
+        x-ratelimit-limit-requests:
+          - "10000"
+        x-ratelimit-limit-tokens:
+          - "30000000"
+        x-ratelimit-remaining-requests:
+          - "9999"
+        x-ratelimit-remaining-tokens:
+          - "29999790"
+        x-ratelimit-reset-requests:
+          - 6ms
+        x-ratelimit-reset-tokens:
+          - 0s
+        x-request-id:
+          - req_366dfd5f505d08facd0f7d10e64a9f5e
+      status:
+        code: 200
+        message: OK
+version: 1

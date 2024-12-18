@@ -1,0 +1,108 @@
+interactions:
+  - request:
+      body:
+        '{"messages": [{"content": "You are evaluating answers for a test which
+        has fixed options. Repeat back which option the proposed answer matches. GIVE
+        ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\nB\nC\n\nProposed answer:
+        F", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
+      headers:
+        accept:
+          - application/json
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        content-length:
+          - "367"
+        content-type:
+          - application/json
+        host:
+          - api.openai.com
+        user-agent:
+          - AsyncOpenAI/Python 1.57.4
+        x-stainless-arch:
+          - arm64
+        x-stainless-async:
+          - async:asyncio
+        x-stainless-lang:
+          - python
+        x-stainless-os:
+          - MacOS
+        x-stainless-package-version:
+          - 1.57.4
+        x-stainless-raw-response:
+          - "true"
+        x-stainless-retry-count:
+          - "0"
+        x-stainless-runtime:
+          - CPython
+        x-stainless-runtime-version:
+          - 3.12.7
+      method: POST
+      uri: https://api.openai.com/v1/chat/completions
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAAwAAAP//jJI/T8MwEMX3fArr5gYl/d9uLIxIMLBQFLn2JXFxfJbtQKuq3x05DU0r
+          QGLJ8H73Xt5dckwYAyVhzUDUPIjG6vS+/Ni3T5TnlpYPyA/ukT4r2r3kcqKeYRQdtN2hCN+uO0GN
+          1RgUmTMWDnnAmJovJtPZbDGfZB1oSKKOtsqGdErpOBtP02yZZvPeWJMS6GHNXhPGGDt2z1jRSNzD
+          mnUxndKg97xCWF+GGANHOirAvVc+cBNgNEBBJqDpWm9gA9fIYdl6HpuZVuteP13epamyjra+5xe9
+          VEb5unDIPZmY6wNZ6OgpYeyt26m9qQnWUWNDEegdTQycr85xMBxxgHnPAgWuB3nRn+E2rJAYuNL+
+          6iQguKhRDs7hfryViq5AcrXyzy6/ZZ/XVqb6T/wAhEAbUBbWoVTidt9hzGH8w/4au5y4Kwz+4AM2
+          RalMhc46df7IpS1WJd/yVZlNlpCcki8AAAD//wMAJ6aXP+0CAAA=
+      headers:
+        CF-Cache-Status:
+          - DYNAMIC
+        CF-RAY:
+          - 8f4246051c1ceb26-SJC
+        Connection:
+          - keep-alive
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json
+        Date:
+          - Wed, 18 Dec 2024 21:33:50 GMT
+        Server:
+          - cloudflare
+        Set-Cookie:
+          - __cf_bm=in2yLMzYdxfPIHSQDPq17chYgGhrTOolB6HZrJk9Iy8-1734557630-1.0.1.1-LYUU4oNWUKO8gNwjcIktYjnSyIsGLKQGmQKI54P4UxfMJ330MXeZFWWhVoJnP0b1M92ejFaHTWHlz4eHH30gIA;
+            path=/; expires=Wed, 18-Dec-24 22:03:50 GMT; domain=.api.openai.com; HttpOnly;
+            Secure; SameSite=None
+          - _cfuvid=El.JjK6nMT19ye2jesHXCIAySeg4BN7pKN7mVnzqSM8-1734557630598-0.0.1.1-604800000;
+            path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+        Transfer-Encoding:
+          - chunked
+        X-Content-Type-Options:
+          - nosniff
+        access-control-expose-headers:
+          - X-Request-ID
+        alt-svc:
+          - h3=":443"; ma=86400
+        openai-organization:
+          - future-house-xr4tdh
+        openai-processing-ms:
+          - "253"
+        openai-version:
+          - "2020-10-01"
+        strict-transport-security:
+          - max-age=31536000; includeSubDomains; preload
+        x-ratelimit-limit-requests:
+          - "10000"
+        x-ratelimit-limit-tokens:
+          - "30000000"
+        x-ratelimit-remaining-requests:
+          - "9999"
+        x-ratelimit-remaining-tokens:
+          - "29999912"
+        x-ratelimit-reset-requests:
+          - 6ms
+        x-ratelimit-reset-tokens:
+          - 0s
+        x-request-id:
+          - req_5992eb433053f3b82b29a5319a96ef7e
+      status:
+        code: 200
+        message: OK
+version: 1
