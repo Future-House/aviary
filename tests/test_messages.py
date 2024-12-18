@@ -1,4 +1,5 @@
 import json
+import pathlib
 
 import numpy as np
 import pytest
@@ -10,6 +11,12 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
+
+FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures" / "test_images"
+
+
+def load_base64_image(filename: str) -> str:
+    return (FIXTURES_DIR / filename).read_text().strip()
 
 
 class TestMessage:
@@ -112,20 +119,98 @@ class TestMessage:
     def test_dump(self, message: Message, expected: dict) -> None:
         assert message.model_dump(exclude_none=True) == expected
 
-    def test_image_message(self) -> None:
-        # An RGB image of a red square
-        image = np.zeros((32, 32, 3), dtype=np.uint8)
-        image[:] = [255, 0, 0]  # (255 red, 0 green, 0 blue) is maximum red in RGB
-        message_text = "What color is this square? Respond only with the color name."
-        message_with_image = Message.create_message(text=message_text, image=image)
-        assert message_with_image.content
-        specialized_content = json.loads(message_with_image.content)
-        assert len(specialized_content) == 2
-        text_idx, image_idx = (
-            (0, 1) if specialized_content[0]["type"] == "text" else (1, 0)
-        )
+    @pytest.mark.parametrize(
+        ("images", "message_text", "expected_error", "expected_content_length"),
+        [
+            # Case 1: Invalid base64 image should raise error
+            (
+                [
+                    np.zeros((32, 32, 3), dtype=np.uint8),  # red square
+                    "data:image/jpeg;base64,fake_base64_content",  # invalid base64
+                ],
+                "What color are these squares? List each color.",
+                "Invalid base64 encoded image",
+                None,
+            ),
+            # Case 2: Valid images should work
+            (
+                [
+                    np.zeros((32, 32, 3), dtype=np.uint8),  # red square
+                    load_base64_image("sample_jpeg_image.b64"),
+                ],
+                "What color are these squares? List each color.",
+                None,
+                3,  # 2 images + 1 text
+            ),
+            # Case 3: A numpy array in non-list formatshould be converted to a base64 encoded image
+            (
+                np.zeros((32, 32, 3), dtype=np.uint8),  # red square
+                "What color is this square?",
+                None,
+                2,  # 1 image + 1 text
+            ),
+            # Case 4: A string should be converted to a base64 encoded image
+            (
+                load_base64_image("sample_jpeg_image.b64"),
+                "What color is this square?",
+                None,
+                2,  # 1 image + 1 text
+            ),
+            # Case 5: A PNG image should be converted to a base64 encoded image
+            (
+                load_base64_image("sample_png_image.b64"),
+                "What color is this square?",
+                None,
+                2,  # 1 image + 1 text
+            ),
+        ],
+    )
+    def test_image_message(
+        self,
+        images: list[np.ndarray | str] | np.ndarray | str,
+        message_text: str,
+        expected_error: str | None,
+        expected_content_length: int | None,
+    ) -> None:
+        # Set red color for numpy array if present
+        for img in images:
+            if isinstance(img, np.ndarray):
+                img[:] = [255, 0, 0]  # (255 red, 0 green, 0 blue) is maximum red in RGB
+
+        if expected_error:
+            with pytest.raises(ValueError, match=expected_error):
+                Message.create_message(text=message_text, images=images)
+            return
+
+        message_with_images = Message.create_message(text=message_text, images=images)
+        assert message_with_images.content
+        specialized_content = json.loads(message_with_images.content)
+        assert len(specialized_content) == expected_content_length
+
+        # Find indices of each content type
+        image_indices = []
+        text_idx = None
+        for i, content in enumerate(specialized_content):
+            if content["type"] == "image_url":
+                image_indices.append(i)
+            else:
+                text_idx = i
+
+        if isinstance(images, list):
+            assert len(image_indices) == len(images)
+        else:
+            assert len(image_indices) == 1
+        assert text_idx is not None
         assert specialized_content[text_idx]["text"] == message_text
-        assert "image_url" in specialized_content[image_idx]
+
+        # Check both images are properly formatted
+        for idx in image_indices:
+            assert "image_url" in specialized_content[idx]
+            assert "url" in specialized_content[idx]["image_url"]
+            # Both images should be base64 encoded
+            assert specialized_content[idx]["image_url"]["url"].startswith(
+                "data:image/"
+            )
 
 
 class TestToolRequestMessage:

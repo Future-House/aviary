@@ -62,6 +62,30 @@ Messages have two attributes:
 msg = Message(content="Hello, world!", role="assistant")
 ```
 
+The `content` is a string with a text, a JSON serializable list of `dict`s, or a null value.
+A list of dicts is used to encode multi-modal content. The method `create_message` can be used to create a message with images:
+
+```py
+from PIL import Image
+import numpy as np
+
+img = Image.open("your_image.jpg")
+img_array = np.array(img)
+
+msg = Message.create_message(role="user", text="Hello, world!", images=[img_array])
+```
+
+`create_message` supports images as numpy array or base64 encoded images. In this case, `content` will be a list of dictionaries with the keys `text` and `image_url`.
+
+```py
+{
+    {"type": "text", "text": "Hello World!"},
+    {"text": "image_url", "image_url": "data:image/png;base64,{base64_image}"},
+}
+```
+
+We follow the structure adopted by [OpenAI](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images).
+
 For the meaning of role, see the table below.
 You can change around roles as desired,
 except for `tool` which has a special meaning in aviary.
@@ -73,7 +97,7 @@ except for `tool` which has a special meaning in aviary.
 | user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
 | tool      | Result of tool run in the environment            | Some number crunching program's output                           |
 
-The `content` is a string that can be anything, or a null value.
+`Message` is extended in `ToolRequestMessage` and `ToolResponseMessage` to include the relevant tool name and arguments.
 
 ## Environment
 
@@ -94,7 +118,7 @@ is a boolean value.
 The easiest way to create an environment is using the functional interface, which just uses functions and decorators to define environments. First, let's define what the environment looks like by defining its `start` function:
 
 ```py
-from aviary import fenv
+from aviary.core import fenv
 
 
 @fenv.start()

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, ClassVar, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from aviary.utils import encode_image_to_base64
+from aviary.utils import encode_image_to_base64, validate_base64_image
 
 if TYPE_CHECKING:
     from logging import LogRecord
@@ -124,16 +124,36 @@ class Message(BaseModel):
         cls,
         role: str = DEFAULT_ROLE,
         text: str | None = None,
-        image: np.ndarray | None = None,
+        images: list[np.ndarray | str] | str | np.ndarray | None = None,
     ) -> Self:
-        # Assume no image, and update to image if present
+        """Create a message with optional text and images.
+
+        Args:
+            role: The role of the message.
+            text: The text of the message.
+            images: The images to include in the message. This can be a single image or
+                a list of images. Images can be a numpy array or a base64 encoded image
+                string (str).
+
+        Returns:
+            The created message.
+        """
+        # Assume no images, and update to images if present
         content: str | list[dict] | None = text
-        if image is not None:
+        if images is not None:
+            if not isinstance(images, list):
+                images = [images]
             content = [
                 {
                     "type": "image_url",
-                    "image_url": {"url": encode_image_to_base64(image)},
+                    "image_url": {
+                        "url": validate_base64_image(image)
+                        # If image is a string, assume it's already a base64 encoded image
+                        if isinstance(image, str)
+                        else encode_image_to_base64(image)
+                    },
                 }
+                for image in images
             ]
             if text is not None:
                 content.append({"type": "text", "text": text})

@@ -60,6 +60,7 @@ dev = [
     "pytest>=8",  # Pin to keep recent
     "refurb>=2",  # Pin to keep recent
     "typeguard",
+    "vcrpy>=6",  # Pin for https://github.com/kevin1024/vcrpy/issues/884
 ]
 gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]

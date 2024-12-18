@@ -37,7 +37,7 @@ LLM_EXTRACT_CONFIG = {
 }
 
 
-LLM_SCORE_EVAL_CONFIG = {
+LLM_SCORE_EVAL_CONFIG = LLM_EVAL_CONFIG | {
     "prompt": (
         "Here is a question, the correct answer to the question, and a rubric for"
         " evaluating the question. Judge the proposed answer based on the given rubric."
@@ -46,8 +46,6 @@ LLM_SCORE_EVAL_CONFIG = {
         "\n\nRubric: {correct_answer}"
         "\n\nProposed answer: {proposed_answer}"
     ),
-    "model": "gpt-4o-mini",
-    "temperature": 0,
     "max_score": 10,
 }
 
@@ -83,6 +81,17 @@ def encode_image_to_base64(img: "np.ndarray") -> str:
     return (
         f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
     )
+
+
+def validate_base64_image(image: str) -> str:
+    """Validate if the input string is a valid base64 encoded image and if it is, return the image."""
+    try:
+        # Support for inclusion of the data:image/ url prefix
+        test_image = image.split(",")[1] if image.startswith("data:image/") else image
+        base64.b64decode(test_image)
+    except Exception as err:
+        raise ValueError("Invalid base64 encoded image") from err
+    return image
 
 
 def is_coroutine_callable(obj) -> bool:
@@ -136,13 +145,14 @@ async def eval_answer(
     proposed: str,
     correct: str,
     question: str | None = None,
-    eval_mode: EvalAnswerMode = EvalAnswerMode.CONTAINS,
+    eval_mode: str | EvalAnswerMode = EvalAnswerMode.CONTAINS,
     llm_eval_config: dict | None = None,
 ) -> float:
     """Evaluate a proposed answer against a correct answer.
 
     Will return 0 or 1, except for llm-score which should be between 0 and 1
     """
+    eval_mode = EvalAnswerMode(eval_mode)
     if eval_mode in {EvalAnswerMode.LLM, EvalAnswerMode.LLM_SCORE}:
         try:
             from litellm import acompletion
