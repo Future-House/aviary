@@ -6,7 +6,7 @@ interactions:
         ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
         or ambiguous, return an empty string.\n\nOptions:\n-84\nInsufficient information
         to answer this question\ncheesecake\n11\n42\n\nProposed answer: 14", "role":
-        "user"}], "model": "gpt-4o", "temperature": 0}'
+        "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -15,7 +15,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "437"
+          - "442"
         content-type:
           - application/json
         host:
@@ -35,7 +35,7 @@ interactions:
         x-stainless-raw-response:
           - "true"
         x-stainless-retry-count:
-          - "1"
+          - "0"
         x-stainless-runtime:
           - CPython
         x-stainless-runtime-version:
@@ -45,18 +45,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAA4xSy07DMBC85yusPTcobVJIe6u4wKESIHFCKHKdTWpwvJa9FaCq/46cvtUicfFh
-          Zmc8s/Y6EQJ0DVMBailZdc6ks+Zrko2cxvljMXvunmavPHkJTA9zk9/DICpo8YGK96obRZ0zyJrs
-          llYeJWN0Hd7lxXhc5sOyJzqq0URZ6zgtKB1loyLNyjS73QmXpBUGmIq3RAgh1v0ZI9oav2EqssEe
-          6TAE2SJMD0NCgCcTEZAh6MDSMgyOpCLLaPvUp7DHZhVkTGVXxuzwzeEeQ63ztAg7/oA32uqwrDzK
-          QDZ6BiYHPbtJhHjv+6zOIoLz1DmumD7RRsNyvLWD4wKP5K4qMLE0VzRnZlWNLLUJJ+sAJdUS6wtD
-          IUCuak0nRHJS+TLLNe9tbW3b/9gfCaXQMdaV81hrdbVvbx5/119jhxX3gSH8BMauarRt0Tuvtw/c
-          uGrSyIWcNFleQrJJfgEAAP//AwA5BypS6QIAAA==
+          H4sIAAAAAAAAAwAAAP//jFLLTsMwELznK6w9Nyh9P24V0AMHBBK9gFDk2pvU4NiWveVV9d+R00da
+          tUhcfJjZGc+svU4YAyVhwkAsOYnK6XRafF7fzuWPeLwZP4v7p5maTwd3GD6yB5pBKyrs4g0F7VVX
+          wlZOIylrtrTwyAmja3vY7fX7o357VBOVlaijrHSU9mxaKaPSTtbppdkwbY926qVVAgNM2EvCGGPr
+          +ow5jcQvmLCstUcqDIGXCJPDEGPgrY4I8BBUIG4IWg0prCE0dfRj2GOxCjxGMyutd/jmcI+2pfN2
+          EXb8AS+UUWGZe+TBmugZyDqo2U3C2GvdZ3USEZy3laOc7DuaaDjqb+2g2WJD7qoCWeL6gubELJdI
+          XOlwtA4QXCxRnhkyBnwllT0ikqPK51kueW9rK1P+x74hhEBHKHPnUSpxsW9tHr/YX2OHFdeBIXwH
+          wiovlCnRO6+2D1y4vDvmvUyMBzyDZJP8AgAA//8DADaBBszuAgAA
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f4256d28f9615ff-SJC
+          - 8f425bb2ac70f953-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,9 +64,15 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 18 Dec 2024 21:45:18 GMT
+          - Wed, 18 Dec 2024 21:48:38 GMT
         Server:
           - cloudflare
+        Set-Cookie:
+          - __cf_bm=Z3Wkkk2LQA2GKAPZVirKPYLTJfmm9Luttv26RxPBKro-1734558518-1.0.1.1-4BZR47qupd.QCWRMrfyj_F2lS0fqBEuzxwPZTqYPUxSKwdzL4S_8YWk9ofOPXhFEnkMN6nwgWjBLjAR4nioxiQ;
+            path=/; expires=Wed, 18-Dec-24 22:18:38 GMT; domain=.api.openai.com; HttpOnly;
+            Secure; SameSite=None
+          - _cfuvid=B7CeJKL1WXveU2pmeUGy_AFjPsbf25SvdiSN_4fxTXE-1734558518441-0.0.1.1-604800000;
+            path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
         X-Content-Type-Options:
@@ -78,25 +84,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "208"
+          - "144"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29999"
         x-ratelimit-remaining-tokens:
-          - "29999896"
+          - "149999896"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_7db1d1f6dded4679e43cc12a2183fa21
+          - req_503cd8163bd0d3b634eb723d6874b1da
       status:
         code: 200
         message: OK

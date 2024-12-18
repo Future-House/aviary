@@ -5,7 +5,7 @@ interactions:
         question, and a proposed answer to the question. Please tell me if the proposed
         answer is correct, given the correct answer. ONLY SAY ''YES'' OR ''NO''. No
         other output is permitted.\n\nQuestion: What is 25 * 10?\n\nCorrect answer:
-        250\n\nProposed answer: 250", "role": "user"}], "model": "gpt-4o", "temperature":
+        250\n\nProposed answer: 250", "role": "user"}], "model": "gpt-4o-mini", "temperature":
         0.5}'
       headers:
         accept:
@@ -15,7 +15,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "387"
+          - "392"
         content-type:
           - application/json
         host:
@@ -45,18 +45,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJLNasMwEITvfgqhc1ycH+okt0Ja6KUthBzaUowirW2lslZIG0gJefci
-          x4kT2kIvPsy3M55de58wxrXic8ZlLUg2zqR35dvTLF+8PJgRPhLUrtwszWKVPa92M+CD6MD1BiSd
-          XDcSG2eANNojlh4EQUwd5uPJJM/y6bgFDSow0VY5SieYjrLRJM2maXbbGWvUEgKfs/eEMcb27TNW
-          tAp2fM6ywUlpIARRAZ+fhxjjHk1UuAhBBxKW+KCHEi2BbVu/3i8viYdyG0QsZrfGdPrh/CqDlfO4
-          Dh0/66W2OtSFBxHQxthA6HhLDwljH+1K26uW3HlsHBWEn2BjYD47xvH+hj0cdoyQhOnlaXeF67BC
-          AQltwsVFuBSyBtU7+/OJrdJ4AZKLlX92+S37uLa21X/ieyAlOAJVOA9Ky+t9+zEP8Qf7a+x84rYw
-          D1+BoClKbSvwzuvjNy5dIfKZmiohhyVPDsk3AAAA//8DADQLsKzsAgAA
+          H4sIAAAAAAAAAwAAAP//jJJfa4MwFMXf/RQhz3Vo/8zWt1H60LExaAdjjCFpctVsMQlJpCul333E
+          WrVsg734cH73HM+9egwQwpzhFGFaEkcrLcK7fL9cMbp+vF/L/fLpsH3eVGabLDb5w+QFj7xD7T6A
+          uovrhqpKC3BcyTOmBogDnxonk+lsNp/F8wZUioHwtkK7cKrCiksejqPxNIySMJ637lJxChan6C1A
+          CKFj8/Q9JYMvnKJodFEqsJYUgNNuCCFslPAKJtZy64h0eNRDqqQD2VR/XW2HxEBeW+LbyVqIVj91
+          rxKq0EbtbMs7PeeS2zIzQKySPtY6pXFDTwFC781K9VVLrI2qtMuc+gTpA5PFOQ73h+xh3DKnHBG9
+          PG+vcB2WMXCECzu4CKaElsB6Z38+UjOuBiAYrPyzy2/Z57W5LP4T3wNKQTtgmTbAOL3etx8z4P+y
+          v8a6EzeFsT1YB1WWc1mA0Yafv3Gus9ucxhHEEexwcAq+AQAA//8DAPSiOYXxAgAA
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f39fdbac9db643b-SJC
+          - 8f425bb65e7c6453-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,7 +64,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Tue, 17 Dec 2024 21:26:23 GMT
+          - Wed, 18 Dec 2024 21:48:39 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -78,25 +78,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "231"
+          - "229"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29999"
         x-ratelimit-remaining-tokens:
-          - "29999909"
+          - "149999909"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_6538a77713d1ec9b61a8e15f3cf37377
+          - req_1f8e0a7bd96417a061e010db00f50b6f
       status:
         code: 200
         message: OK

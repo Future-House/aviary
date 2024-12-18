@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     import numpy as np
 
 
-DEFAULT_EVAL_MODEL_NAME = "gpt-4o"
+DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
 LLM_BOOL_EVAL_CONFIG: dict[str, Any] = {
     "prompt": (
         "Here is a question, the correct answer to the question, and a proposed answer"

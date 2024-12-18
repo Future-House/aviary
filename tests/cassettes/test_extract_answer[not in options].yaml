@@ -5,7 +5,7 @@ interactions:
         has fixed options. Repeat back which option the proposed answer matches. GIVE
         ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
         or ambiguous, return an empty string.\n\nOptions:\nB\nC\n\nProposed answer:
-        F", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
+        F", "role": "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -14,7 +14,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "367"
+          - "372"
         content-type:
           - application/json
         host:
@@ -44,18 +44,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJI/T8MwEMX3fArr5gYl/d9uLIxIMLBQFLn2JXFxfJbtQKuq3x05DU0r
-          QGLJ8H73Xt5dckwYAyVhzUDUPIjG6vS+/Ni3T5TnlpYPyA/ukT4r2r3kcqKeYRQdtN2hCN+uO0GN
-          1RgUmTMWDnnAmJovJtPZbDGfZB1oSKKOtsqGdErpOBtP02yZZvPeWJMS6GHNXhPGGDt2z1jRSNzD
-          mnUxndKg97xCWF+GGANHOirAvVc+cBNgNEBBJqDpWm9gA9fIYdl6HpuZVuteP13epamyjra+5xe9
-          VEb5unDIPZmY6wNZ6OgpYeyt26m9qQnWUWNDEegdTQycr85xMBxxgHnPAgWuB3nRn+E2rJAYuNL+
-          6iQguKhRDs7hfryViq5AcrXyzy6/ZZ/XVqb6T/wAhEAbUBbWoVTidt9hzGH8w/4au5y4Kwz+4AM2
-          RalMhc46df7IpS1WJd/yVZlNlpCcki8AAAD//wMAJ6aXP+0CAAA=
+          H4sIAAAAAAAAAwAAAP//jFLLTsMwELznK6w9NyjpM/QGiAsSEuICEkKR62wSg2Nb9rY8qv47chLa
+          VC0SFx9mdsYza28jxkAWsGQgak6isSq+Kj9ubt0dyflYyIfy8b7mT5ss3Txff6sJjILCrN5Q0K/q
+          QpjGKiRpdEcLh5wwuKaLyXQ2y2Zp1hKNKVAFWWUpnpq4kVrG42Q8jZNFnGa9ujZSoIcle4kYY2zb
+          niGnLvATliwZ/SINes8rhOV+iDFwRgUEuPfSE9cEowMpjCbUbfQh7LBcex6i6bVSPb7b36NMZZ1Z
+          +Z7f46XU0te5Q+6NDp6ejIWW3UWMvbZ91kcRwTrTWMrJvKMOhvPLzg4OWzyQfVUgQ1yd0RyZ5QUS
+          l8oP1gGCixqLE0PGgK8LaQZENKh8muWcd1db6uo/9gdCCLSERW4dFlKc7duahy/219h+xW1g8F+e
+          sMlLqSt01snugUubz0uRJpgmuIJoF/0AAAD//wMAUYws+e4CAAA=
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f4246051c1ceb26-SJC
+          - 8f425bb11ca22513-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -63,14 +63,14 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 18 Dec 2024 21:33:50 GMT
+          - Wed, 18 Dec 2024 21:48:38 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=in2yLMzYdxfPIHSQDPq17chYgGhrTOolB6HZrJk9Iy8-1734557630-1.0.1.1-LYUU4oNWUKO8gNwjcIktYjnSyIsGLKQGmQKI54P4UxfMJ330MXeZFWWhVoJnP0b1M92ejFaHTWHlz4eHH30gIA;
-            path=/; expires=Wed, 18-Dec-24 22:03:50 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=ABTDwd4t79cPLIko1hPlFoZXxUQ6rzPq8jHwq1Xy7XE-1734558518-1.0.1.1-Qqt3v2jz7xPx17Fx0ehWguxbmaMuZk4B3NM4Z1HW2aMmaaTMq2RvfX.y5A9X5qv4xoO0qWDJdyM.E9ahp.RW5A;
+            path=/; expires=Wed, 18-Dec-24 22:18:38 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=El.JjK6nMT19ye2jesHXCIAySeg4BN7pKN7mVnzqSM8-1734557630598-0.0.1.1-604800000;
+          - _cfuvid=17oj8YL1hlYLaR7o.N8HEjWKDALCyYtBfmHe30jFAG0-1734558518262-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
@@ -83,25 +83,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "253"
+          - "232"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29996"
         x-ratelimit-remaining-tokens:
-          - "29999912"
+          - "149992191"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 7ms
         x-ratelimit-reset-tokens:
-          - 0s
+          - 3ms
         x-request-id:
-          - req_5992eb433053f3b82b29a5319a96ef7e
+          - req_e11e29110308fec0a5310bf18d49c27d
       status:
         code: 200
         message: OK

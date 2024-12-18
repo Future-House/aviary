@@ -6,7 +6,8 @@ interactions:
         ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
         or ambiguous, return an empty string.\n\nOptions:\n-8\nInsufficient information
         to answer this question\ncheesecake\n94106\n94107\n\nProposed answer: the answer
-        is 94106 or 94107", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
+        is 94106 or 94107", "role": "user"}], "model": "gpt-4o-mini", "temperature":
+        0}'
       headers:
         accept:
           - application/json
@@ -15,7 +16,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "468"
+          - "473"
         content-type:
           - application/json
         host:
@@ -35,7 +36,7 @@ interactions:
         x-stainless-raw-response:
           - "true"
         x-stainless-retry-count:
-          - "1"
+          - "0"
         x-stainless-runtime:
           - CPython
         x-stainless-runtime-version:
@@ -45,18 +46,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jFKxbsIwFNzzFdabSRUIlMBWsYNUVepQVZHjPAdTx7ZsRy1F/HvlEJJU
-          UKmLh7t357tnnyJCQJSwJsD21LPayPiJf2bfxbZ+3iqeqdfjruCr3eblkLqj2cAkKHRxQOavqgem
-          ayPRC60uNLNIPQbX6TKdLxZZOl22RK1LlEFWGR/PdTxLZvM4yeLksRPutWDoYE3eIkIIObVniKhK
-          /II1SSZXpEbnaIWw7ocIAatlQIA6J5ynysNkIJlWHlWbegxb5I2jIZVqpOzwc3+P1JWxunAd3+Nc
-          KOH2uUXqtAqezmsDLXuOCHlv+zS/IoKxujY+9/oDVTBcLS52MCxwILuq4LWn8o7ml1leoqdCutE6
-          gFG2x/LGkBCgTSn0iIhGlW+z3PO+1Baq+o/9QDCGxmOZG4ulYHf7tubhd/011q+4DQzu6DzWOReq
-          QmusuDwwN/mK04KueJJmEJ2jHwAAAP//AwCZn7Uj6QIAAA==
+          H4sIAAAAAAAAAwAAAP//jFLLbsIwELznK6w9kyoJz3Jrq35ARakqVVVk7E0wdWzLXkQrxL9XDhBA
+          UKkXH2Z2xjNrbxPGQEmYMhBLTqJxOn2oNk/PzWJFr+KlmM03j/NZ8TbavMt+UVfQiwq7WKGgo+pO
+          2MZpJGXNnhYeOWF0zcf9wXA4GeaTlmisRB1ltaN0YNNGGZUWWTFIs3GaTw7qpVUCA0zZR8IYY9v2
+          jDmNxG+Ysqx3RBoMgdcI026IMfBWRwR4CCoQNwS9EymsITRt9HPYY7UOPEYza60P+K67R9vaebsI
+          B77DK2VUWJYeebAmegayDlp2lzD22fZZX0QE523jqCT7hSYa3g/3dnDa4ok8VAWyxPUNzYVZKZG4
+          0uFsHSC4WKK8MmQM+Foqe0YkZ5Wvs9zy3tdWpv6P/YkQAh2hLJ1HqcTNvq15/GJ/jXUrbgND+AmE
+          TVkpU6N3Xu0fuHLlqBJ5hnmGC0h2yS8AAAD//wMALlTCsO4CAAA=
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f4256c89c4217de-SJC
+          - 8f425bb169ea22f6-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,9 +65,15 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 18 Dec 2024 21:45:17 GMT
+          - Wed, 18 Dec 2024 21:48:38 GMT
         Server:
           - cloudflare
+        Set-Cookie:
+          - __cf_bm=d8n1B6AzFA1xougxyBgoPLD0ITgb.iimKMM9kNYr6NA-1734558518-1.0.1.1-c8MRCOD4wNoPcANGb9a6gOWsl6NhHqx911Ktp.RARxFa..7XVR9hKaZVQ2nRa8g.bTL2e2pT7EpsuMaFLlx6Sw;
+            path=/; expires=Wed, 18-Dec-24 22:18:38 GMT; domain=.api.openai.com; HttpOnly;
+            Secure; SameSite=None
+          - _cfuvid=DPEKvT7hx6XvGnKxQqNrPq5Y4dSqkyQo4hPKRlWd79E-1734558518261-0.0.1.1-604800000;
+            path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
         X-Content-Type-Options:
@@ -78,25 +85,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "140"
+          - "168"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29999"
         x-ratelimit-remaining-tokens:
-          - "29999889"
+          - "149999888"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_92a0dc630d0d21997ff3aeede540417d
+          - req_becb26d30d1adf2d410f311a4664a6b2
       status:
         code: 200
         message: OK

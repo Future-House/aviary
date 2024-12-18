@@ -7,7 +7,7 @@ interactions:
         other output is permitted.\n\nQuestion: Which of the following is most likely
         true:\n\nA) Piggie, B) Pigeon, C) Gerald\n\n\nCorrect answer: C\n\nProposed
         answer: Based on all factors considered, the most compelling answer is Gerald,
-        C", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
+        C", "role": "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -16,7 +16,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "516"
+          - "521"
         content-type:
           - application/json
         host:
@@ -46,18 +46,16 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJI/b8IwEMX3fArLM6kCpPzbGDpQVahSh4pWVWTsS+Li+CzbkaCI7145
-          AZKqVOri4X73nt+dfYwIoVLQBaG8ZJ5XRsXL/G09e3zePyX1YbxZrhzuynKTi9WXW7/SQVDg9hO4
-          v6juOFZGgZeoW8wtMA/BdTgdp+k0mc5GDahQgAqywvg4xXiUjNI4mcXJ5CwsUXJwdEHeI0IIOTZn
-          iKgF7OmCJINLpQLnWAF0cW0ihFpUoUKZc9J5pj0ddJCj9qCb1JuHlz6xkNeOhWC6VupcP12vUlgY
-          i1t35td6LrV0ZWaBOdTB1nk0tKGniJCPZqT6R0pqLFbGZx53oIPhMLlv/Wi3xB49M4+eqb5oMrhh
-          lwnwTCrX2wnljJcgOmm3QFYLiT0Q9Yb+HeaWdzu41MV/7DvAORgPIjMWhOQ/B+7aLIQv9lfbdclN
-          YOoOzkOV5VIXYI2V7SvnJpvnbMvmeTKe0egUfQMAAP//AwAWS34s7gIAAA==
+          H4sIAAAAAAAAA4ySy2rDMBBF9/4KoXVcnMTOa1dKCl00lAZKHxSjSGNbjSwJaUJTSv69yHnYoSl0
+          o8WcuVd3RvqOCKFS0BmhvGLIa6vi6+LzZr54vh2tB/Xr0zgTi8Lh/ZY93vHlA+0FhVl9AMej6oqb
+          2ipAafQecwcMIbj2x8M0yyZZf9KA2ghQQVZajFMT11LLeJAM0jgZx/3JQV0ZycHTGXmLCCHkuzlD
+          Ti1gS2ck6R0rNXjPSqCzUxMh1BkVKpR5Lz0yjbTXQm40gm6iv8yXXeKg2HgW0umNUof67nSVMqV1
+          ZuUP/FQvpJa+yh0wb3Sw9WgsbeguIuS9GWlzlpJaZ2qLOZo16GDYT7K9H2032aEHhgaZ6opGvQt2
+          uQBkUvnOTihnvALRStsFso2QpgOiztC/w1zy3g8udfkf+xZwDhZB5NaBkPx84LbNQfhnf7WdltwE
+          pv7LI9R5IXUJzjq5f+XC5sMpSxM+HbGERrvoBwAA//8DAJN7IxXzAgAA
       headers:
-        CF-Cache-Status:
-          - DYNAMIC
         CF-RAY:
-          - 8f39fdb5cae1158a-SJC
+          - 8f425bb118049453-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -65,14 +63,14 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Tue, 17 Dec 2024 21:26:22 GMT
+          - Wed, 18 Dec 2024 21:48:38 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=lVkT7i5qloNOJW3VW5kf8Ohm6U080WiPUv6XirXCoFk-1734470782-1.0.1.1-nAgxt2GizSWkF.auEc_j1tv3Erjbd74Lsh9WJmMaZa_E8fpVuEZ8SsBIqLBHICQDV0sfwSjHgP9mTBHQujl_XA;
-            path=/; expires=Tue, 17-Dec-24 21:56:22 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=shlFi0WrRQqtHm9BFHA8BA_DE3OgD.WLNX_BG0MJ.Uc-1734558518-1.0.1.1-dTPiGPfeRXm4eFyNx5Qhh98ITpHISNJJ15gnJl7VfBbOzj3CoF.H.Mssss_WvoWjPSiaq4ZWwBKCF16.mbMFig;
+            path=/; expires=Wed, 18-Dec-24 22:18:38 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=YCWb3aZdtzEmsWTuiPgC.gchnL7jvJLEWh9yvJqAiAw-1734470782603-0.0.1.1-604800000;
+          - _cfuvid=LbfayFWmgFkPH4gOfhOfLicD7koAa3IqwrVpt0Q2uQ0-1734558518270-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Transfer-Encoding:
           - chunked
@@ -82,28 +80,30 @@ interactions:
           - X-Request-ID
         alt-svc:
           - h3=":443"; ma=86400
+        cf-cache-status:
+          - DYNAMIC
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "124"
+          - "226"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29998"
         x-ratelimit-remaining-tokens:
-          - "29999876"
+          - "149999877"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_84a9ec4746765b74e4d84610ebc880ad
+          - req_c627f8d13c1969c6fd3a26f94a43a44f
       status:
         code: 200
         message: OK

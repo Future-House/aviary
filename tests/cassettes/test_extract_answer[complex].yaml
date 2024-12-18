@@ -11,7 +11,7 @@ interactions:
         believe the collapse was due to social unrest because of the prolonged epidemic
         of 2025. I tend to agree with the majority - although I can see both sides.
         Thus my response is that the social unrest was the significant factor in the
-        collapse of the regime.", "role": "user"}], "model": "gpt-4o", "temperature":
+        collapse of the regime.", "role": "user"}], "model": "gpt-4o-mini", "temperature":
         0}'
       headers:
         accept:
@@ -21,7 +21,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "861"
+          - "866"
         content-type:
           - application/json
         host:
@@ -51,18 +51,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJI/T8MwEMX3fArLc4Oa9E9KtrJ1REyAUOTal8TF8RnbgaKq3x05TZNW
-          FInFw/3uPb87+xARQqWgOaG8Zp43RsXr8nP/9VCtNKzbGuYvJSab3cdj+rySiw2dBAVud8D9WXXH
-          sTEKvER9wtwC8xBck2w2Xyyy5SztQIMCVJBVxsdzjNNpOo+nq3i67IU1Sg6O5uQ1IoSQQ3eGiFrA
-          nuZkOjlXGnCOVUDzoYkQalGFCmXOSeeZ9nQyQo7ag+5SPyGXTJFWW3BXPRbK1rEQUbdK9fXjcKnC
-          yljcup4P9VJq6erCAnOowwXOo6EdPUaEvHXDtVd5qbHYGF94fAcdDJPl4uRHx3WONO2ZR8/UpSib
-          3LArBHgmlbvYDuWM1yBG6bhK1gqJFyC6GPp3mFvep8Glrv5jPwLOwXgQhbEgJL8eeGyzED7bX23D
-          krvA1H07D01RSl2BNVae3rs0BcvuxUownpQ0OkY/AAAA//8DAOEzla34AgAA
+          H4sIAAAAAAAAAwAAAP//jJLNasMwEITvfgqhc1zsNE5S30qhhzZQaKE5lGIUaW2rkbVCkklDyLsX
+          OT92aAq96LDfzmh2pV1ECJWC5oTymnneGBXfl5uHx4VKt7PNy3KdLerpUj8/vavXxtkNHQUFrr6A
+          +5PqhmNjFHiJ+oC5BeYhuKaz20mWzbP0rgMNClBBVhkfTzBupJbxOBlP4mQWp/OjukbJwdGcfESE
+          ELLrzpBTC/imOUlGp0oDzrEKaH5uIoRaVKFCmXPSeaY9HfWQo/agu+hvyCVTpNUW3EWPhbJ1LOTU
+          rVLH+v58qcLKWFy5Iz/XS6mlqwsLzKEOFziPhnZ0HxHy2Q3XXuSlxmJjfOFxDToYptPs4Ef7nfZ0
+          fGQePVND0Wx0xa4Q4JlUbrAdyhmvQfTSfpWsFRIHIBoM/TvMNe/D4FJX/7HvAedgPIjCWBCSXw7c
+          t1kIP+6vtvOSu8DUbZ2HpiilrsAaKw/vXZpiWvI0gTSBFY320Q8AAAD//wMA8VLBff0CAAA=
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f42461018c5eb29-SJC
+          - 8f425bb69fe5250c-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -70,7 +70,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 18 Dec 2024 21:33:52 GMT
+          - Wed, 18 Dec 2024 21:48:39 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -84,25 +84,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "235"
+          - "491"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29999"
         x-ratelimit-remaining-tokens:
-          - "29999790"
+          - "149999790"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_366dfd5f505d08facd0f7d10e64a9f5e
+          - req_0446ed4c188b77427f33f74f91e0d112
       status:
         code: 200
         message: OK

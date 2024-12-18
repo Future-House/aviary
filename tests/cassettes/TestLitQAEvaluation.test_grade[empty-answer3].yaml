@@ -6,7 +6,7 @@ interactions:
         ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
         or ambiguous, return an empty string.\n\nOptions:\ncryo EM\nInsufficient information
         to answer this question\nNMR\nx-ray crystallography\ncircular dichroism\n\nProposed
-        answer: ", "role": "user"}], "model": "gpt-4o", "temperature": 0}'
+        answer: ", "role": "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -15,7 +15,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "467"
+          - "472"
         content-type:
           - application/json
         host:
@@ -45,18 +45,18 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//jJJLa8MwEITv/hViz3FxXs3jFkIooZSQQ3spxSjy2lYrS6qkkJaQ/14k
-          p7ZDUujFhx3N55mVjhEhwDOYE2AldazSIl7kh9lgtZmMt4+r4fPL08NivN5uPvvLw3Kzhp53qN07
-          MvfrumOq0gIdV7KWmUHq0FP7k+FoPJ4OB0kQKpWh8LZCu3ik4kEyGMXJNE7uz8ZScYYW5uQ1IoSQ
-          Y/j6iDLDL5iTgAmTCq2lBcK8OUQIGCX8BKi13DoqHfRakSnpUIbU3bHBfG+pTyX3Qpznp+Y/QhXa
-          qJ09680855LbMjVIrZKeaZ3SENRTRMhb6LO/iAjaqEq71KkPlB4469c4aBfYiueq4JSj4obnApZm
-          6CgXtrMOYJSVmF0BCQG6z7jqCFGn8nWWW+y6NpfFf/CtwBhqh1mqDWac3ewb4P51/XWsWXEIDPbb
-          OqzSnMsCjTa8vuBcp7Oc7ugsT4ZTiE7RDwAAAP//AwBp6cyD6QIAAA==
+          H4sIAAAAAAAAAwAAAP//jFLLbsIwELznK6w9kypAKIRbH+pDVU+9VK2qyDibxNSxLXtRSxH/Xjm8
+          gqBSLz7M7Ixn1l5FjIEsYMpA1JxEY1V8VX7d3N2/PP7czp9f39QwmTzJ5UNqqb52M+gFhZnNUdBO
+          dSFMYxWSNHpDC4ecMLj2x8N0NJqM+llLNKZAFWSVpTg1cSO1jAfJII2TcdyfbNW1kQI9TNl7xBhj
+          q/YMOXWB3zBlSW+HNOg9rxCm+yHGwBkVEODeS09cE/QOpDCaULfRu7DDcuF5iKYXSm3x9f4eZSrr
+          zMxv+T1eSi19nTvk3ujg6clYaNl1xNhH22dxFBGsM42lnMwn6mCY9Td2cNjigdxWBTLE1RnNkVle
+          IHGpfGcdILiosTgxZAz4opCmQ0SdyqdZznlvaktd/cf+QAiBlrDIrcNCirN9W/Pwxf4a26+4DQx+
+          6QmbvJS6Qmed3DxwafNhxtNEZJc8gWgd/QIAAP//AwCjNKe67gIAAA==
       headers:
         CF-Cache-Status:
           - DYNAMIC
         CF-RAY:
-          - 8f4256dfbb4a7ac7-SJC
+          - 8f425bbaab9a236e-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,7 +64,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 18 Dec 2024 21:45:20 GMT
+          - Wed, 18 Dec 2024 21:48:39 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -78,25 +78,25 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "207"
+          - "231"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29999"
         x-ratelimit-remaining-tokens:
-          - "29999889"
+          - "149999888"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_06b5243be6b66dfc6827056b2c49f4c4
+          - req_427dff29f2a632ec0882c27c797f5d5a
       status:
         code: 200
         message: OK

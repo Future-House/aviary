@@ -6,7 +6,7 @@ interactions:
         ONLY THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
         or ambiguous, return an empty string.\n\nOptions:\n-8\nInsufficient information
         to answer this question\ncheesecake\n94106\n94107\n\nProposed answer: ", "role":
-        "user"}], "model": "gpt-4o", "temperature": 0}'
+        "user"}], "model": "gpt-4o-mini", "temperature": 0}'
       headers:
         accept:
           - application/json
@@ -15,7 +15,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "440"
+          - "445"
         content-type:
           - application/json
         host:
@@ -45,18 +45,16 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAA4xSy27CMBC85yusPZMqkAApt6rHSr0U9VJVkbE3wa3jtWyj8hD/XjlAAEGlXnyY
-          2RnPrL1LGAMlYcZALHkQrdXpU/1TbhfrIn+j+Vxs281Cv7/k9JrN1/gMg6igxReKcFI9CGqtxqDI
-          HGjhkAeMrsNpXozHZT6cdkRLEnWUNTakBaWjbFSkWZlmk6NwSUqghxn7SBhjbNedMaKRuIYZywYn
-          pEXveYMw64cYA0c6IsC9Vz5wE2BwJgWZgKZLfQk7rFeex1RmpfUR3/f3aGqso4U/8j1eK6P8snLI
-          PZno6QNZ6Nh9wthn12d1FRGso9aGKtA3mmhYTg52cF7gmTxWhUCB6zuaK7NKYuBK+4t1gOBiifLG
-          kDHgK6nogkguKt9mued9qK1M8x/7MyEE2oCysg6lEnf7dubxd/011q+4Cwx+4wO2Va1Mg846dXjg
-          2lZ8+ihLycWwhmSf/AIAAP//AwBsWlME6QIAAA==
+          H4sIAAAAAAAAAwAAAP//jFJdS8MwFH3vrwj3eZV2X46+6RAR0T2JikjJkts2miYhSVEZ+++Srms3
+          NsGXPJxzz8k5N9lEhIDgkBFgFfWsNjK+Kr6WN6vb8XL+9LqSxj3Qu2R1ff/8yCfiBUZBodcfyPxe
+          dcF0bSR6odWOZhapx+CaXk6ms9lili5aotYcZZCVxsdTHddCiXicjKdxchmni05dacHQQUbeIkII
+          2bRnyKk4fkNGktEeqdE5WiJk/RAhYLUMCFDnhPNUeRgNJNPKo2qjH8IWi8bREE01Unb4tr9H6tJY
+          vXYd3+OFUMJVuUXqtAqezmsDLbuNCHlv+zRHEcFYXRufe/2JKhgu5js7GLY4kF1V8NpTeUZzZJZz
+          9FRId7AOYJRVyE8MCQHacKEPiOig8mmWc9672kKV/7EfCMbQeOS5scgFO9u3NQ9f7K+xfsVtYHA/
+          zmOdF0KVaI0VuwcuTD4vWJpgmuAaom30CwAA//8DAL0A1qzuAgAA
       headers:
-        CF-Cache-Status:
-          - DYNAMIC
         CF-RAY:
-          - 8f4256cce931eb29-SJC
+          - 8f425bb5de5996de-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -64,7 +62,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Wed, 18 Dec 2024 21:45:17 GMT
+          - Wed, 18 Dec 2024 21:48:39 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -75,28 +73,30 @@ interactions:
           - X-Request-ID
         alt-svc:
           - h3=":443"; ma=86400
+        cf-cache-status:
+          - DYNAMIC
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "217"
+          - "233"
         openai-version:
           - "2020-10-01"
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-ratelimit-limit-requests:
-          - "10000"
+          - "30000"
         x-ratelimit-limit-tokens:
-          - "30000000"
+          - "150000000"
         x-ratelimit-remaining-requests:
-          - "9999"
+          - "29999"
         x-ratelimit-remaining-tokens:
-          - "29999895"
+          - "149999896"
         x-ratelimit-reset-requests:
-          - 6ms
+          - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_520872e529ccbb680d27a3729fbe637e
+          - req_0c845e0049332bd1fa73fdbe76005ea1
       status:
         code: 200
         message: OK
