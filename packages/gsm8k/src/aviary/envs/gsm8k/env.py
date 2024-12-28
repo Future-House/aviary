@@ -160,16 +160,12 @@ class CalculatorEnv(Environment[None]):
         try:
             expr = expr.strip()
             result = eval(expr)  # noqa: S307  # pylint: disable=eval-used
-            # logger.debug(f"{expr} = {result}")
-            with contextlib.suppress(ValueError):
+            with contextlib.suppress(ValueError):  # If possible, downcast float to int
                 if int(result) == result:
                     result = int(result)
-
-        except Exception:
-            # msg = f"ERROR: ({expr}) -> {repr(e)}"
-            # logger.error(msg)
+        except Exception as exc:
             return (
-                "Error using calculator",
+                f"Error using calculator: {exc!r}.",
                 self.config.tool_failure_reward,
                 self.config.done_on_failure,
             )
