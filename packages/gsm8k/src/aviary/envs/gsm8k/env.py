@@ -53,16 +53,16 @@ class CalculatorEnv(Environment[None]):
 
         self.config = config if config is not None else CalculatorEnvConfig()
 
-        self.calc_tool = Tool.from_function(self.calculator)
-        self.check_tool = Tool.from_function(self.submit_answer)
-        self.tools = [self.calc_tool, self.check_tool]
-
     @classmethod
     def from_task(cls, task: str) -> "CalculatorEnv":
         return cls(problem_id="task", problem=task, answer=0.0)
 
     async def reset(self) -> tuple[Messages, list[Tool]]:
         self.state = None  # this environment is effectively stateless
+        self.tools = [
+            Tool.from_function(self.calculator),
+            Tool.from_function(self.submit_answer),
+        ]
         return [Message(content=self.problem)], self.tools
 
     async def step(
