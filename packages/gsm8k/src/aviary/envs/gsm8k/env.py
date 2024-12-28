@@ -145,14 +145,17 @@ class CalculatorEnv(Environment[None]):
         else:
             return correct, reward, True
 
-    def calculator(self, expr: str) -> tuple[float | str | None, float, bool]:
+    def calculator(self, expr: str) -> tuple[float | str, float, bool]:
         """Calculate a mathematical expression.
 
         Args:
-            expr (str): A valid python expression
+            expr: A valid Python expression.
 
         Returns:
-            float: Result of the expression
+            A three-tuple where the first element is the float evaluation if successful,
+                or a string containing the failure cause if unsuccessful, the second
+                element is the reward associated with success or failure, and the third
+                element is a boolean indicating if this action is terminal.
         """
         try:
             expr = expr.strip()
