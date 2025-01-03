@@ -300,13 +300,22 @@ class TestRendering:
         mutable_state[0].append("bar")
         assert deep_copy.model_dump()["state"] == [["foo"]]
 
-    def test_rendering(self, dummy_env: DummyEnv) -> None:
+    def test_rendering(self, dummy_env: DummyEnv, subtests: SubTests) -> None:
         # Reset to add state
         asyncio.run(dummy_env.reset())
+        frame_after_reset = dummy_env.export_frame()
 
         renderer = Renderer(name="Name", prefix="test")
-        renderer.append(dummy_env.export_frame())
-        with tempfile.TemporaryDirectory() as tmpdir:
+        renderer.append(frame_after_reset)
+        with subtests.test(msg="check-can-deduplicate-frames"):
+            assert frame_after_reset in renderer.frames, (
+                "Should be able to not add duplicate Frames to the renderer"
+            )
+
+        with (
+            subtests.test(msg="build-rehydrate"),
+            tempfile.TemporaryDirectory() as tmpdir,
+        ):
             build_dir = pathlib.Path(tmpdir)
             renderer.build(build_dir)
             file_paths = list(build_dir.glob("*.json"))
@@ -316,9 +325,9 @@ class TestRendering:
             ]
             with frame_path.open() as f:
                 rehydrated = json.load(f)
-        assert rehydrated["state"]["messages"] == [
-            "Write a 5 word story via print_story"
-        ]
+            assert rehydrated["state"]["messages"] == [
+                "Write a 5 word story via print_story"
+            ]
 
 
 class ParallelizedDummyEnv(DummyEnv):
