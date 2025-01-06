@@ -178,7 +178,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.14.1.dev2+g9e3f7bc"
+version = "0.14.1.dev3+g7c91963.d20250106"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -201,7 +201,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.14.1.dev2+g9e3f7bc"
+version = "0.14.1.dev3+g7c91963.d20250106"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -828,7 +828,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.14.1.dev2+g9e3f7bc"
+version = "0.14.1.dev3+g7c91963.d20250106"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -925,7 +925,7 @@ requires-dist = [
     { name = "fastapi", marker = "extra == 'server'" },
     { name = "fhaviary", extras = ["image", "llm", "server", "typing", "xml"], marker = "extra == 'dev'", editable = "." },
     { name = "httpx" },
-    { name = "httpx", marker = "extra == 'dev'", specifier = "<0.28" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = "<0.29" },
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "litellm", marker = "python_full_version >= '3.13' and extra == 'llm'", specifier = ">=1.49.1" },
     { name = "litellm", marker = "python_full_version < '3.13' and extra == 'llm'" },
