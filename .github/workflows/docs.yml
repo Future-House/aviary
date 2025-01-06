@@ -1,0 +1,40 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - main 
+      - docs
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install sphinx sphinx_rtd_theme
+        pip install .[all]
+        
+    - name: Clean previous builds
+      working-directory: ./docs
+      run: make clean
+      
+    - name: Generate .rst files using sphinx-apidoc
+      working-directory: ./docs
+      run: sphinx-apidoc -o . ../src/aviary
+   
+    - name: Build the Sphinx documentation
+      working-directory: ./docs
+      run: make html
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        cname: aviary.bio
+        publish_dir: docs/_build/html
