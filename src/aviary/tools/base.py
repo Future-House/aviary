@@ -401,7 +401,7 @@ class Tool(BaseModel):
                 (
                     cls._get_param_desc(
                         p, include_type=types_in_param_descriptions
-                    ).replace("\n", " ")
+                    )
                     for p in docstring.params
                     if p.arg_name == pname
                 ),

@@ -169,7 +169,7 @@ class TestTool:
                                 },
                                 "y": {
                                     "description": (
-                                        "I am null. And despite that there is a"
+                                        "I am null.\nAnd despite that there is a"
                                         " multiline argument description."
                                     ),
                                     "title": "Y",
