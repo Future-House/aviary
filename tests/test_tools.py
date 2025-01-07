@@ -84,7 +84,7 @@ def many_edge_cases(
                 Modified Search:
                     Use operators to modify search behavior:
                     >>> 'EXPANSION[None]NAME"word phrase"'  # doctest: +SKIP
-                    >>> "EXPANSION[Concept]words"  # doctest: +SKIP
+                    >>> 'EXPANSION[Concept]"words"'  # doctest: +SKIP
 
             Operators:
                 EXPANSION[type]: Terms
@@ -246,17 +246,17 @@ class TestTool:
                                 "structured_arg": {
                                     "default": "structured",
                                     "description": (
-                                        "I am structured. There are lots of examples \n"
+                                        "I am structured. There are lots of examples\n"
                                         "included which cross several lines.\n"
                                         "Query Syntax:\n"
                                         "    Basic Search:\n"
                                         "        Search with two words and a space:\n"
-                                        '        >>> "word1 word2" # doctest: +SKIP\n'
+                                        '        >>> "word1 word2"  # doctest: +SKIP\n'
                                         "\n"
                                         "    Modified Search:\n"
                                         "        Use operators to modify search behavior:\n"
-                                        "        >>> 'EXPANSION[None]NAME\"word phrase\"' # doctest: +SKIP\n"
-                                        "        >>> 'EXPANSION[Concept]words' # doctest: +SKIP\n"
+                                        "        >>> 'EXPANSION[None]NAME\"word phrase\"'  # doctest: +SKIP\n"
+                                        "        >>> 'EXPANSION[Concept]\"words\"'  # doctest: +SKIP\n"
                                         "\n"
                                         "Operators:\n"
                                         "    EXPANSION[type]: Terms\n"
