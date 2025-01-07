@@ -58,6 +58,7 @@ def many_edge_cases(
     enum: StubEnum,
     defaulted_str: str = "default",
     defaulted_float: float = 1.0,
+    structured_arg: str = "structured",
 ) -> None:
     """
     Check using docstrings as partial f-string templates like so: {summary_format}.
@@ -73,6 +74,22 @@ def many_edge_cases(
         enum: I am an enum.
         defaulted_str: I have a string default value.
         defaulted_float: I have a float default value.
+        structured_arg: I am structured. There are lots of examples 
+            included which cross several lines.
+            Query Syntax:
+                Basic Search:
+                    Search with two words and a space:
+                    >>> "word1 word2" # doctest: +SKIP
+
+                Modified Search:
+                    Use operators to modify search behavior:
+                    >>> 'EXPANSION[None]NAME"word phrase"' # doctest: +SKIP
+                    >>> 'EXPANSION[Concept]words' # doctest: +SKIP
+
+            Operators:
+                EXPANSION[type]: Terms
+                    - Term1: a description
+                    - Term2: another description
     """
 
 
@@ -225,6 +242,29 @@ class TestTool:
                                     "description": "I have a float default value.",
                                     "title": "Defaulted Float",
                                     "type": "number",
+                                },
+                                "structured_arg": {
+                                    "default": "structured",
+                                    "description": (
+                                        'I am structured. There are lots of examples \n'
+                                        'included which cross several lines.\n'
+                                        'Query Syntax:\n'
+                                        '    Basic Search:\n'
+                                        '        Search with two words and a space:\n'
+                                        '        >>> \"word1 word2" # doctest: +SKIP\n'
+                                        '\n'
+                                        '    Modified Search:\n'
+                                        '        Use operators to modify search behavior:\n'
+                                        '        >>> \'EXPANSION[None]NAME"word phrase"\' # doctest: +SKIP\n'
+                                        '        >>> \'EXPANSION[Concept]words\' # doctest: +SKIP\n'
+                                        '\n'
+                                        'Operators:\n'
+                                        '    EXPANSION[type]: Terms\n'
+                                        '        - Term1: a description\n'
+                                        '        - Term2: another description'
+                                    ),
+                                    "title": "Structured Arg",
+                                    "type": "string",
                                 },
                             },
                             "required": [
