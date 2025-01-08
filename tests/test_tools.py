@@ -564,8 +564,7 @@ PARAMETERS:
             assert new_messages[0].content == "Go for a walk"
 
 
-@pytest.mark.asyncio
-async def test_argref_by_name_basic_usage() -> None:
+def test_argref_by_name_basic_usage() -> None:
     class MyState:
         def __init__(self):
             self.refs = {"foo": 1}
@@ -585,8 +584,7 @@ async def test_argref_by_name_basic_usage() -> None:
     assert s.refs[name] == 1 + 2
 
 
-@pytest.mark.asyncio
-async def test_argref_by_name_error_handling() -> None:
+def test_argref_by_name_error_handling() -> None:
     class MyState:
         def __init__(self):
             self.refs = {"foo": 1}
@@ -711,8 +709,7 @@ async def test_argref_by_name_advanced_features() -> None:
     assert kwarg_list_test(a="foo,foo", state=s) == 2
 
 
-@pytest.mark.asyncio
-async def test_argref_by_name_type_checking() -> None:
+def test_argref_by_name_type_checking() -> None:
     class MyInt(int):
         pass
 
