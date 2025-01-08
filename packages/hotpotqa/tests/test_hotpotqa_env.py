@@ -70,7 +70,7 @@ async def test_tool_results() -> None:
         "Expected text after the match to be a paragraph"
     )
 
-    obs5 = hotpotqa_env.submit_answer("China")
+    obs5 = await hotpotqa_env.submit_answer("China")
 
     # Ensure that the observations are different
     assert obs1 != obs2 != obs3 != obs4 != obs5
