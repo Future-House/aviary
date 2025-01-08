@@ -106,6 +106,7 @@ async def test_invalid_start_function():
         await env.reset()
 
 
+@pytest.mark.asyncio
 async def test_invalid_state_dict():
     @fenv.start()
     def invalid_env():

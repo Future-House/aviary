@@ -45,7 +45,7 @@ async def make_tool_server(  # noqa: PLR0915
         env_path = Path(tempfile.gettempdir())
     auth_scheme = HTTPBearer()
 
-    async def validate_token(
+    def validate_token(
         credentials: HTTPAuthorizationCredentials = Depends(auth_scheme),  # noqa: B008
     ) -> str:
         # NOTE: don't use os.environ.get() to avoid possible empty string matches, and

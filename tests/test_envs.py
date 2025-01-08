@@ -488,7 +488,7 @@ class TestParallelism:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def server_async_client() -> AsyncClient:
+def server_async_client() -> AsyncClient:
     dataset = TaskDataset.from_name("dummy")
     server = TaskDatasetServer[DummyEnv](dataset)
     return AsyncClient(app=server.app, base_url="http://test")

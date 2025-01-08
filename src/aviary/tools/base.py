@@ -251,8 +251,7 @@ class FunctionInfo(BaseModel):
             merged_schema.update({k: v for k, v in schema.items() if k != key})
 
             # Remove the original key
-            if key in merged_schema:
-                del merged_schema[key]
+            merged_schema.pop(key, None)
 
             return merged_schema
 
