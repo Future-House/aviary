@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 try:
     from litellm import acompletion
@@ -215,6 +215,8 @@ _CAPITAL_A_INDEX = ord("A")
 
 
 class MultipleChoiceQuestion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}\n\nOptions:\n{options}"
     DEFAULT_UNSURE_OPTION: ClassVar[str] = (
         "Insufficient information to answer this question"
