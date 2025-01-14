@@ -2,8 +2,12 @@ from collections.abc import Iterable, Sequence
 
 import pytest
 
-from aviary.core import eval_answer, extract_answer
-from aviary.utils import MultipleChoiceEvaluation, MultipleChoiceQuestion
+from aviary.core import (
+    MultipleChoiceEvaluation,
+    MultipleChoiceQuestion,
+    eval_answer,
+    extract_answer,
+)
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
