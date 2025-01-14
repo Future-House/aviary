@@ -232,7 +232,7 @@ class TestLitQAEvaluation:
 
         mc_question_1a_copy = MultipleChoiceQuestion(**mc_question_1a.model_dump())
         self._assert_prompt_is_valid(mc_question_1a_copy, question, ideal, distractors)
-        assert mc_question_1a == mc_question_1b, (
+        assert mc_question_1a == mc_question_1a_copy == mc_question_1b, (
             "Serialization then deserialization should lead to same prompts"
         )
 
