@@ -9,15 +9,13 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, TypeVar, cast
 
+import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 try:
     from litellm import acompletion
 except ImportError:
     acompletion = None
-
-if TYPE_CHECKING:
-    import numpy as np
 
 
 DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
@@ -218,15 +216,20 @@ def shuffle(
     value: Sequence[T], seed: "int | random.Random | np.random.Generator | None" = None
 ) -> Sequence[T]:
     """Shuffle a non-mutable sequence."""
-    # Since most shuffle fn's are in-place, we employ sampling without replacement
-    if isinstance(seed, int):
-        return random.Random(seed).sample(value, k=len(value))
-    if isinstance(seed, random.Random):
-        return seed.sample(value, k=len(value))
+    k = len(value)
+
     if seed is None:
-        return random.sample(value, k=len(value))
-    # Numpy RNG. Note this will have a type error for sequences like str, but oh well
-    return seed.choice(value, size=len(value), replace=False)  # type: ignore[arg-type,return-value]
+        return random.sample(value, k=k)
+    if isinstance(seed, int):
+        rng = random.Random(seed)
+    elif isinstance(seed, random.Random):
+        rng = seed
+    elif isinstance(seed, np.random.Generator):
+        return seed.choice(value, size=k, replace=False)
+    else:
+        raise TypeError("Invalid seed type")
+
+    return rng.sample(value, k=k)
 
 
 _CAPITAL_A_INDEX = ord("A")
