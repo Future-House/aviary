@@ -47,6 +47,7 @@ dev = [
     "httpx<0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
     "ipython>=8",  # Pin to keep recent
     "mypy>=1.8",  # Pin for mutable-override
+    "numpy>=1",  # Pin to keep recent
     "pre-commit>=3.4",  # Pin to keep recent
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",

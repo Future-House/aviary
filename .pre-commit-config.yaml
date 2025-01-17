@@ -84,7 +84,7 @@ repos:
           - fastapi
           - httpx < 0.28 # Match aviary pyproject.toml
           - litellm
-          - numpy
+          - numpy>=1 # Match aviary pyproject.toml
           - pydantic~=2.0 # Match aviary pyproject.toml
           - tenacity
           - types-Pillow
