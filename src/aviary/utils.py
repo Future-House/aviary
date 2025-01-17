@@ -280,10 +280,11 @@ class MultipleChoiceQuestion(BaseModel):
             "Optional seed or random number generator to use in randomization of"
             " options, where seeding is not global (e.g. no `random.seed`). Optionally"
             " pass in the string literal 'SEED_USING_QUESTION' to hash the question as"
-            " the seed. If making many questions with the same amount of options in"
-            " parallel, take care to either specify a different seed per question (e.g."
-            " using 'SEED_USING_QUESTION') or specify a random number generator to"
-            " avoid placing the ideal option in the same index."
+            " the seed. If making many questions with the same count of options and"
+            " sharing a seed across all instantiations, take care to either specify a"
+            " different seed per question (e.g. using 'SEED_USING_QUESTION') or specify"
+            " a random number generator, to avoid placing the ideal option being"
+            " shuffled into the same index for every question."
         ),
     )
 
