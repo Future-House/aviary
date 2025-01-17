@@ -7,7 +7,7 @@ import string
 from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -209,6 +209,24 @@ async def extract_answer(
         if answer == option.strip().casefold():
             return option
     return None
+
+
+T = TypeVar("T")
+
+
+def shuffle(
+    value: Sequence[T], seed: "int | random.Random | np.random.Generator | None" = None
+) -> Sequence[T]:
+    """Shuffle a non-mutable sequence."""
+    # Since most shuffle fn's are in-place, we employ sampling without replacement
+    if isinstance(seed, int):
+        return random.Random(seed).sample(value, k=len(value))
+    if isinstance(seed, random.Random):
+        return seed.sample(value, k=len(value))
+    if seed is None:
+        return random.sample(value, k=len(value))
+    # Numpy RNG. Note this will have a type error for sequences like str, but oh well
+    return seed.choice(value, size=len(value), replace=False)  # type: ignore[arg-type,return-value]
 
 
 _CAPITAL_A_INDEX = ord("A")

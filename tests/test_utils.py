@@ -1,5 +1,8 @@
+import random
 from collections.abc import Iterable, Sequence
+from copy import deepcopy
 
+import numpy as np
 import pytest
 
 from aviary.core import (
@@ -8,6 +11,7 @@ from aviary.core import (
     eval_answer,
     extract_answer,
 )
+from aviary.utils import T, shuffle
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
@@ -77,6 +81,40 @@ async def test_extract_answer(
 async def test_eval_llm_config():
     config = {"temperature": 0.5}
     assert await eval_answer("250", "250", "What is 25 * 10?", "llm", config)
+
+
+@pytest.mark.parametrize(
+    ("sequence", "seed", "expected"),
+    [
+        pytest.param((), None, [], id="empty-sequence"),
+        pytest.param((1,), None, [1], id="single-element"),
+        pytest.param("12345", 42, ["1", "5", "3", "2", "4"], id="string"),
+        pytest.param(
+            list(range(10)),
+            random.Random(42),
+            [1, 0, 4, 9, 6, 5, 8, 2, 3, 7],
+            id="random-rng",
+        ),
+        pytest.param(
+            list(range(10)),
+            np.random.default_rng(42),
+            [2, 9, 1, 6, 3, 8, 5, 7, 4, 0],
+            id="numpy-rng",
+        ),
+    ],
+)
+def test_shuffle(
+    sequence: Sequence[T],
+    seed: int | random.Random | np.random.Generator | None,
+    expected: Sequence[T],
+) -> None:
+    deepcopy_sequence = deepcopy(sequence)
+    shuffled = shuffle(sequence, seed)
+    assert sequence == deepcopy_sequence, "Should not mutate input"
+    # Use length then element-wise comparison to work around numpy:
+    # > The truth value of an array with more than one element is ambiguous.
+    assert len(shuffled) == len(expected)
+    assert all(v == e for v, e in zip(shuffled, expected, strict=True))
 
 
 class TestLitQAEvaluation:
