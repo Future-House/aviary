@@ -291,7 +291,7 @@ class TestLitQAEvaluation:
         )
         self._assert_prompt_is_valid(mc_question_2b, question, ideal, distractors)
         assert mc_question_2a == mc_question_2b, (
-            "Same seeding strategy should lead to same prompts"
+            "Question seeding strategy should lead to same prompts"
         )
         assert mc_question_2a != mc_question_1a, (
             "Different seeding strategies should lead to different prompts"

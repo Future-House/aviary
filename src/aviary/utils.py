@@ -233,7 +233,10 @@ _CAPITAL_A_INDEX = ord("A")
 
 
 class MultipleChoiceQuestion(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        arbitrary_types_allowed=True,  # Allow random.Random
+    )
 
     OPEN_ANSWER_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}"
     MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
@@ -271,12 +274,16 @@ class MultipleChoiceQuestion(BaseModel):
             " automatically added."
         ),
     )
-    shuffle_seed: int | Literal["SEED_USING_QUESTION"] | None = Field(
+    shuffle_seed: int | random.Random | Literal["SEED_USING_QUESTION"] | None = Field(
         default=None,
         description=(
-            "Optional seed to use in randomization of options, where seeding is not"
-            " global (e.g. no `random.seed`). Optionally pass in the string literal"
-            " 'SEED_USING_QUESTION' to hash the question for the seed"
+            "Optional seed or random number generator to use in randomization of"
+            " options, where seeding is not global (e.g. no `random.seed`). Optionally"
+            " pass in the string literal 'SEED_USING_QUESTION' to hash the question as"
+            " the seed. If making many questions with the same amount of options in"
+            " parallel, take care to either specify a different seed per question (e.g."
+            " using 'SEED_USING_QUESTION') or specify a random number generator to"
+            " avoid placing the ideal option in the same index."
         ),
     )
 
@@ -294,9 +301,7 @@ class MultipleChoiceQuestion(BaseModel):
         if self.shuffle_seed == self.SEED_USING_QUESTION:
             self.shuffle_seed = hash(self.question)
         if self.shuffle_seed is not None:
-            self.options = random.Random(self.shuffle_seed).sample(
-                self.options, k=len(self.options)
-            )
+            self.options = shuffle(self.options, seed=self.shuffle_seed)
             # Ensure deserialization doesn't re-shuffle
             self.shuffle_seed = None
         return self
