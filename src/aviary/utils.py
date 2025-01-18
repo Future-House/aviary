@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, cast
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 try:
     from litellm import acompletion
@@ -215,7 +215,13 @@ _CAPITAL_A_INDEX = ord("A")
 
 
 class MultipleChoiceQuestion(BaseModel):
-    QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}\n\nOptions:\n{options}"
+    model_config = ConfigDict(extra="forbid")
+
+    OPEN_ANSWER_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}"
+    MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
+        OPEN_ANSWER_PROMPT_TEMPLATE,
+        "Options:\n{options}",
+    ))
     DEFAULT_UNSURE_OPTION: ClassVar[str] = (
         "Insufficient information to answer this question"
     )
@@ -225,6 +231,13 @@ class MultipleChoiceQuestion(BaseModel):
 
     question: str = Field(
         description="Question to answer (without multiple choice options)."
+    )
+    prompt_without_options: bool = Field(
+        default=False,
+        description=(
+            "Opt-in flag to exclude options from the question_prompt, effectively"
+            " making the prompt be open answer."
+        ),
     )
     options: Sequence[str] = Field(description="All multiple choice options.")
     ideal_answer: str = Field(
@@ -282,7 +295,9 @@ class MultipleChoiceQuestion(BaseModel):
 
     @property
     def question_prompt(self) -> str:
-        return self.QUESTION_PROMPT_TEMPLATE.format(
+        if self.prompt_without_options:
+            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(question=self.question)
+        return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             question=self.question,
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)

@@ -653,7 +653,7 @@ async def test_argref_by_name_async_functions() -> None:
 
     # Define the async_add function with the decorator
     @argref_by_name()
-    async def async_add(a: int, b: int) -> int:
+    async def async_add(a: int, b: int) -> int:  # noqa: RUF029
         """Some docstring."""
         return a + b
 
@@ -674,7 +674,7 @@ async def test_argref_by_name_async_functions() -> None:
 
     # Define and test async_list
     @argref_by_name()
-    async def async_list(a: int, b: int) -> list[int]:
+    async def async_list(a: int, b: int) -> list[int]:  # noqa: RUF029
         """Some docstring."""
         return [a, b]
 
@@ -685,7 +685,7 @@ async def test_argref_by_name_async_functions() -> None:
 
     # Define and test async_list_direct
     @argref_by_name(return_direct=True)
-    async def async_list_direct(a: int, b: int) -> list[int]:
+    async def async_list_direct(a: int, b: int) -> list[int]:  # noqa: RUF029
         """Some docstring."""
         return [a, b]
 
@@ -726,7 +726,7 @@ async def test_argref_by_name_advanced_features() -> None:
 
     # Test state passing with fxn_requires_state
     @argref_by_name(fxn_requires_state=True)
-    async def want_state(a: int, state: MyState) -> int:  # noqa: ARG001
+    async def want_state(a: int, state: MyState) -> int:  # noqa: ARG001, RUF029
         """Some docstring.
 
         Args:

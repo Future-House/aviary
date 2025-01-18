@@ -2,8 +2,12 @@ from collections.abc import Iterable, Sequence
 
 import pytest
 
-from aviary.core import eval_answer, extract_answer
-from aviary.utils import MultipleChoiceEvaluation, MultipleChoiceQuestion
+from aviary.core import (
+    MultipleChoiceEvaluation,
+    MultipleChoiceQuestion,
+    eval_answer,
+    extract_answer,
+)
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
@@ -82,15 +86,12 @@ class TestLitQAEvaluation:
         question: str,
         ideal_answer: str,
         distractors: Iterable[str],
+        is_open_answer: bool = False,
     ) -> None:
         question_prompt = mc_question.question_prompt
-        for substr in (
-            question,
-            "Insufficient information",
-            ideal_answer,
-            *distractors,
-        ):
-            assert question_prompt.count(substr) == 1
+        assert question_prompt.count(question) == 1
+        for substr in ("Insufficient information", ideal_answer, *distractors):
+            assert question_prompt.count(substr) == (1 if not is_open_answer else 0)
 
     # Use for general purpose testing
     ZIP_CODE_QUESTION_IDEAL_DISTRACTORS = (
@@ -232,7 +233,7 @@ class TestLitQAEvaluation:
 
         mc_question_1a_copy = MultipleChoiceQuestion(**mc_question_1a.model_dump())
         self._assert_prompt_is_valid(mc_question_1a_copy, question, ideal, distractors)
-        assert mc_question_1a == mc_question_1b, (
+        assert mc_question_1a == mc_question_1a_copy == mc_question_1b, (
             "Serialization then deserialization should lead to same prompts"
         )
 
@@ -256,6 +257,41 @@ class TestLitQAEvaluation:
         )
         assert mc_question_2a != mc_question_1a, (
             "Different seeding strategies should lead to different prompts"
+        )
+
+    def test_consistent_open_answer(self) -> None:
+        question, ideal, distractors = self.MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS
+        mc_question_1a = MultipleChoiceQuestion(
+            question=question,
+            ideal_answer=ideal,
+            options=distractors,
+            shuffle_seed=0,
+            prompt_without_options=True,
+        )
+        self._assert_prompt_is_valid(
+            mc_question_1a, question, ideal, distractors, is_open_answer=True
+        )
+
+        mc_question_1b = MultipleChoiceQuestion(
+            question=question,
+            ideal_answer=ideal,
+            options=distractors,
+            shuffle_seed=0,
+            prompt_without_options=True,
+        )
+        self._assert_prompt_is_valid(
+            mc_question_1b, question, ideal, distractors, is_open_answer=True
+        )
+        assert mc_question_1a == mc_question_1b, (
+            "Same seeding should lead to same prompts"
+        )
+
+        mc_question_1a_copy = MultipleChoiceQuestion(**mc_question_1a.model_dump())
+        self._assert_prompt_is_valid(
+            mc_question_1a_copy, question, ideal, distractors, is_open_answer=True
+        )
+        assert mc_question_1a == mc_question_1a_copy == mc_question_1b, (
+            "Serialization then deserialization should lead to same prompts"
         )
 
 

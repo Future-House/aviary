@@ -41,7 +41,7 @@ MISTRAL_API_TOOL_CALL_ID_PATTERN = re.compile(r"^[a-zA-Z0-9]{9}$")
 class TestDummyEnv:
     @pytest.mark.asyncio
     async def test_dummyenv(self, dummy_env: DummyEnv) -> None:
-        async def my_policy(obs: list[Message]) -> ToolRequestMessage:  # noqa: ARG001
+        async def my_policy(obs: list[Message]) -> ToolRequestMessage:  # noqa: ARG001, RUF029
             # For testing purposes, we hardcoded the policy
             return ToolRequestMessage(
                 tool_calls=[

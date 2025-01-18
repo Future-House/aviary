@@ -38,6 +38,8 @@ from aviary.tools import (
 )
 from aviary.utils import (
     EvalAnswerMode,
+    MultipleChoiceEvaluation,
+    MultipleChoiceQuestion,
     encode_image_to_base64,
     eval_answer,
     extract_answer,
@@ -62,6 +64,8 @@ __all__ = [
     "Message",
     "Messages",
     "MessagesAdapter",
+    "MultipleChoiceEvaluation",
+    "MultipleChoiceQuestion",
     "Parameters",
     "Renderer",
     "TaskConfig",
