@@ -531,6 +531,11 @@ max-line-length = 120
 # defaults when analyzing docstring sections.
 convention = "google"
 
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = [
+    "__get_pydantic_core_schema__",  # Pydantic built-in: https://docs.pydantic.dev/latest/concepts/types/#customizing-validation-with-__get_pydantic_core_schema__
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
