@@ -7,7 +7,7 @@ import string
 from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
 from pydantic_core import core_schema as cs
@@ -265,10 +265,7 @@ _CAPITAL_A_INDEX = ord("A")
 
 
 class MultipleChoiceQuestion(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        arbitrary_types_allowed=True,  # Allow random.Random
-    )
+    model_config = ConfigDict(extra="forbid")
 
     OPEN_ANSWER_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}"
     MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
@@ -306,7 +303,12 @@ class MultipleChoiceQuestion(BaseModel):
             " automatically added."
         ),
     )
-    shuffle_seed: int | random.Random | Literal["SEED_USING_QUESTION"] | None = Field(
+    shuffle_seed: (
+        int
+        | Annotated[random.Random, RandomAnnotation()]
+        | Literal["SEED_USING_QUESTION"]
+        | None
+    ) = Field(
         default=None,
         description=(
             "Optional seed or random number generator to use in randomization of"
