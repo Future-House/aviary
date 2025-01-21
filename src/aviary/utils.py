@@ -9,7 +9,8 @@ from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self, TypeVar, cast
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
+from pydantic_core import core_schema as cs
 
 try:
     from litellm import acompletion
@@ -209,6 +210,37 @@ async def extract_answer(
         if answer == option.strip().casefold():
             return option
     return None
+
+
+class RandomAnnotation:
+    """Enable Pydantic annotation for random.Random instances."""
+
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, source: type[random.Random], handler: GetCoreSchemaHandler
+    ) -> cs.CoreSchema:
+        def val_func(state: list) -> random.Random:
+            random_inst = source()
+            # `Random.setstate()` raises `ValueError`s if the state is invalid,
+            # so no need to handle validation on our own. But we do need to
+            # cast the internal_state to a tuple
+            version, internal_state, gauss_next = state
+            random_inst.setstate((version, tuple(internal_state), gauss_next))
+            return random_inst
+
+        plain_val_schema = cs.no_info_plain_validator_function(val_func)
+        plain_val_schema_json = plain_val_schema.copy() | {
+            "serialization": (
+                cs.plain_serializer_function_ser_schema(lambda inst: inst.getstate())
+            )
+        }
+        return cs.json_or_python_schema(
+            python_schema=cs.union_schema([
+                cs.is_instance_schema(source),
+                plain_val_schema,
+            ]),
+            json_schema=plain_val_schema_json,
+        )
 
 
 T = TypeVar("T")

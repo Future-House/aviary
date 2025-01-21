@@ -1,9 +1,12 @@
+import json
 import random
 from collections.abc import Iterable, Sequence
 from copy import deepcopy
+from typing import Annotated
 
 import numpy as np
 import pytest
+from pydantic import BaseModel
 
 from aviary.core import (
     MultipleChoiceEvaluation,
@@ -11,7 +14,7 @@ from aviary.core import (
     eval_answer,
     extract_answer,
 )
-from aviary.utils import T, shuffle
+from aviary.utils import RandomAnnotation, T, shuffle
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
@@ -115,6 +118,30 @@ def test_shuffle(
     # > The truth value of an array with more than one element is ambiguous.
     assert len(shuffled) == len(expected)
     assert all(v == e for v, e in zip(shuffled, expected, strict=True))
+
+
+def test_random_annotation() -> None:
+    class SomeModel(BaseModel):
+        rng: Annotated[random.Random, RandomAnnotation()]
+
+    model = SomeModel(rng=random.Random(5))
+    assert isinstance(model.rng, random.Random)
+    serialized = model.model_dump_json()
+
+    # 1. Manually check serialized RNG is expected
+    deserialized_manual = json.loads(serialized)
+    rng_serialized = deserialized_manual.pop("rng")
+    assert not deserialized_manual, "Expected only one key in the serialized model"
+    version, internal_state, gauss_next = rng_serialized
+    assert isinstance(version, int)
+    assert isinstance(internal_state, list)
+    assert isinstance(gauss_next, float | None)
+
+    # 2. Check deserialized RNG behaves as original RNG
+    deserialized_model = SomeModel.model_validate_json(serialized)
+    sampled_original = model.rng.sample(list(range(10)), k=6)
+    sampled_deserialized = deserialized_model.rng.sample(list(range(10)), k=6)
+    assert sampled_original == sampled_deserialized, "Deserialization seeding failed"
 
 
 class TestLitQAEvaluation:
