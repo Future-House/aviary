@@ -1,0 +1,72 @@
+---
+cff-version: 1.2.0
+title: "Aviary: training language agents on challenging scientific tasks"
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+authors:
+  - given-names: Siddharth
+    family-names: Narayanan
+  - given-names: James D.
+    family-names: Braza
+  - given-names: Ryan-Rhys
+    family-names: Griffiths
+  - family-names: Ponnapati
+    given-names: Manvitha
+  - given-names: Albert
+    family-names: Bou
+  - given-names: Jon
+    family-names: Laurent
+  - given-names: Ori
+    family-names: Kabeli
+  - given-names: Geemi
+    family-names: Wellawatte
+  - given-names: Sam
+    family-names: Cox
+  - given-names: Samuel G.
+    family-names: Rodriques
+  - given-names: Andrew D.
+    family-names: White
+identifiers:
+  - type: doi
+    value: 10.48550/arXiv.2412.21154
+    description: ArXiv DOI
+  - type: url
+    value: https://arxiv.org/abs/2412.21154
+    description: ArXiv abstract
+repository-code: https://github.com/Future-House/aviary
+keywords:
+  - Artificial Intelligence
+  - Computation and Language
+  - Machine Learning
+license: Apache-2.0
+preferred-citation:
+  authors:
+    - given-names: Siddharth
+      family-names: Narayanan
+    - given-names: James D.
+      family-names: Braza
+    - given-names: Ryan-Rhys
+      family-names: Griffiths
+    - family-names: Ponnapati
+      given-names: Manvitha
+    - given-names: Albert
+      family-names: Bou
+    - given-names: Jon
+      family-names: Laurent
+    - given-names: Ori
+      family-names: Kabeli
+    - given-names: Geemi
+      family-names: Wellawatte
+    - given-names: Sam
+      family-names: Cox
+    - given-names: Samuel G.
+      family-names: Rodriques
+    - given-names: Andrew D.
+      family-names: White
+  date-published: 2024-12-30
+  doi: 10.48550/arXiv.2412.21154
+  journal: preprint
+  title: "Aviary: training language agents on challenging scientific tasks"
+  type: article
+  url: https://arxiv.org/abs/2412.21154
