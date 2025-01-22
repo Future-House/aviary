@@ -126,22 +126,32 @@ def test_random_annotation() -> None:
 
     model = SomeModel(rng=random.Random(5))
     assert isinstance(model.rng, random.Random)
-    serialized = model.model_dump_json()
 
     # 1. Manually check serialized RNG is expected
-    deserialized_manual = json.loads(serialized)
-    rng_serialized = deserialized_manual.pop("rng")
-    assert not deserialized_manual, "Expected only one key in the serialized model"
-    version, internal_state, gauss_next = rng_serialized
-    assert isinstance(version, int)
-    assert isinstance(internal_state, list)
-    assert isinstance(gauss_next, float | None)
+    for deserialized in (
+        json.loads(model.model_dump_json()),  # JSON str
+        model.model_dump(mode="json"),  # JSON dict
+    ):
+        rng_serialized = deserialized.pop("rng")
+        assert not deserialized, "Expected only one key in the serialized model"
+        version, internal_state, gauss_next = rng_serialized
+        assert isinstance(version, int)
+        assert isinstance(internal_state, list)
+        assert isinstance(gauss_next, float | None)
 
     # 2. Check deserialized RNG behaves as original RNG
-    deserialized_model = SomeModel.model_validate_json(serialized)
-    sampled_original = model.rng.sample(list(range(10)), k=6)
-    sampled_deserialized = deserialized_model.rng.sample(list(range(10)), k=6)
-    assert sampled_original == sampled_deserialized, "Deserialization seeding failed"
+    for i, deserialized_model in enumerate((
+        SomeModel.model_validate_json(model.model_dump_json()),  # JSON str
+        SomeModel.model_validate(model.model_dump(mode="json")),  # JSON dict
+    )):
+        if i == 0:
+            # Sample original model once so RNG aligns for both deserialized
+            # models in the `for` loop
+            sampled_original = model.rng.sample(list(range(10)), k=6)
+        sampled_deserialized = deserialized_model.rng.sample(list(range(10)), k=6)
+        assert sampled_original == sampled_deserialized, (
+            "Deserialization seeding failed"
+        )
 
 
 class TestLitQAEvaluation:

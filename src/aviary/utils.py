@@ -235,10 +235,12 @@ class RandomAnnotation:
             )
         }
         return cs.json_or_python_schema(
-            python_schema=cs.union_schema([
-                cs.is_instance_schema(source),
-                plain_val_schema,
-            ]),
+            python_schema=cs.union_schema(
+                choices=[cs.is_instance_schema(source), plain_val_schema],
+                serialization=cs.plain_serializer_function_ser_schema(
+                    lambda inst: inst.getstate(), when_used="json"
+                ),
+            ),
             json_schema=plain_val_schema_json,
         )
 
