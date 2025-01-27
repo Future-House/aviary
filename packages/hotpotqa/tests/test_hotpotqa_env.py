@@ -1,4 +1,5 @@
 import re
+from uuid import UUID
 
 import pytest
 
@@ -20,8 +21,25 @@ def test_env_construction() -> None:
 
 
 def test_dataset_from_name() -> None:
+    raw_dataset = HotPotQADataset.load_raw(split="dev")
+    raw_ds_ids: set[str] = set()
+    raw_ds_ids.update(row["id"] for row in raw_dataset)
+
     dataset = TaskDataset.from_name("hotpotqa", split="dev")
-    assert isinstance(dataset.get_new_env_by_idx(0), HotPotQAEnv)
+
+    question_ids: set[UUID] = set()
+    for i in range(len(dataset)):
+        env = dataset.get_new_env_by_idx(i)
+        assert isinstance(env, HotPotQAEnv)
+        assert isinstance(env.question_id, UUID)
+        question_ids.add(env.question_id)
+
+    assert len(raw_ds_ids) == len(dataset) == len(question_ids) == 7405, (
+        'Expected 7405 examples in "dev" split'
+    )
+    assert {str(qid)[:-8] for qid in question_ids} == raw_ds_ids, (
+        "Should be able to restore original HotPotQA question ID"
+    )
 
     # double-check we can load with various options
     dataset = TaskDataset.from_name(
@@ -85,6 +103,7 @@ async def test_answer_evaluation_mode(evaluation_mode: EvalAnswerMode) -> None:
     correct_answer = "Golden Gate Bridge"
     incorrect_answer = "Bay Bridge"
     env = HotPotQAEnv(
+        question_id=None,
         question="What is the reddest bridge in San Francisco?",
         correct_answer=correct_answer,
         evaluation_mode=evaluation_mode,
