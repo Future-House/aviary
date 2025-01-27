@@ -3,6 +3,7 @@ import json
 from enum import StrEnum
 from logging import getLogger
 from typing import TYPE_CHECKING, ClassVar, Literal
+from uuid import UUID
 
 import datasets
 from pydantic import BaseModel, ConfigDict
@@ -125,6 +126,9 @@ class CalculatorEnv(Environment[None]):
             self.config.done_on_failure,
             False,
         )
+
+    async def get_id(self) -> str | UUID:
+        return self.problem_id
 
     def submit_answer(self, answer: str) -> tuple[bool, float, Literal[True]]:
         """Submit the proposed answer and check if it is correct. This action is terminal.

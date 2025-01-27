@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator
 from copy import deepcopy
 from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
+from uuid import UUID
 
 from pydantic import (
     BaseModel,
@@ -129,6 +130,16 @@ class Environment(ABC, Generic[TEnvState]):
         Returns:
             Two-tuple of initial observations and tools.
         """
+
+    async def get_id(self) -> str | UUID:
+        """
+        Get a unique identifier for this environment.
+
+        This method is asynchronous to allow for DB transactions.
+        """
+        raise NotImplementedError(
+            f"Getting ID is not yet implemented for environment {type(self).__name__}."
+        )
 
     def filter_invalid_tool_calls(
         self, message: ToolRequestMessage
@@ -463,6 +474,11 @@ class DummyEnv(Environment[DummyEnvState]):
         self.end_immediately = end_immediately
         self.task = task
         self.concurrent_tool_calls = concurrent_tool_calls
+
+    async def get_id(self) -> str | UUID:
+        if self.task is None:
+            raise ValueError("Task must be set to get an ID.")
+        return self.task
 
     @classmethod
     def from_task(cls, task: str) -> DummyEnv:
