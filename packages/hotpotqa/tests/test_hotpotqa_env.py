@@ -1,3 +1,4 @@
+import os
 import re
 from uuid import UUID
 
@@ -19,6 +20,35 @@ def test_env_construction() -> None:
         correct_answer="pi*r^2*h",
     )
     assert isinstance(hotpotqa_env, HotPotQAEnv)
+
+
+IN_GITHUB_ACTIONS: bool = os.getenv("GITHUB_ACTIONS") == "true"
+
+
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Slow test")
+def test_question_id_uniqueness() -> None:
+    raw_dataset = HotPotQADataset.load_raw(split="dev")
+    raw_ds_ids: set[str] = set()
+    raw_ds_ids.update(row["id"] for row in raw_dataset)
+
+    dataset = TaskDataset.from_name("hotpotqa", split="dev")
+
+    question_ids: set[UUID] = set()
+    for i in range(len(dataset)):
+        env = dataset.get_new_env_by_idx(i)
+        assert isinstance(env, HotPotQAEnv)
+        assert isinstance(env.question_id, UUID)
+        question_ids.add(env.question_id)
+
+    assert len(raw_ds_ids) == len(dataset) == len(question_ids) == 7405, (
+        'Expected 7405 examples in "dev" split'
+    )
+    converted_back_question_ids = {
+        str(qid)[8:].replace("-", "") for qid in question_ids
+    }
+    assert converted_back_question_ids == raw_ds_ids, (
+        "Should be able to restore original HotPotQA question ID"
+    )
 
 
 def test_dataset_from_name() -> None:
