@@ -564,9 +564,7 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
             split = "validation"
         all_datasets = load_dataset(hf_dataset, name="fullwiki", trust_remote_code=True)
         try:
-            return all_datasets[split].select_columns(
-                column_names=["id", "question", "answer", "level"]
-            )
+            return all_datasets[split].select(["id", "question", "answer", "level"])
         except KeyError as exc:
             raise ValueError(
                 f"Split {split!r} was invalid for Hugging Face dataset {hf_dataset},"
@@ -642,3 +640,13 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
 
     def __len__(self) -> int:
         return len(self.data)
+
+    def _initialize_config(
+        self, config: HotPotQAEnvConfig | dict | None, **kwargs
+    ) -> HotPotQAEnvConfig:
+        """Initialize the dataset configuration."""
+        if isinstance(config, dict):  # Serialized config
+            return HotPotQAEnvConfig(**(config | kwargs))
+        if config is None:
+            return HotPotQAEnvConfig(**kwargs)
+        return config
