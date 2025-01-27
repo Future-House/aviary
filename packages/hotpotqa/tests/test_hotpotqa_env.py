@@ -1,4 +1,5 @@
 import re
+from uuid import UUID
 
 import pytest
 
@@ -11,6 +12,7 @@ from aviary.utils import EvalAnswerMode
 def test_env_construction() -> None:
     hotpotqa_env: HotPotQAEnv = Environment.from_name(
         "hotpotqa",
+        question_id=None,
         question=(
             "What is the formula for the volume of Abraham Lincoln's favorite hat?"
         ),
@@ -21,7 +23,9 @@ def test_env_construction() -> None:
 
 def test_dataset_from_name() -> None:
     dataset = TaskDataset.from_name("hotpotqa", split="dev")
+    env_0 = dataset.get_new_env_by_idx(0)
     assert isinstance(dataset.get_new_env_by_idx(0), HotPotQAEnv)
+    assert isinstance(env_0.question_id, UUID)
 
     # double-check we can load with various options
     dataset = TaskDataset.from_name(
@@ -44,7 +48,8 @@ def test_dataset_from_name() -> None:
 async def test_tool_results() -> None:
     hotpotqa_env: HotPotQAEnv = Environment.from_name(
         "hotpotqa",
-        question=("Which country has a larger population: China or France?"),
+        question_id=None,
+        question="Which country has a larger population: China or France?",
         correct_answer="China",
     )
     lookup_pattern = r"^\(Result \d+ / \d+\)\s*(.*)"
@@ -85,6 +90,7 @@ async def test_answer_evaluation_mode(evaluation_mode: EvalAnswerMode) -> None:
     correct_answer = "Golden Gate Bridge"
     incorrect_answer = "Bay Bridge"
     env = HotPotQAEnv(
+        question_id=None,
         question="What is the reddest bridge in San Francisco?",
         correct_answer=correct_answer,
         evaluation_mode=evaluation_mode,

@@ -20,7 +20,8 @@ import re
 import string
 from collections.abc import Callable
 from enum import StrEnum
-from typing import Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
+from uuid import UUID
 
 import httpx
 from bs4 import BeautifulSoup
@@ -39,6 +40,9 @@ from aviary.core import (
     ToolRequestMessage,
     eval_answer,
 )
+
+if TYPE_CHECKING:
+    from datasets import Dataset
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +184,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
     def __init__(
         self,
+        question_id: UUID | None,
         question: str,
         correct_answer: str | float,
         correct_reward: float = 1.0,
@@ -189,6 +194,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         proxy: str | None = None,
     ):
         super().__init__()
+        self.question_id = question_id
         self.question = question
         # Normalize the correct answer once here as a minor performance optimization
         self.normalized_correct_answer = normalize_answer(correct_answer)
@@ -214,7 +220,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
     @classmethod
     def from_task(cls, task: str) -> "HotPotQAEnv":
-        return cls(question=task, correct_answer=0.0)
+        return cls(question_id=None, question=task, correct_answer=0.0)
 
     async def calculate_answer_reward(self, answer: str | None) -> float:
         """Calculate the reward based on the agent's answer.
@@ -549,16 +555,17 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
     # SEE: https://huggingface.co/datasets/hotpotqa/hotpot_qa
     HOTPOTQA_HUGGING_FACE_DATASET = "hotpotqa/hotpot_qa"
 
-    def get_data_from_hugging_face(
-        self, split: str, hf_dataset: str = HOTPOTQA_HUGGING_FACE_DATASET
-    ) -> list[tuple[str, str]]:
-        """Convert a local file and split to a list of (question, answer) tuples."""
+    @staticmethod
+    def load_raw(
+        split: str, hf_dataset: str = HOTPOTQA_HUGGING_FACE_DATASET
+    ) -> "Dataset":
+        """Load the HotPotQA dataset split from Hugging Face."""
         if split in {"dev", "eval", "val"}:  # Map common aliases
             split = "validation"
         all_datasets = load_dataset(hf_dataset, name="fullwiki", trust_remote_code=True)
         try:
-            data = all_datasets[split].select_columns(
-                column_names=["question", "answer", "level"]
+            return all_datasets[split].select_columns(
+                column_names=["id", "question", "answer", "level"]
             )
         except KeyError as exc:
             raise ValueError(
@@ -566,15 +573,33 @@ class HotPotQADataset(TaskDataset[HotPotQAEnv]):
                 f" please specify a split from {set(all_datasets.keys())}."
             ) from exc
 
+    def get_data_from_hugging_face(
+        self, split: str, hf_dataset: str = HOTPOTQA_HUGGING_FACE_DATASET
+    ) -> list[tuple[UUID, str, str]]:
+        """Get a list of (id, question, answer) tuples for the Hugging Face dataset."""
+        data = self.load_raw(split, hf_dataset)
+
         if not all(  # Making up for datasets not being typed: https://github.com/huggingface/datasets/issues/3841
-            isinstance(d["question"], str) and isinstance(d["answer"], str | float)
+            isinstance(d["id"], str)
+            and isinstance(d["question"], str)
+            and isinstance(d["answer"], str | float)
             for d in data
         ):
             raise ValueError(
                 f"Dataset {hf_dataset!r} and split {split!r} contains invalid"
-                " question(s) or answer(s)."
+                " ID(s), question(s), or answer(s)."
             )
-        return [(d["question"], d["answer"]) for d in data if self._filter_task(d)]
+        return [
+            (
+                # Sadly, using UUID v4 doesn't work with left padding (has collisions)
+                # or right padding (is a lossy conversion), so leave version unspecified
+                UUID(bytes=b"\x00" * 4 + bytes.fromhex(d["id"])),  # Left zero-pad
+                d["question"],
+                d["answer"],
+            )
+            for d in data
+            if self._filter_task(d)
+        ]
 
     def __init__(
         self, split: str, config: HotPotQAEnvConfig | dict | None = None, **kwargs
