@@ -49,14 +49,18 @@ class TestDummyEnv:
                 ],
             )
 
+        env_hash = hash(dummy_env)  # Get hash before reset
+
         obs, _ = await dummy_env.reset()
         assert isinstance(obs, list)
         assert len(obs) == 1
+        assert hash(dummy_env) == env_hash, "reset should not affect hash"
 
         action = await my_policy(obs)
         _, reward, done, _ = await dummy_env.step(action)
         assert reward > 0
         assert done
+        assert hash(dummy_env) == env_hash, "step should not affect hash"
 
     @pytest.mark.asyncio
     async def test_tool_signatures(self, dummy_env: DummyEnv) -> None:
