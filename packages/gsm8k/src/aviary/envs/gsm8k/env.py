@@ -1,6 +1,7 @@
 import contextlib
 import json
 from enum import StrEnum
+from functools import cache, lru_cache
 from logging import getLogger
 from typing import TYPE_CHECKING, ClassVar, Literal
 
@@ -248,12 +249,21 @@ class GSM8kDataset(TaskDataset):
         self.config = config
         self.src_df = GSM8kDatasetSplit(split).get_df_from_hf(hf_source)
 
+    @cache  # Cache results to improve performance on repeated indices
     def get_new_env_by_idx(self, idx: int) -> CalculatorEnv:
+        # Fetch the row just once
         row = self.src_df.iloc[idx]
+
+        # Directly extract values to variables to avoid repeated dictionary access
+        problem_id = int(row["problem_id"])
+        question = row["question"]
+        answer_num = row["answer_num"]
+
+        # Create and return the CalculatorEnv object
         return CalculatorEnv(
-            problem_id=int(row["problem_id"]),
-            problem=row["question"],
-            answer=row["answer_num"],
+            problem_id=problem_id,
+            problem=question,
+            answer=answer_num,
             config=self.config,
         )
 
