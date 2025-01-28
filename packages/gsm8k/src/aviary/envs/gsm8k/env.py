@@ -3,7 +3,6 @@ import json
 from enum import StrEnum
 from logging import getLogger
 from typing import TYPE_CHECKING, ClassVar, Literal
-from uuid import UUID
 
 import datasets
 from pydantic import BaseModel, ConfigDict
@@ -40,7 +39,7 @@ class CalculatorEnvConfig(BaseModel):
 class CalculatorEnv(Environment[None]):
     def __init__(
         self,
-        problem_id: str,
+        problem_id: int | None,
         problem: str,
         answer: float,
         config: CalculatorEnvConfig | None = None,
@@ -56,7 +55,7 @@ class CalculatorEnv(Environment[None]):
 
     @classmethod
     def from_task(cls, task: str) -> "CalculatorEnv":
-        return cls(problem_id="task", problem=task, answer=0.0)
+        return cls(problem_id=None, problem=task, answer=0.0)
 
     async def reset(self) -> tuple[Messages, list[Tool]]:
         self.state = None  # this environment is effectively stateless
@@ -121,7 +120,9 @@ class CalculatorEnv(Environment[None]):
             False,
         )
 
-    async def get_id(self) -> str | UUID:
+    def __hash__(self) -> int:
+        if self.problem_id is None:
+            raise ValueError("Hashing requires a problem ID to be configured.")
         return self.problem_id
 
     def submit_answer(self, answer: str) -> tuple[bool, float, Literal[True]]:
@@ -216,7 +217,7 @@ class GSM8kDatasetSplit(StrEnum):
             src_df = src_df[src_df.index % 5 == 0]
         if add_metadata:
             # Assign problem ID for the env
-            src_df["problem_id"] = self.value + "_" + src_df.index.astype(str)
+            src_df["problem_id"] = src_df.index
 
             # Attempt to extract a numerical answer
             try:
@@ -250,7 +251,7 @@ class GSM8kDataset(TaskDataset):
     def get_new_env_by_idx(self, idx: int) -> CalculatorEnv:
         row = self.src_df.iloc[idx]
         return CalculatorEnv(
-            problem_id=row["problem_id"],
+            problem_id=int(row["problem_id"]),
             problem=row["question"],
             answer=row["answer_num"],
             config=self.config,

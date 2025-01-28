@@ -40,7 +40,7 @@ MISTRAL_API_TOOL_CALL_ID_PATTERN = re.compile(r"^[a-zA-Z0-9]{9}$")
 
 class TestDummyEnv:
     @pytest.mark.asyncio
-    async def test_dummyenv(self, dummy_env: DummyEnv) -> None:
+    async def test_dummyenv(self) -> None:
         async def my_policy(obs: list[Message]) -> ToolRequestMessage:  # noqa: ARG001, RUF029
             # For testing purposes, we hardcoded the policy
             return ToolRequestMessage(
@@ -49,14 +49,19 @@ class TestDummyEnv:
                 ],
             )
 
+        dummy_env = DummyEnv(task="bananas")
+        env_hash = hash(dummy_env)
+
         obs, _ = await dummy_env.reset()
         assert isinstance(obs, list)
         assert len(obs) == 1
+        assert hash(dummy_env) == env_hash, "reset should not affect hash"
 
         action = await my_policy(obs)
         _, reward, done, _ = await dummy_env.step(action)
         assert reward > 0
         assert done
+        assert hash(dummy_env) == env_hash, "step should not affect hash"
 
     @pytest.mark.asyncio
     async def test_tool_signatures(self, dummy_env: DummyEnv) -> None:
