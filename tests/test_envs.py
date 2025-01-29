@@ -6,6 +6,7 @@ import tempfile
 import time
 from collections.abc import Sequence
 from typing import ClassVar
+from uuid import UUID
 
 import litellm
 import pytest
@@ -49,12 +50,13 @@ class TestDummyEnv:
                 ],
             )
 
-        env_hash = hash(dummy_env)  # Get hash before reset
+        assert isinstance(await dummy_env.get_id(), str | UUID), (
+            "Expected getting ID to work before reset"
+        )
 
         obs, _ = await dummy_env.reset()
         assert isinstance(obs, list)
         assert len(obs) == 1
-        assert hash(dummy_env) == env_hash, "reset should not affect hash"
 
         # Check if we have a bad policy that gives an empty action, the env reports this
         obs, reward, done, _ = await dummy_env.step(
@@ -68,7 +70,6 @@ class TestDummyEnv:
         _, reward, done, _ = await dummy_env.step(action)
         assert reward > 0
         assert done
-        assert hash(dummy_env) == env_hash, "step should not affect hash"
 
     @pytest.mark.asyncio
     async def test_tool_signatures(self, dummy_env: DummyEnv) -> None:
@@ -353,7 +354,7 @@ class TestRendering:
             with frame_path.open() as f:
                 rehydrated = json.load(f)
             assert rehydrated["state"]["messages"] == [
-                "Write a 5 word story via print_story"
+                "Write a 5 word story via print_story about applesauce"
             ]
 
 
