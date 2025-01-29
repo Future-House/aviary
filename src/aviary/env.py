@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator
 from copy import deepcopy
 from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
+from uuid import UUID
 
 from pydantic import (
     BaseModel,
@@ -130,17 +131,16 @@ class Environment(ABC, Generic[TEnvState]):
             Two-tuple of initial observations and tools.
         """
 
-    def __hash__(self) -> int:
+    async def get_id(self) -> str | UUID:
         """
-        Get a unique identifier of the environment.
+        Get a unique identifier for this environment.
 
         The main use case is something like the ID of the task from a dataset.
 
         The return should not be affected by state, in other words across reset/step,
         the return value should not change.
 
-        If you implement this by calling `UUID(...).int`, to make this reversible
-        the UUID should be version 4, so one can have `UUID(int=hash(env), version=4)`.
+        This method is asynchronous to allow for DB transactions.
         """
         raise NotImplementedError(
             f"Getting ID is not yet implemented for environment {type(self).__name__}."
@@ -480,10 +480,10 @@ class DummyEnv(Environment[DummyEnvState]):
         self.task = task
         self.concurrent_tool_calls = concurrent_tool_calls
 
-    def __hash__(self) -> int:
+    async def get_id(self) -> str | UUID:
         if self.task is None:
-            raise ValueError("Hashing requires a task to be configured.")
-        return hash(self.task)  # Unfortunately this is not invertible
+            raise ValueError("No task (to reuse as an ID) was configured.")
+        return self.task
 
     @classmethod
     def from_task(cls, task: str) -> DummyEnv:
