@@ -53,6 +53,13 @@ class TestDummyEnv:
         assert isinstance(obs, list)
         assert len(obs) == 1
 
+        # Check if we have a bad policy that gives an empty action, the env reports this
+        obs, reward, done, _ = await dummy_env.step(
+            action=ToolRequestMessage(tool_calls=[])
+        )
+        assert not done, "Should not be done after empty action"
+        assert "no tool calls" in obs[0].content.lower()
+
         action = await my_policy(obs)
         _, reward, done, _ = await dummy_env.step(action)
         assert reward > 0
