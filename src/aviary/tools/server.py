@@ -66,7 +66,7 @@ async def make_tool_server(  # noqa: PLR0915
         # make sure we force all tools to pickle
         for tool in tools:
             tool._force_pickle_fn = True
-        with open(env_path / f"{environment_id}.pkl", "wb") as f:
+        with (env_path / f"{environment_id}.pkl").open("wb") as f:
             pickle.dump((environment, tools), f)
 
     def load_environment(environment_id):
@@ -75,7 +75,7 @@ async def make_tool_server(  # noqa: PLR0915
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Environment {environment_id} not found",
             )
-        with open(env_path / f"{environment_id}.pkl", "rb") as f:
+        with (env_path / f"{environment_id}.pkl").open("rb") as f:
             return pickle.load(f)
 
     def make_environment_id():
