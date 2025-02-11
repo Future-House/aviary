@@ -190,7 +190,7 @@ wheels = [
 
 [[package]]
 name = "aviary-gsm8k"
-version = "0.16.1.dev1+g6f534e5.d20250211"
+version = "0.16.1.dev3+g227614a.d20250211"
 source = { editable = "packages/gsm8k" }
 dependencies = [
     { name = "datasets" },
@@ -213,7 +213,7 @@ requires-dist = [
 
 [[package]]
 name = "aviary-hotpotqa"
-version = "0.16.1.dev1+g6f534e5.d20250211"
+version = "0.16.1.dev3+g227614a.d20250211"
 source = { editable = "packages/hotpotqa" }
 dependencies = [
     { name = "beautifulsoup4" },
@@ -840,7 +840,7 @@ wheels = [
 
 [[package]]
 name = "fhaviary"
-version = "0.16.1.dev1+g6f534e5.d20250211"
+version = "0.16.1.dev3+g227614a.d20250211"
 source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
@@ -997,6 +997,7 @@ requires-dist = [
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "litellm", marker = "python_full_version >= '3.13' and extra == 'llm'", specifier = ">=1.49.1" },
     { name = "litellm", marker = "python_full_version < '3.13' and extra == 'llm'" },
+    { name = "litellm", marker = "extra == 'dev'", specifier = "<1.60.7" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
     { name = "numpy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "numpy", marker = "extra == 'typing'" },
@@ -1600,7 +1601,7 @@ wheels = [
 
 [[package]]
 name = "litellm"
-version = "1.60.8"
+version = "1.60.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1615,9 +1616,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/55/e72b020b56064ef1a0a71bfc20f1c8a494e557c0effce652ecaa5043b019/litellm-1.60.8.tar.gz", hash = "sha256:4a0aca9bd226d727ca4a41aaf8722f825fc10cf33f37a177a3cceb4ee2c442d8", size = 6463019 }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/5b/487cb3994346a0f4a2109fd43d87029e0604d06d42eda404b75b14249a2d/litellm-1.60.6.tar.gz", hash = "sha256:b9fdd38b482abc6b6d6afffa6fbf25912b70b1b34ca91a5c798aba2d81bef322", size = 6460683 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/a9/20e8f8674943f748d477f7c8e7259c6a0e3fe03ce9687bdb84cf03d1d8c7/litellm-1.60.8-py3-none-any.whl", hash = "sha256:260bdcc9749c769f1a84dc927abe7c91f6294a97da05abc6b513c5dd2dcf17a1", size = 6763571 },
+    { url = "https://files.pythonhosted.org/packages/78/6c/b1b4cab0997808e0f1d48ce744cb47e2a03d8d203b889993271169814df8/litellm-1.60.6-py3-none-any.whl", hash = "sha256:7c2d61f5073c823aa7b069328fed34e61d0e9a1777f91e758c1770724d060578", size = 6762571 },
 ]
 
 [[package]]

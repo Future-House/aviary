@@ -46,6 +46,7 @@ dev = [
     "fhaviary[image,llm,server,typing,xml]",
     "httpx<0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
     "ipython>=8",  # Pin to keep recent
+    "litellm<1.60.7",  # Pin as beyond this version on 2/10/2025, message.content was often None. TODO: remove this downpinning
     "mypy>=1.8",  # Pin for mutable-override
     "numpy>=1",  # Pin to keep recent
     "pre-commit>=3.4",  # Pin to keep recent
