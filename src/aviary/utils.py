@@ -285,8 +285,8 @@ class MultipleChoiceQuestion(BaseModel):
         description="Question to answer (without multiple choice options)."
     )
 
-    question_id: str | None = Field(
-        default=None, description="Unique identifier for the question."
+    question_id: str = Field(
+        default="Q", description="Unique identifier for the question."
     )
 
     prompt_without_options: bool = Field(
@@ -373,7 +373,7 @@ class MultipleChoiceQuestion(BaseModel):
         if self.prompt_without_options:
             return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(
                 question=self.question,
-                question_id="Q" if self.question_id is None else self.question_id,
+                question_id=self.question_id,
             )
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             question=self.question,
