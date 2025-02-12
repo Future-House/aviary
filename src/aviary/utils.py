@@ -377,6 +377,7 @@ class MultipleChoiceQuestion(BaseModel):
             )
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             question=self.question,
+            question_id=self.question_id,
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
             ]),
