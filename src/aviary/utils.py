@@ -286,7 +286,7 @@ class MultipleChoiceQuestion(BaseModel):
     )
 
     question_id: str = Field(
-        default="Q", description="Unique identifier for the question."
+        default="Q", description="Question identifier used in the prompt."
     )
 
     prompt_without_options: bool = Field(

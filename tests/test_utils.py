@@ -369,6 +369,58 @@ class TestLitQAEvaluation:
             "Serialization then deserialization should lead to same prompts"
         )
 
+    @pytest.mark.parametrize(
+        ("options", "ideal_answer", "expected_letter"),
+        [
+            (["A", "B", "C"], "A", "A"),
+            (["A", "B", "C"], "B", "B"),
+            (["A", "B", "C"], "C", "C"),
+            # Test when ideal answer is added to options
+            (["A", "B"], "C", "C"),
+            (["X", "Y"], "Z", "C"),
+        ],
+    )
+    def test_ideal_answer_letter(
+        self, options: list[str], ideal_answer: str, expected_letter: str
+    ) -> None:
+        """Test that ideal_answer_letter returns correct letter for answer index."""
+        mc_question = MultipleChoiceQuestion(
+            question="test question",
+            options=options,
+            ideal_answer=ideal_answer,
+            shuffle_seed=None,  # Disable shuffling to ensure predictable ordering
+        )
+        assert mc_question.ideal_answer_letter == expected_letter
+
+    @pytest.mark.parametrize(
+        ("options", "ideal_answer", "unsure_answer", "expected_letter"),
+        [
+            (["A", "B", "C"], "A", "B", "B"),
+            (["A", "B", "C"], "A", None, None),
+            # Test when unsure answer is added to options
+            (["A", "B"], "A", "Not sure", "C"),
+            (["X", "Y"], "X", "Insufficient information", "C"),
+            # Test with default unsure option
+            (["A", "B"], "A", MultipleChoiceQuestion.DEFAULT_UNSURE_OPTION, "C"),
+        ],
+    )
+    def test_unsure_answer_letter(
+        self,
+        options: list[str],
+        ideal_answer: str,
+        unsure_answer: str | None,
+        expected_letter: str | None,
+    ) -> None:
+        """Test that unsure_answer_letter returns correct letter for answer index."""
+        mc_question = MultipleChoiceQuestion(
+            question="test question",
+            options=options,
+            ideal_answer=ideal_answer,
+            unsure_answer=unsure_answer,
+            shuffle_seed=None,  # Disable shuffling to ensure predictable ordering
+        )
+        assert mc_question.unsure_answer_letter == expected_letter
+
 
 class TestMultipleChoiceEvaluation:
     @pytest.mark.parametrize(
