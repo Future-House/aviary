@@ -269,7 +269,7 @@ _CAPITAL_A_INDEX = ord("A")
 class MultipleChoiceQuestion(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    OPEN_ANSWER_PROMPT_TEMPLATE: ClassVar[str] = "Q: {question}"
+    OPEN_ANSWER_PROMPT_TEMPLATE: ClassVar[str] = "{question_id}: {question}"
     MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
         OPEN_ANSWER_PROMPT_TEMPLATE,
         "Options:\n{options}",
