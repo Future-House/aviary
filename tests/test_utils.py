@@ -370,96 +370,47 @@ class TestLitQAEvaluation:
         )
 
     @pytest.mark.parametrize(
-        ("options", "ideal_answer", "seed", "expected_letter"),
+        (
+            "options",
+            "ideal_answer",
+            "unsure_answer",
+            "seed",
+            "expected_ideal_letter",
+            "expected_unsure_letter",
+        ),
         [
-            (
-                ["A", "B"],
-                "C",
-                42,
-                "D",
-            ),  # With seed 42, C moves to index 3 with unsure answer
-            (
-                ["X", "Y"],
-                "Z",
-                0,
-                "D",
-            ),  # With seed 0, Z stays at index 3 with unsure answer
-            # Test with ideal answer already in options
-            (
-                ["A", "B", "C"],
-                "B",
-                42,
-                "C",
-            ),  # With seed 42, B moves to index 2 with unsure answer
+            # Test cases for ideal and unsure answer letters
+            (["A", "B"], "C", "Not sure", 42, "D", "B"),  # With seed 42
+            (["X", "Y"], "Z", "Unsure", 0, "D", "A"),  # With seed 0
+            (["A", "B", "C"], "B", None, 42, "C", None),  # Ideal answer in options
             (
                 ["D", "E", "F"],
                 "E",
-                0,
-                "B",
-            ),  # With seed 0, E moves to index 1 with unsure answer
-        ],
-    )
-    def test_ideal_answer_letter(
-        self, options: list[str], ideal_answer: str, seed: int, expected_letter: str
-    ) -> None:
-        """Test that ideal_answer_letter returns correct letter after shuffling."""
-        mc_question = MultipleChoiceQuestion(
-            question="test question",
-            options=options,
-            ideal_answer=ideal_answer,
-            shuffle_seed=seed,  # Use specific seeds for predictable shuffling
-        )
-        assert mc_question.ideal_answer_letter == expected_letter
-        # Verify the answer is actually in the shuffled options
-        assert ideal_answer in mc_question.options
-
-    @pytest.mark.parametrize(
-        ("options", "ideal_answer", "unsure_answer", "seed", "expected_letter"),
-        [
-            # Test with custom unsure answer
-            (
-                ["A", "B"],
-                "C",
-                "Not sure",
-                42,
-                "B",
-            ),  # With seed 42, "Not sure" moves to index 1
-            (
-                ["X", "Y"],
-                "Z",
-                "Unsure",
-                0,
-                "A",
-            ),  # With seed 0, "Unsure" moves to index 0
-            # Test with default unsure option
-            (
-                ["A", "B"],
-                "C",
                 MultipleChoiceQuestion.DEFAULT_UNSURE_OPTION,
-                42,
+                0,
                 "B",
+                "A",
             ),
-            # Test with None unsure_answer
-            (["A", "B"], "C", None, 42, None),
-            # Test with unsure answer already in options
             (
                 ["A", "B", "Not sure"],
                 "C",
                 "Not sure",
                 0,
+                "A",
                 "D",
-            ),  # With seed 0, "Not sure" moves to index 3
+            ),  # Unsure answer in options
         ],
     )
-    def test_unsure_answer_letter(
+    def test_answer_letters(
         self,
         options: list[str],
         ideal_answer: str,
         unsure_answer: str | None,
         seed: int,
-        expected_letter: str | None,
+        expected_ideal_letter: str,
+        expected_unsure_letter: str | None,
     ) -> None:
-        """Test that unsure_answer_letter returns correct letter after shuffling."""
+        """Test that ideal_answer_letter and unsure_answer_letter return correct letters after shuffling."""
         mc_question = MultipleChoiceQuestion(
             question="test question",
             options=options,
@@ -467,9 +418,12 @@ class TestLitQAEvaluation:
             unsure_answer=unsure_answer,
             shuffle_seed=seed,  # Use specific seeds for predictable shuffling
         )
-        assert mc_question.unsure_answer_letter == expected_letter
-        # Verify the answers are actually in the shuffled options
+        # Check ideal answer letter
+        assert mc_question.ideal_answer_letter == expected_ideal_letter
         assert ideal_answer in mc_question.options
+
+        # Check unsure answer letter
+        assert mc_question.unsure_answer_letter == expected_unsure_letter
         if unsure_answer is not None:
             assert unsure_answer in mc_question.options
 
