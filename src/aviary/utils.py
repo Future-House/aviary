@@ -284,6 +284,11 @@ class MultipleChoiceQuestion(BaseModel):
     question: str = Field(
         description="Question to answer (without multiple choice options)."
     )
+
+    question_id: str | None = Field(
+        default=None, description="Unique identifier for the question."
+    )
+
     prompt_without_options: bool = Field(
         default=False,
         description=(
@@ -348,15 +353,28 @@ class MultipleChoiceQuestion(BaseModel):
         return self.options.index(self.ideal_answer)
 
     @property
+    def ideal_answer_letter(self) -> str:
+        return chr(_CAPITAL_A_INDEX + self.ideal_answer_index)
+
+    @property
     def unsure_answer_index(self) -> int | None:
         if self.unsure_answer is None:
             return None
         return self.options.index(self.unsure_answer)
 
     @property
+    def unsure_answer_letter(self) -> str | None:
+        if self.unsure_answer_index is None:
+            return None
+        return chr(_CAPITAL_A_INDEX + self.unsure_answer_index)
+
+    @property
     def question_prompt(self) -> str:
         if self.prompt_without_options:
-            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(question=self.question)
+            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(
+                question=self.question,
+                question_id="Q" if self.question_id is None else self.question_id,
+            )
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             question=self.question,
             options="\n".join([
