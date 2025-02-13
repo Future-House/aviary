@@ -1,0 +1,135 @@
+interactions:
+  - request:
+      body:
+        '{"contents": [{"role": "user", "parts": [{"text": "Please get a random
+        integer."}]}], "tools": [{"function_declarations": [{"name": "print_story",
+        "description": "Print a story.", "parameters": {"type": "object", "properties":
+        {"story": {"description": "Story to print.", "type": "string"}}, "required":
+        ["story"]}}, {"name": "cast_float", "description": "Cast the input argument
+        x to a float.", "parameters": {"type": "object", "properties": {"x": {"type":
+        "string"}}, "required": ["x"]}}, {"name": "cast_int", "description": "Cast the
+        input argument x to an integer.", "parameters": {"type": "object", "properties":
+        {"x": {"type": "number"}}, "required": ["x"]}}, {"name": "get_random_int", "description":
+        "Get a random integer in 1 to 10.", "parameters": {"type": "object", "properties":
+        {}, "required": []}}]}], "toolConfig": {"functionCallingConfig": {"mode": "ANY"}},
+        "generationConfig": {}}'
+      headers:
+        accept:
+          - "*/*"
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        content-length:
+          - "897"
+        content-type:
+          - application/json
+        host:
+          - generativelanguage.googleapis.com
+        user-agent:
+          - litellm/1.61.1
+      method: POST
+      uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%3CFILTERED%3E
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAC/y2OuwrCQBBF+3zFsKVoCGhl5yNIxAeI2qhITK4PSHbWnUkRxH93Rbt7Lqc4r4jI
+          wHv2ZkivAAELLhFokCTd31FDJL99P9OhGSx8rpiwVVjd4NlANFbmSg7JKb42ttAH23OJosqDGbYc
+          +qfYBaih8BI7zw5eH5AhyZ2bqqQLyLLtoXba0pU9rcfzdLIlbR2O1vxLRHNt5BuSrfajRTY9jzaz
+          3TJdbU0Q3tE7+gBFuOVc0QAAAA==
+      headers:
+        Alt-Svc:
+          - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json; charset=UTF-8
+        Date:
+          - Thu, 13 Feb 2025 20:22:26 GMT
+        Server:
+          - scaffolding on HTTPServer2
+        Server-Timing:
+          - gfet4t7; dur=54
+        Transfer-Encoding:
+          - chunked
+        Vary:
+          - Origin
+          - X-Origin
+          - Referer
+        X-Content-Type-Options:
+          - nosniff
+        X-Frame-Options:
+          - SAMEORIGIN
+        X-XSS-Protection:
+          - "0"
+      status:
+        code: 400
+        message: Bad Request
+  - request:
+      body:
+        '{"contents": [{"role": "user", "parts": [{"text": "Please get a random
+        integer."}]}], "tools": [{"function_declarations": [{"name": "print_story",
+        "description": "Print a story.", "parameters": {"type": "object", "properties":
+        {"story": {"description": "Story to print.", "type": "string"}}, "required":
+        ["story"]}}, {"name": "cast_float", "description": "Cast the input argument
+        x to a float.", "parameters": {"type": "object", "properties": {"x": {"type":
+        "string"}}, "required": ["x"]}}, {"name": "cast_int", "description": "Cast the
+        input argument x to an integer.", "parameters": {"type": "object", "properties":
+        {"x": {"type": "number"}}, "required": ["x"]}}, {"name": "get_random_int", "description":
+        "Get a random integer in 1 to 10."}]}], "toolConfig": {"functionCallingConfig":
+        {"mode": "ANY"}}, "generationConfig": {}}'
+      headers:
+        accept:
+          - "*/*"
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        content-length:
+          - "829"
+        content-type:
+          - application/json
+        host:
+          - generativelanguage.googleapis.com
+        user-agent:
+          - litellm/1.61.1
+      method: POST
+      uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%3CFILTERED%3E
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAC/61Ry2rDMBC86yuMznFwwI+m17S3lpbWlEIpYRPLjqgsGUkuFON/7/qVSOm1Phhp
+          ZndHO9ORIKBHkAUvwDJDb4MPRIKgG/8Dp6Rl0iKxQAg2oO2ldvo654wlZSuPliu5AyG85pmXUDPE
+          acXsXqO+qvccZVbXdaCrQanrPcK9Xc6fl26qlRjn16pggs54vxTQkktuTi8MjJJD2Wv+9HwWp/Bd
+          Paiq0eowaIfpOs2SNIuzONpEN2kabVkYZWQRH2Vpa6Bij8wCGgnnjSkOqRubqy8md6odjUzjScjx
+          3eOTmbbKgvA7t6s/U80danLhxuEkheuD4PZn2DG/f88dg3G+96jFI+JYef3EfxJLfC0yJzOF9ca0
+          4VMqFasxp3CzTsJSgDlR0pNfzHu3UbICAAA=
+      headers:
+        Alt-Svc:
+          - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json; charset=UTF-8
+        Date:
+          - Thu, 13 Feb 2025 20:22:26 GMT
+        Server:
+          - scaffolding on HTTPServer2
+        Server-Timing:
+          - gfet4t7; dur=440
+        Transfer-Encoding:
+          - chunked
+        Vary:
+          - Origin
+          - X-Origin
+          - Referer
+        X-Content-Type-Options:
+          - nosniff
+        X-Frame-Options:
+          - SAMEORIGIN
+        X-XSS-Protection:
+          - "0"
+      status:
+        code: 200
+        message: OK
+version: 1

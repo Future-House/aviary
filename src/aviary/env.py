@@ -492,10 +492,15 @@ class DummyEnv(Environment[DummyEnvState]):
             """Cast the input argument x to an integer."""
             return int(x)
 
+        def get_random_int() -> int:
+            """Get a random integer in 1 to 10."""
+            return random.randint(1, 10)
+
         self.tools = [
             Tool.from_function(print_story),
             Tool.from_function(cast_float, allow_empty_param_descriptions=True),
             Tool.from_function(cast_int, allow_empty_param_descriptions=True),
+            Tool.from_function(get_random_int, allow_empty_param_descriptions=True),
         ]
         self.state = type(self).State(
             messages=[
