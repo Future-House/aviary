@@ -102,7 +102,7 @@ class ToolCall(BaseModel):
         **kwargs is what is passed to toolcall because we have to use named parameters.
         """
         # convert args to kwargs by matching them with the tool's parameters
-        for i, name in enumerate(tool.info.parameters.properties.keys()):
+        for i, name in enumerate(tool.info.get_properties().keys()):
             if i < len(args):
                 kwargs[name] = args[i]
         return cls(
@@ -217,7 +217,13 @@ class FunctionInfo(BaseModel):
     name: str
     description: str
     # SEE: https://github.com/openai/openai-openapi/blob/0f5de60a3d2b263dc2ac362371673f7a21811874/openapi.yaml#L7567-L7570
-    parameters: Parameters
+    # Allow None for Google gemini-1.5-flash failing server-side with "INVALID_ARGUMENT"
+    # when Parameters.properties is an empty dict, SEE: https://github.com/BerriAI/litellm/issues/7634
+    parameters: Parameters | None
+
+    def get_properties(self) -> dict[str, dict[str, Any]]:
+        """Fetch the parameters' properties, or an empty dict if parameters is null."""
+        return self.parameters.properties if self.parameters is not None else {}
 
     @staticmethod
     def resolve_schema(schema):
@@ -271,7 +277,7 @@ class FunctionInfo(BaseModel):
         # Build the prototype line
         param_str = ", ".join(
             f"{FunctionInfo.resolve_schema(arg).get('type', 'unknown')} {name}"
-            for name, arg in self.parameters.properties.items()
+            for name, arg in self.get_properties().items()
         )
         prototype = f"{self.name}({param_str})"
 
@@ -284,7 +290,7 @@ class FunctionInfo(BaseModel):
         )
 
         params_lines = []
-        for name, arg in self.parameters.properties.items():
+        for name, arg in self.get_properties().items():
             resolved_arg = FunctionInfo.resolve_schema(arg)
             arg_type = resolved_arg.get("type", "unknown")
             arg_description = resolved_arg.get(

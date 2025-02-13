@@ -30,7 +30,7 @@ from aviary.core import (
     ToolSelectorLedger,
 )
 from aviary.dataset_server import TaskDatasetServer
-from aviary.tools import Messages
+from aviary.tools import FunctionInfo, Messages
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
@@ -68,6 +68,10 @@ class TestDummyEnv:
     @pytest.mark.asyncio
     async def test_tool_signatures(self, dummy_env: DummyEnv) -> None:
         _, tools = await dummy_env.reset()
+        # Also check we can serialize a Tool that has null parameters
+        tools.append(
+            Tool(info=FunctionInfo(name="stub", description="Stub.", parameters=None))
+        )
         assert ToolsAdapter.dump_python(tools, exclude_none=True) == [
             {
                 "type": "function",
@@ -111,6 +115,15 @@ class TestDummyEnv:
                 },
                 "type": "function",
             },
+            {
+                "type": "function",
+                "info": {
+                    "name": "get_random_int",
+                    "description": "Get a random integer in 1 to 10.",
+                    "parameters": {"type": "object", "properties": {}, "required": []},
+                },
+            },
+            {"type": "function", "info": {"name": "stub", "description": "Stub."}},
         ]
 
     def test_loading_from_name(self):
@@ -492,6 +505,36 @@ class TestParallelism:
         assert tool_request_message.info, "Expected message info"
         assert tool_request_message.info["usage"][0] > 0, "Expected prompt tokens"
         assert tool_request_message.info["model"], "Expected model name"
+
+    @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
+    @pytest.mark.asyncio
+    async def test_dummyenv_using_empty_params(self, dummy_env: DummyEnv) -> None:
+        _, tools = await dummy_env.reset()  # Populate tools
+
+        # Let's use a tool that has no parameters for the objective
+        obs = [Message(content="Please get a random integer.")]
+        expected_tool_call_fn = ToolCall.from_tool(tools[-1]).function
+        dummy_env.state = dummy_env.State(messages=obs)
+
+        selector = ToolSelector("gemini/gemini-1.5-flash")
+
+        assert any(not t.info.get_properties() for t in tools), (
+            "Test requires empty properties"
+        )
+        # Google gemini/gemini-1.5-flash fails to support empty dict properties
+        # SEE: https://github.com/BerriAI/litellm/issues/7634
+        with pytest.raises(litellm.BadRequestError, match="INVALID_ARGUMENT"):
+            await selector(messages=obs, tools=tools)
+
+        # Show we can manually work around this bug by nullifying parameters
+        for t in tools:
+            if not t.info.get_properties():
+                t.info.parameters = None
+        # Voila, Google gemini/gemini-1.5-flash can be an agent
+        tool_request_message = await selector(messages=obs, tools=tools)
+        assert [tc.function for tc in tool_request_message.tool_calls] == [
+            expected_tool_call_fn
+        ]
 
 
 @pytest_asyncio.fixture(scope="function")

@@ -463,6 +463,7 @@ PARAMETERS:
     async def test_arg_types(self) -> None:
         tool = Tool.from_function(example_fxn)
 
+        assert tool.info.parameters
         assert tool.info.parameters.properties["x"]["type"] == "integer"
         assert tool.info.parameters.properties["y"]["type"] == "string"
         assert tool.info.parameters.properties["z"]["type"] == "number"
