@@ -134,7 +134,7 @@ async def run_prompt(
             "Answer evaluation requires the 'llm' extra for 'litellm'. Please:"
             " `pip install aviary[llm]`."
         ) from None
-    return response.choices[0].message.content
+    return response.choices[0].message.content or ""
 
 
 async def eval_answer(
