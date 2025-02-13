@@ -178,6 +178,7 @@ module = [
     "cloudpickle",  # SEE: https://github.com/cloudpipe/cloudpickle/issues/541
     "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
     "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
+    "vcr.*",  # SEE: https://github.com/kevin1024/vcrpy/issues/780
 ]
 
 [tool.pylint]
