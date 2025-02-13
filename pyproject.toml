@@ -66,6 +66,7 @@ dev = [
 ]
 gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]
+litqa = ["aviary.litqa"]
 image = [
     "Pillow",
 ]
