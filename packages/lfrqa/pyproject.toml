@@ -7,14 +7,11 @@ authors = [
     {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
 ]
 dependencies = [
-    "beautifulsoup4",
-    "datasets",
     "fhaviary",
+    "paper-qa",
     "aviary.litqa",
     "fh-llm-client",
-    "httpx",
     "pydantic~=2.0",
-    "tenacity",
 ]
 description = "LFRQA environment implemented with aviary"
 dynamic = ["version"]
