@@ -99,11 +99,6 @@ def make_discounted_returns(
             " `pip install paper-qa[ldp]`."
         ) from exc
 
-
-class ComputeTrajectoryMetricsMixin:  # Avoid importing from private paperqa._ldp_shims
-    """Placeholder parent class for when ldp isn't installed."""
-
-
 class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
     """Extended environment that can grade answers."""
 
