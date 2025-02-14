@@ -39,6 +39,16 @@ jobs:
         with:
           name: ${{ steps.build-aviary-hotpotqa.outputs.artifact-name }}
           path: dist
+      - id: build-aviary-litqa
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/litqa
+          upload-name-suffix: -litqa
+      - name: Download built aviary.litqa artifact to dist/
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.build-aviary-litqa.outputs.artifact-name }}
+          path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
