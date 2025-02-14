@@ -1,5 +1,5 @@
 # aviary.lfrqa
-
+A GradablePaperQAEnvironment to answer LFRQA questions, introduced in RAG-QA-Arena.
 
 ## References
 [1] (https://arxiv.org/pdf/2407.13998) RAG-QA Arena
