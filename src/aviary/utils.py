@@ -7,7 +7,7 @@ import string
 from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
+from typing import Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
 
 from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
 from pydantic_core import core_schema as cs
@@ -16,10 +16,7 @@ try:
     from litellm import acompletion
 except ImportError:
     acompletion = None
-
-if TYPE_CHECKING:
-    import numpy as np
-
+import numpy as np
 
 DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
 LLM_BOOL_EVAL_CONFIG: dict[str, Any] = {
