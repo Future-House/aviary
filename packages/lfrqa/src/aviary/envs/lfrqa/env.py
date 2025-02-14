@@ -1,12 +1,4 @@
-"""
-
-"""
-
 __all__ = [
-    "ENV_NAME",
-    "TASK_DATASET_NAME",
-    "GradablePaperQAEnvironment",
-    "LFRQATaskDataset",
     "LFRQAPairwiseEvalEnv",
     "LFRQAQuestion",
 ]
@@ -14,21 +6,17 @@ __all__ = [
 import logging
 import random
 import re
-from collections.abc import Awaitable, Callable
 from uuid import UUID
 
-from aviary.core import (
-    TASK_DATASET_REGISTRY,
-    Messages,
-    TaskDataset,
-    ToolRequestMessage,
-)
+from llmclient import CommonLLMNames, LiteLLMModel, LLMModel
+from paperqa.docs import Docs
 from pydantic import BaseModel, model_validator
 
-from llmclient import CommonLLMNames, LiteLLMModel, LLMModel
-from paperqa.tasks import GradablePaperQAEnvironment
-from paperqa.settings import Settings
-from paperqa.docs import Docs
+from aviary.core import (
+    Messages,
+    ToolRequestMessage,
+)
+from aviary.litqa import GradablePaperQAEnvironment
 
 logger = logging.getLogger(__name__)
 
@@ -127,11 +115,13 @@ lfrqa_prompt_template = (
     "Remember your rating should be 0 if you are not sure, and your rating must be either 0, 1, or 2."
 )
 
+
 def strip_citations(text: str) -> str:
     # Combined regex for identifying citations (see unit tests for examples)
     citation_regex = r"\b[\w\-]+\set\sal\.\s\([0-9]{4}\)|\((?:[^\)]*?[a-zA-Z][^\)]*?[0-9]{4}[^\)]*?)\)"
     # Remove the citations from the text
     return re.sub(citation_regex, "", text, flags=re.MULTILINE)
+
 
 class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
     """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
@@ -231,51 +221,3 @@ class LFRQAQuestion(BaseModel):
             data["gt_doc_ids"] = data["gt_doc_ids"].strip("[]").split(",")
             data["gt_doc_ids"] = [int(_id) for _id in data["gt_doc_ids"]]
         return data
-
-
-class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
-    """Task dataset for custom evaluation of non-multiple choice questions."""
-
-    def __init__(
-        self,
-        data: list[LFRQAQuestion],
-        settings: Settings | dict | None = None,
-        pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
-        evaluation_callback: Callable[[dict], Awaitable] | None = None,
-    ):
-        self.data = data
-        self.pairwise_eval_llm = pairwise_eval_llm
-
-        if settings is None:
-            settings = Settings()
-        if isinstance(settings, dict):
-            settings = Settings(**settings)
-        self._settings = settings
-        self._rewards = {"win": 1, "tie": 0, "lose": -1}
-        self._evaluation_callback = evaluation_callback
-
-    def get_new_env_by_idx(self, idx: int) -> LFRQAPairwiseEvalEnv:
-        """Create a new environment instance for the given index."""
-        question = self.data[idx]
-
-        return LFRQAPairwiseEvalEnv(
-            qid=question.qid,
-            question=question.question,
-            human_answer=question.answer,
-            gt_doc_ids=question.gt_doc_ids,
-            pairwise_eval_llm=self.pairwise_eval_llm,
-            settings=self._settings,
-            rewards=self._rewards,
-            evaluation_callback=self._evaluation_callback,
-        )
-
-    def __len__(self) -> int:
-        return len(self.data)
-
-
-# Register your custom dataset
-CUSTOM_TASK_DATASET_NAME = "lfrqa"
-TASK_DATASET_REGISTRY[CUSTOM_TASK_DATASET_NAME] = (
-    LFRQATaskDataset.__module__,
-    LFRQATaskDataset.__name__,
-)
