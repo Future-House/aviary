@@ -9,7 +9,7 @@ from . import CASSETTES_DIR
 
 @pytest.fixture(name="dummy_env")
 def fixture_dummy_env() -> DummyEnv:
-    return DummyEnv()
+    return DummyEnv(task="applesauce")
 
 
 OPENAI_API_KEY_HEADER = "authorization"
