@@ -74,9 +74,6 @@ llm = [
     'litellm; python_version < "3.13"',  # NOTE: paper-qa==5.3 doesn't support 3.13 yet
     'litellm>=1.49.1; python_version >= "3.13"',  # For removal of imghdr
 ]
-paperqa = [
-    "paper-qa[ldp]>=5",  # Pin for LDP compatibility
-]
 server = [
     "click",
     "cloudpickle",
