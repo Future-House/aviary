@@ -14,6 +14,7 @@ resolution-markers = [
 members = [
     "aviary-gsm8k",
     "aviary-hotpotqa",
+    "aviary-lfrqa",
     "aviary-litqa",
     "fhaviary",
 ]
@@ -879,6 +880,7 @@ cloud = [
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
+    { name = "aviary-lfrqa" },
     { name = "aviary-litqa" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
@@ -918,6 +920,9 @@ hotpotqa = [
 image = [
     { name = "pillow" },
 ]
+lfrqa = [
+    { name = "aviary-lfrqa" },
+]
 litqa = [
     { name = "aviary-litqa" },
 ]
@@ -955,6 +960,8 @@ requires-dist = [
     { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
+    { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
     { name = "aviary-litqa", marker = "extra == 'dev'", editable = "packages/litqa" },
     { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
