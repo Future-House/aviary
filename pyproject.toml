@@ -66,10 +66,10 @@ dev = [
 ]
 gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]
-litqa = ["aviary.litqa"]
 image = [
     "Pillow",
 ]
+litqa = ["aviary.litqa"]
 llm = [
     'litellm; python_version < "3.13"',  # NOTE: paper-qa==5.3 doesn't support 3.13 yet
     'litellm>=1.49.1; python_version >= "3.13"',  # For removal of imghdr
