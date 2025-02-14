@@ -1,39 +1,38 @@
 import re
+from abc import ABC
 from collections.abc import Mapping, Sequence
+from enum import StrEnum
+from typing import Any, assert_never
+
+import pandas as pd
 from ldp.data_structures import Trajectory
 from llmclient import LLMModel
-
 from paperqa.agents.tools import Complete
 from paperqa.docs import Docs
 from paperqa.settings import Settings
+from paperqa.types import DocDetails
+
 from aviary.core import (
+    TASK_DATASET_REGISTRY,
     TaskDataset,
     ToolResponseMessage,
 )
-from typing import assert_never
-import pandas as pd
-from aviary.core import (
-    TASK_DATASET_REGISTRY,
-)
-from enum import StrEnum
 from aviary.utils import (
+    DEFAULT_EVAL_MODEL_NAME,
     MultipleChoiceQuestion,
 )
-from typing import Any
+
 from .env import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
-    ComputeTrajectoryMetricsMixin,
 )
-from aviary.utils import (
-    DEFAULT_EVAL_MODEL_NAME,
+from ldp.alg import (
+    ComputeTrajectoryMetricsMixin
 )
-from abc import ABC
-from paperqa.types import DocDetails
-
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
 DEFAULT_AVIARY_PAPER_HF_HUB_NAME = "futurehouse/aviary-paper-data"
+
 
 def read_litqa_v2_from_hub(
     train_eval_dataset: str = DEFAULT_LABBENCH_HF_HUB_NAME,
@@ -191,6 +190,7 @@ class LitQATaskDataset(
                 for t in trajectories
             ],
         }
+
 
 class LitQAv2TaskSplit(StrEnum):
     TRAIN = "train"
