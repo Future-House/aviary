@@ -250,7 +250,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aviary-litqa", editable = "packages/litqa" },
-    { name = "fh-llm-client" },
+    { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "fhaviary", editable = "." },
     { name = "paper-qa" },
     { name = "pydantic", specifier = "~=2.0" },

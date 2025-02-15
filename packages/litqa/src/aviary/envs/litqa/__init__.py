@@ -19,9 +19,9 @@ __all__ = [
     "DEFAULT_REWARD_MAPPING",
     "TASK_DATASET_NAME",
     "GradablePaperQAEnvironment",
+    "LitQATaskDataset",
     "LitQAv2TaskDataset",
     "LitQAv2TaskSplit",
-    
     "make_discounted_returns",
     "read_litqa_v2_from_hub",
 ]
