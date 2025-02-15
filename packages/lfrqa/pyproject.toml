@@ -7,10 +7,10 @@ authors = [
     {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
 ]
 dependencies = [
-    "fhaviary",
-    "paper-qa",
     "aviary.litqa",
     "fh-llm-client",
+    "fhaviary",
+    "paper-qa",
     "pydantic~=2.0",
 ]
 description = "LFRQA environment implemented with aviary"

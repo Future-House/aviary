@@ -1,8 +1,10 @@
 import os
 
-from aviary.envs.lfrqa.env import LFRQAQuestion, LFRQAPairwiseEvalEnv
-from aviary.envs.lfrqa.task import LFRQATaskDataset
 import pandas as pd
+
+from aviary.envs.lfrqa.env import LFRQAPairwiseEvalEnv, LFRQAQuestion
+from aviary.envs.lfrqa.task import LFRQATaskDataset
+
 
 def test_env_construction() -> None:
     data: list[LFRQAQuestion] = [
@@ -11,7 +13,7 @@ def test_env_construction() -> None:
             os.path.join("packages", "lfrqa", "tests", "datasets", "mini_lfrqa.csv")
         )[["qid", "question", "answer", "gold_doc_ids"]].to_dict(orient="records")
     ]
-    
+
     dataset = LFRQATaskDataset(
         data=data,
     )

@@ -237,6 +237,26 @@ requires-dist = [
 ]
 
 [[package]]
+name = "aviary-lfrqa"
+source = { editable = "packages/lfrqa" }
+dependencies = [
+    { name = "aviary-litqa" },
+    { name = "fh-llm-client" },
+    { name = "fhaviary" },
+    { name = "paper-qa" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aviary-litqa", editable = "packages/litqa" },
+    { name = "fh-llm-client" },
+    { name = "fhaviary", editable = "." },
+    { name = "paper-qa" },
+    { name = "pydantic", specifier = "~=2.0" },
+]
+
+[[package]]
 name = "aviary-litqa"
 source = { editable = "packages/litqa" }
 dependencies = [
