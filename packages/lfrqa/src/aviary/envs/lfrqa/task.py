@@ -4,7 +4,8 @@ from llmclient import CommonLLMNames, LLMModel
 from paperqa.settings import Settings
 
 from aviary.core import TASK_DATASET_REGISTRY, TaskDataset
-from aviary.envs.lfrqa.env import LFRQAPairwiseEvalEnv, LFRQAQuestion
+
+from .env import LFRQAPairwiseEvalEnv, LFRQAQuestion
 
 
 class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
