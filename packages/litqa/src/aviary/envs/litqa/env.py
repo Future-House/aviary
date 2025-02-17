@@ -99,6 +99,7 @@ def make_discounted_returns(
             " `pip install paper-qa[ldp]`."
         ) from exc
 
+
 class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
     """Extended environment that can grade answers."""
 
