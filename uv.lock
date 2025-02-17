@@ -2081,17 +2081,15 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.8.0"
+version = "5.11.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
-    { name = "coredis" },
+    { name = "fh-llm-client" },
     { name = "fhaviary", extra = ["llm"] },
     { name = "html2text" },
     { name = "httpx" },
-    { name = "limits" },
-    { name = "litellm" },
     { name = "numpy" },
     { name = "pybtex" },
     { name = "pydantic" },
@@ -2103,9 +2101,9 @@ dependencies = [
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/c7/99fca83ad12c5bda259783300916c050656d4dcce1e530cb2a1748228c97/paper_qa-5.8.0.tar.gz", hash = "sha256:2898a6446e5574ccd6b05ca950ef141efdfa9ed5664b3028adc51ccb078f9fe8", size = 3216980 }
+sdist = { url = "https://files.pythonhosted.org/packages/76/0a/975b738e5efe7e13ce8049d14cfc44ef2da5f82b0df9d29cb952f0f10378/paper_qa-5.11.1.tar.gz", hash = "sha256:e1606be3878d3a98f603a5cd9904a4fc278376c1678e8a02d87054e9858b8bba", size = 3286565 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/65/7dd04a475fe671104022ea31157e8ce25a9ef4c10bfa5d143bdb8c40edcb/paper_qa-5.8.0-py3-none-any.whl", hash = "sha256:5e3d2c1c09603325e5bfdb560548df19ece98a6f58da09418f940cc98698f2f6", size = 530212 },
+    { url = "https://files.pythonhosted.org/packages/a6/69/63e6b0bf7f38121f8a65998000e8ce44e605039f60e61480d21b425839c7/paper_qa-5.11.1-py3-none-any.whl", hash = "sha256:dceca15f71e1185e9cc63cc183aa998c2817b51c1c26012440e6c84b14d807be", size = 531748 },
 ]
 
 [[package]]
