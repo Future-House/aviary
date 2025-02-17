@@ -2,9 +2,11 @@ import re
 from abc import ABC
 from collections.abc import Mapping, Sequence
 from enum import StrEnum
-from typing import Any, assert_never
+from typing import TYPE_CHECKING, Any, assert_never
 
-import pandas as pd
+if TYPE_CHECKING:
+    import pandas as pd
+from ldp.alg import ComputeTrajectoryMetricsMixin
 from ldp.data_structures import Trajectory
 from llmclient import LLMModel
 from paperqa.agents.tools import Complete
@@ -26,9 +28,7 @@ from .env import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
 )
-from ldp.alg import (
-    ComputeTrajectoryMetricsMixin
-)
+
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
 DEFAULT_AVIARY_PAPER_HF_HUB_NAME = "futurehouse/aviary-paper-data"
@@ -40,7 +40,7 @@ def read_litqa_v2_from_hub(
     randomize: bool = True,
     seed: int | None = None,
     train_eval_split: float = 0.8,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> "tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]":
     """
     Read LitQA v2 JSONL into train, eval, and test DataFrames.
 

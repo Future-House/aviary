@@ -83,6 +83,7 @@ server = [
 typing = [
     "boto3-stubs[s3]",
     "numpy",
+    "pandas-stubs",
     "types-Pillow",
 ]
 xml = [

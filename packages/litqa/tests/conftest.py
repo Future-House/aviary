@@ -1,9 +1,10 @@
 import os
 import shutil
-import pytest
-from pathlib import Path
 from collections.abc import Iterator
+from pathlib import Path
 from unittest.mock import patch
+
+import pytest
 from paperqa import Settings
 
 
@@ -11,12 +12,14 @@ from paperqa import Settings
 def fixture_stub_data_dir() -> Path:
     return Path(__file__).parent / "stub_data"
 
+
 @pytest.fixture
 def tmp_path_cleanup(tmp_path: Path) -> Iterator[Path]:
     yield tmp_path
     # Cleanup after the test
     if tmp_path.exists():
         shutil.rmtree(tmp_path, ignore_errors=True)
+
 
 @pytest.fixture
 def agent_home_dir(tmp_path_cleanup: str | os.PathLike) -> Iterator[str | os.PathLike]:

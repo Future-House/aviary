@@ -8,8 +8,8 @@ authors = [
 ]
 dependencies = [
     "datasets",
-    "fh-llm-client",
-    "ldp",
+    "fh-llm-client>=0.0.11",
+    "ldp>=0.20",
     "paper-qa",
     "pydantic~=2.0",
     "tenacity",
