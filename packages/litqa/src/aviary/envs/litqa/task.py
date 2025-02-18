@@ -12,7 +12,7 @@ from paperqa.docs import Docs
 from paperqa.settings import Settings
 from paperqa.types import DocDetails
 
-from aviary.core import (
+from aviary.core import (  # type: ignore[attr-defined]
     DEFAULT_EVAL_MODEL_NAME,
     TASK_DATASET_REGISTRY,
     MultipleChoiceQuestion,

@@ -283,7 +283,9 @@ class TestTaskDataset:
             agent_task_settings.answer.max_answer_attempts = 2
             agent_task_settings.answer.get_evidence_if_no_contexts = False
             dataset = LitQAv2TaskDataset(settings=agent_task_settings)
-            dataset.data = dataset.data[:2]  # Save the world: just use two questions
+            dataset.data = dataset.data[  # type: ignore[attr-defined]
+                :2
+            ]  # Save the world: just use two questions
             storage_callback = StoreTrajectoriesCallback()
             evaluator = Evaluator(
                 config=EvaluatorConfig(batch_size=len(dataset), max_rollout_steps=4),
