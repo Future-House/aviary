@@ -4,8 +4,6 @@ from collections.abc import Mapping, Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, assert_never
 
-if TYPE_CHECKING:
-    import pandas as pd
 from ldp.alg import ComputeTrajectoryMetricsMixin
 from ldp.data_structures import Trajectory
 from llmclient import LLMModel
@@ -28,6 +26,9 @@ from .env import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
 )
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
