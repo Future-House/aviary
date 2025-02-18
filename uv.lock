@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
@@ -14,6 +13,7 @@ resolution-markers = [
 members = [
     "aviary-gsm8k",
     "aviary-hotpotqa",
+    "aviary-lfrqa",
     "aviary-litqa",
     "fhaviary",
 ]
@@ -211,7 +211,6 @@ requires-dist = [
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
-provides-extras = ["typing"]
 
 [[package]]
 name = "aviary-hotpotqa"
@@ -233,6 +232,26 @@ requires-dist = [
     { name = "httpx" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
+]
+
+[[package]]
+name = "aviary-lfrqa"
+source = { editable = "packages/lfrqa" }
+dependencies = [
+    { name = "aviary-litqa" },
+    { name = "fh-llm-client" },
+    { name = "fhaviary" },
+    { name = "paper-qa" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aviary-litqa", editable = "packages/litqa" },
+    { name = "fh-llm-client", specifier = ">=0.0.11" },
+    { name = "fhaviary", editable = "." },
+    { name = "paper-qa", specifier = ">=5.12.0" },
+    { name = "pydantic", specifier = "~=2.0" },
 ]
 
 [[package]]
@@ -262,7 +281,6 @@ requires-dist = [
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
-provides-extras = ["datasets"]
 
 [[package]]
 name = "backoff"
@@ -879,6 +897,7 @@ cloud = [
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
+    { name = "aviary-lfrqa" },
     { name = "aviary-litqa" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
@@ -918,6 +937,9 @@ hotpotqa = [
 image = [
     { name = "pillow" },
 ]
+lfrqa = [
+    { name = "aviary-lfrqa" },
+]
 litqa = [
     { name = "aviary-litqa" },
 ]
@@ -955,6 +977,8 @@ requires-dist = [
     { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
+    { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
     { name = "aviary-litqa", marker = "extra == 'dev'", editable = "packages/litqa" },
     { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
@@ -993,7 +1017,6 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "litqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 codeflash = [
@@ -1504,7 +1527,7 @@ wheels = [
 
 [[package]]
 name = "ldp"
-version = "0.23.0"
+version = "0.22.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1521,9 +1544,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
     { name = "usearch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0d/21/7291e47e710156f1e8efb086e649bae2e4106926f7388288b631d281d2f4/ldp-0.23.0.tar.gz", hash = "sha256:d2259380cdd4a09508c5181abac47c3418df198abd8c87c6f7d82a3eb2cab5bf", size = 436232 }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/b4/e351973340eaf02c92fb90801bf7ceba256b7ce3adda41f3c723b6240c0f/ldp-0.22.0.tar.gz", hash = "sha256:1a60f7211dfb515b7b690b0864f7e958785afaf9f9dd72e91e556f4ed0018cdc", size = 434177 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/6d/abd1d2f4216a819a35d184e2fd0d1f4a737cd0bf01e62848e8ff3535b0c0/ldp-0.23.0-py3-none-any.whl", hash = "sha256:5d1adb3ca032b9a4c728753f0273a1af703a9b4635b446d67491c81acab2c259", size = 135256 },
+    { url = "https://files.pythonhosted.org/packages/f2/0d/c2a6e860091201576c84447a9f9faadcd58bb6e38fbd4c2ca9612141ad82/ldp-0.22.0-py3-none-any.whl", hash = "sha256:79494741783dbbc97e335ca56ecad24fece6a77c20d17be78e9a70c883811361", size = 134913 },
 ]
 
 [[package]]

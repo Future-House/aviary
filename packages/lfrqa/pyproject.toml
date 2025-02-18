@@ -1,0 +1,38 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+
+[project]
+authors = [
+    {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python",
+]
+dependencies = [
+    "aviary.litqa",
+    "fh-llm-client>=0.0.11",
+    "fhaviary",
+    "paper-qa>=5.12.0",
+    "pydantic~=2.0",
+]
+description = "LFRQA environment implemented with aviary"
+dynamic = ["version"]
+name = "aviary.lfrqa"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.ruff]
+extend = "../../pyproject.toml"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+root = "../.."
+version_file = "src/aviary/envs/lfrqa/version.py"
