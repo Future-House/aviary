@@ -467,15 +467,9 @@ class DummyEnv(Environment[DummyEnvState]):
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
-        msgs: Messages = cast(
-            Messages,
-            await self.exec_tool_calls(
-                action, state=self.state, concurrency=self.concurrent_tool_calls
-            ),
-        ) or cast(
-            Messages,
-            [Message(content=f"No tool calls input in tool request {action}.")],
-        )
+        msgs: Messages = await self.exec_tool_calls(  # type: ignore[assignment]
+            action, state=self.state, concurrency=self.concurrent_tool_calls
+        ) or [Message(content=f"No tool calls input in tool request {action}.")]  # type: ignore[list-item]
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
 
