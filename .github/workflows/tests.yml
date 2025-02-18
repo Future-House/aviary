@@ -23,7 +23,8 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
-      - run: python -m pip install mypy # pre-commit/action uses system python
+      - run: python -m pip install uv
+      - run: python -m uv sync --python-preference only-system
       - run: python -m pip list
       - uses: pre-commit/action@v3.0.1
       - uses: pre-commit-ci/lite-action@v1.1.0
