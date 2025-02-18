@@ -48,9 +48,8 @@ class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
         return len(self.data)
 
 
-# Register your custom dataset
-CUSTOM_TASK_DATASET_NAME = "lfrqa"
-TASK_DATASET_REGISTRY[CUSTOM_TASK_DATASET_NAME] = (
+TASK_DATASET_NAME = "lfrqa"
+TASK_DATASET_REGISTRY[TASK_DATASET_NAME] = (
     LFRQATaskDataset.__module__,
     LFRQATaskDataset.__name__,
 )
