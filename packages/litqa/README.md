@@ -3,7 +3,7 @@
 LitQA2 environment implemented with aviary,
 allowing agents to perform question answering on the LitQA dataset.
 
-LitQA is a is a dataset composed from 50 multiple-choice questions from recent literature.
+LitQA (now legacy) is a dataset composed from 50 multiple-choice questions from recent literature.
 It is designed to test the LLM's the ability to retrieve information outside of the pre-training corpus.
 To ensure the questions are not in the pre-training corpus, the questions were collected
 from scientific papers published after September 2021 -- cut-off date of GPT-4's training data.
@@ -30,8 +30,7 @@ import os
 
 from aviary.env import TaskDataset
 from ldp.agent import SimpleAgent
-from ldp.alg.callbacks import MeanMetricsCallback
-from ldp.alg.runners import Evaluator, EvaluatorConfig
+from ldp.alg import Evaluator, EvaluatorConfig, MeanMetricsCallback
 
 from paperqa import Settings
 from litqa import TASK_DATASET_NAME
