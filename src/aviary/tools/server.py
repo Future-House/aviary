@@ -83,25 +83,26 @@ async def make_tool_server(  # noqa: PLR0915
 
     def create_request_model_from_tool(tool: Tool) -> BaseModel:
         fields = {}
-        for pname, info in tool.info.parameters.properties.items():
-            if pname == "type":
-                continue
-            # we just assume it exists
-            ptype = reverse_type_map[info["type"]] if "type" in info else Any
+        if tool.info.parameters is not None:  # Without no parameters, there's no fields
+            for pname, info in tool.info.parameters.properties.items():
+                if pname == "type":
+                    continue
+                # we just assume it exists
+                ptype = reverse_type_map[info["type"]] if "type" in info else Any
 
-            # decipher optional description, optional default, and type
-            if pname in tool.info.parameters.required:
-                if "description" in info:
-                    fields[pname] = (ptype, Field(description=info["description"]))
+                # decipher optional description, optional default, and type
+                if pname in tool.info.parameters.required:
+                    if "description" in info:
+                        fields[pname] = (ptype, Field(description=info["description"]))
+                    else:
+                        fields[pname] = (ptype, ...)
+                elif "description" in info:
+                    fields[pname] = (
+                        ptype | None,
+                        Field(description=info["description"], default=None),
+                    )
                 else:
-                    fields[pname] = (ptype, ...)
-            elif "description" in info:
-                fields[pname] = (
-                    ptype | None,
-                    Field(description=info["description"], default=None),
-                )
-            else:
-                fields[pname] = (ptype | None, None)
+                    fields[pname] = (ptype | None, None)
 
         return create_model(f"{tool.info.name.capitalize()}Params", **fields)  # type: ignore[call-overload]
 
