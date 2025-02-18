@@ -3,7 +3,7 @@ science-search-test-30,what is the difference between law and theorem?,"Theorems
 science-search-test-198,what is the difference between binary operation and binary relation?,"A binary operation is characterized as a function from $S\times S \to S$ such as addition, multiplication or anything really.
 A binary relation, on the other hand, is just a subset of $S^2$, that is not necessarily a function.","[[1], [1]]","A binary operation is characterized as a function from $S\times S \to S$ such as addition, multiplication or anything really. [1]
 A binary relation, on the other hand, is just a subset of $S^2$, that is not necessarily a function. [1]",[2388]
-science-forum-test-240,whats an intuitive way to think about the determinant?,"A determinant can be visualized as representing a volume.
+science-forum-test-240,what's an intuitive way to think about the determinant?,"A determinant can be visualized as representing a volume.
 The matrix's columns are thought of as vectors that originate from a skewed box, where the determinant is the volume of that box.
 This is easily imagined in two dimensions with a rhombus, where the matrix's columns form its edges.
 This concept helps us understand why the 'box' would be flattened if two columns are linearly dependent, and its volume would become zero.","[[1], [1], [1], [1]]","A determinant can be visualized as representing a volume. [1]

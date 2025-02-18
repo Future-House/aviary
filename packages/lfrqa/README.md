@@ -6,7 +6,7 @@ A GradablePaperQAEnvironment to answer LFRQA questions, introduced in RAG-QA-Are
 
 [1] (https://arxiv.org/pdf/2407.13998) RAG-QA Arena
 
-## Instalation
+## Installation
 
 To install the LitQA environment, run:
 
