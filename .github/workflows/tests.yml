@@ -24,7 +24,7 @@ jobs:
         with:
           enable-cache: true
       - run: |
-          uv export > requirements.txt
+          uv export --no-hashes --format requirements-txt > requirements.txt
           python -m pip install -r requirements.txt
       - uses: pre-commit/action@v3.0.1
       - uses: pre-commit-ci/lite-action@v1.1.0
