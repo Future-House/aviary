@@ -6,6 +6,7 @@ from .env import (
 from .task import (
     DEFAULT_AVIARY_PAPER_HF_HUB_NAME,
     DEFAULT_LABBENCH_HF_HUB_NAME,
+    TASK_DATASET_NAME,
     LitQATaskDataset,
     LitQAv2TaskDataset,
     LitQAv2TaskSplit,
@@ -16,6 +17,7 @@ __all__ = [
     "DEFAULT_AVIARY_PAPER_HF_HUB_NAME",
     "DEFAULT_LABBENCH_HF_HUB_NAME",
     "DEFAULT_REWARD_MAPPING",
+    "TASK_DATASET_NAME",
     "GradablePaperQAEnvironment",
     "LitQATaskDataset",
     "LitQAv2TaskDataset",
