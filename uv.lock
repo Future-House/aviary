@@ -256,7 +256,7 @@ requires-dist = [
     { name = "datasets", marker = "extra == 'datasets'" },
     { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "ldp", specifier = ">=0.20" },
-    { name = "paper-qa", git = "https://github.com/Future-House/paper-qa.git" },
+    { name = "paper-qa", specifier = ">=5.12.0" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
@@ -2086,8 +2086,8 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.11.2.dev12+gbe8918f"
-source = { git = "https://github.com/Future-House/paper-qa.git#be8918f98e7fa15e14deb3610b7d894668b2ca0f" }
+version = "5.12.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -2105,7 +2105,10 @@ dependencies = [
     { name = "tantivy" },
     { name = "tenacity" },
     { name = "tiktoken" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/94/01/c4c58e3040614693deb054cfe1fb8af1b53a3b621e5ab929e4a19732a571/paper_qa-5.12.0.tar.gz", hash = "sha256:6a522863932bbdc7c085a9ef86266f40cf4ce636f4b921aac0b508d2013551f9", size = 3287827 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/58/05311e319fd8550a62909c382ec0ce8e0cf3384272643bed2c1d7084b045/paper_qa-5.12.0-py3-none-any.whl", hash = "sha256:e6d1aea9c880810373678ce33f6c0e292be63f57752fe09597b883e4b7464492", size = 532469 },
 ]
 
 [[package]]
