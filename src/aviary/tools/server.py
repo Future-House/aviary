@@ -97,8 +97,8 @@ async def make_tool_server(  # noqa: PLR0915
                     else:
                         fields[pname] = (ptype, ...)
                 elif "description" in info:
-                    fields[pname] = (
-                        ptype | None,
+                    fields[pname] = (  # type: ignore[assignment]
+                        ptype | None,  # type: ignore[operator]
                         Field(description=info["description"], default=None),
                     )
                 else:
