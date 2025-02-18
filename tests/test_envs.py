@@ -4,6 +4,7 @@ import pathlib
 import re
 import tempfile
 import time
+from collections.abc import Sequence
 from typing import ClassVar
 
 import litellm
@@ -255,7 +256,8 @@ async def test_invalid_tool_call(
         assert time.perf_counter() - tic > 0.15
     assert obs
     for o, t in zip(obs, tool_calls, strict=True):
-        assert o.tool_call_id == t.id  # type: ignore[attr-defined]
+        assert isinstance(o, ToolResponseMessage)
+        assert o.tool_call_id == t.id
 
 
 class SlowEnv(Environment[None]):
@@ -424,6 +426,7 @@ class TestParallelism:
     @pytest.mark.asyncio
     async def test_exec_tool_calls_handling(self, model_name: str) -> None:
         env = ParallelizedDummyEnv(right_hand_broken=True)
+        obs: Sequence[Message]
         obs, tools = await env.reset()
         right_hand_tool = tools[1]
 
@@ -446,7 +449,7 @@ class TestParallelism:
 
         # 2. Now that we have confirmed that, let's make sure exec_tool_calls
         #    can automate this for us
-        obs = await env.exec_tool_calls(  # type: ignore[assignment]
+        obs = await env.exec_tool_calls(
             message=request_msg, state=env.state, handle_tool_exc=True
         )
         (failure_tool_response,) = obs
