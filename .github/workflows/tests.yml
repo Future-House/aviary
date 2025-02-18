@@ -25,9 +25,10 @@ jobs:
           enable-cache: true
       - run: echo "UV_PROJECT_ENVIRONMENT=$(python -c "import sysconfig; print(sysconfig.get_config_var('prefix'))")" >> $GITHUB_ENV
       - run: echo $UV_PROJECT_ENVIRONMENT
-      - run: uv python pin ${{ matrix.python-version }}
+      - run: git checkout .python-version
       - run: uv sync --python-preference only-system
       - uses: pre-commit/action@v3.0.1
+      - run: uv python pin ${{ matrix.python-version }} # uv requires .python-version to match OS Python: https://github.com/astral-sh/uv/issues/11389
       - uses: pre-commit-ci/lite-action@v1.1.0
         if: always()
   lint:
