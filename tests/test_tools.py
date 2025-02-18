@@ -775,7 +775,7 @@ async def test_make_tool_server():
         return a - b
 
     class MyEnv(Environment):
-        async def reset(self) -> tuple[list[Message], list[Tool]]:
+        async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
             tools = [
                 Tool.from_function(add, allow_empty_param_descriptions=True),
                 Tool.from_function(subtract),

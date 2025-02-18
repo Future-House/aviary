@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from typing import Any, Generic, Self, TypeVar, cast
 
 import httpx
@@ -54,7 +55,7 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[list[Message], float, bool, bool]:
+    ) -> tuple[Sequence[Message], float, bool, bool]:
         response = await self._post(
             self._step_request_url,
             json=self._make_post_json(self.state) | {"action": action.model_dump()},

@@ -1,5 +1,6 @@
 import contextlib
 import json
+from collections.abc import Sequence
 from enum import StrEnum
 from logging import getLogger
 from typing import TYPE_CHECKING, ClassVar, Literal
@@ -11,7 +12,6 @@ from aviary.core import (
     Environment,
     Frame,
     Message,
-    Messages,
     TaskDataset,
     Tool,
     ToolRequestMessage,
@@ -57,7 +57,7 @@ class CalculatorEnv(Environment[None]):
     def from_task(cls, task: str) -> "CalculatorEnv":
         return cls(problem_id="task", problem=task, answer=0.0)
 
-    async def reset(self) -> tuple[Messages, list[Tool]]:
+    async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
         self.state = None  # this environment is effectively stateless
         self.tools = [
             Tool.from_function(self.calculator),
@@ -67,7 +67,7 @@ class CalculatorEnv(Environment[None]):
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    ) -> tuple[Sequence[Message], float, bool, bool]:
         if not action.tool_calls:
             return (
                 [

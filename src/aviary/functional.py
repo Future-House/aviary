@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from functools import update_wrapper
 from typing import Any
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from aviary.env import Environment, Frame
 from aviary.message import Message
-from aviary.tools import Messages, Tool, ToolRequestMessage
+from aviary.tools import Tool, ToolRequestMessage
 from aviary.utils import is_coroutine_callable
 
 
@@ -67,13 +67,13 @@ class FunctionalEnvironment(Environment[DynamicState]):
 
         return obs, DynamicState(extras=state_dict)
 
-    async def reset(self) -> tuple[Messages, list[Tool]]:
+    async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
         obs, self.state = await self._call_start_fn()
         return [Message(content=obs)], self.tools
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    ) -> tuple[Sequence[Message], float, bool, bool]:
         msgs = await self.exec_tool_calls(
             action,
             state=self.state,

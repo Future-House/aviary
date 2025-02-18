@@ -10,7 +10,7 @@ from typing import Generic, TypeVar
 from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
-from aviary.tools import MessagesAdapter, ToolRequestMessage, ToolsAdapter
+from aviary.tools import ToolRequestMessage, ToolsAdapter
 
 try:
     import uvicorn
@@ -123,7 +123,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 obs, tools = await env.reset()
 
             return (
-                MessagesAdapter.dump_python(obs),
+                [o.model_dump() for o in obs],
                 ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
             )
 
@@ -135,7 +135,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
             with handle_exc_as_http_exc():
                 obs, *reward_done_trunc = await env.step(req.action)
 
-            obs_serialized = MessagesAdapter.dump_python(obs)
+            obs_serialized = [o.model_dump() for o in obs]
             return obs_serialized, *reward_done_trunc
 
         @self.app.post("/close")

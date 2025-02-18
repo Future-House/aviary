@@ -4,6 +4,7 @@ import pathlib
 import re
 import tempfile
 import time
+from collections.abc import Sequence
 from typing import ClassVar
 
 import litellm
@@ -357,7 +358,7 @@ class ParallelizedDummyEnv(DummyEnv):
 
     RIGHT_HAND_BROKEN_MESSAGE: ClassVar[str] = "Right hand is broken."
 
-    async def reset(self) -> tuple[list[Message], list[Tool]]:
+    async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
         def move_right_hand(
             distance: int,  # noqa: ARG001
             state: DummyEnvState,

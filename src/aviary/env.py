@@ -7,7 +7,7 @@ import json
 import logging
 import random
 from abc import ABC, abstractmethod
-from collections.abc import Awaitable, Iterator
+from collections.abc import Awaitable, Iterator, Sequence
 from copy import deepcopy
 from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
 
@@ -104,7 +104,7 @@ class Environment(ABC, Generic[TEnvState]):
     @abstractmethod
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    ) -> tuple[Sequence[Message], float, bool, bool]:
         """Take a step in the environment.
 
         Args:
@@ -117,7 +117,7 @@ class Environment(ABC, Generic[TEnvState]):
         """
 
     @abstractmethod
-    async def reset(self) -> tuple[Messages, list[Tool]]:
+    async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
         """
         Reset the environment and collect initial observation(s).
 
@@ -466,14 +466,17 @@ class DummyEnv(Environment[DummyEnvState]):
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
-        msgs: Messages = await self.exec_tool_calls(
-            action, state=self.state, concurrency=self.concurrent_tool_calls
+    ) -> tuple[Sequence[Message], float, bool, bool]:
+        msgs = cast(
+            Sequence[Message],
+            await self.exec_tool_calls(
+                action, state=self.state, concurrency=self.concurrent_tool_calls
+            ),
         ) or [Message(content=f"No tool calls input in tool request {action}.")]
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
 
-    async def reset(self) -> tuple[Messages, list[Tool]]:
+    async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
         def print_story(story: str, state: DummyEnvState) -> None:  # noqa: ARG001
             """Print a story.
 

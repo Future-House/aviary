@@ -18,7 +18,7 @@ import os
 import random
 import re
 import string
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 from uuid import UUID
@@ -243,7 +243,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             else self.incorrect_reward
         )
 
-    async def reset(self) -> tuple[Messages, list[Tool]]:
+    async def reset(self) -> tuple[Sequence[Message], list[Tool]]:
         """Reset the HotPotQA environment to an initial state.
 
         This method resets the environment to its initial state, setting up necessary variables and tools
@@ -268,7 +268,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
 
     async def step(
         self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    ) -> tuple[Sequence[Message], float, bool, bool]:
         """Take a step in the environment. Assume only one tool at a time can be called for HotpotQA.
 
         This method processes an action message, which can be a tool request, a finish request, or an error message.
