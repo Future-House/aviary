@@ -13,13 +13,11 @@ from paperqa.settings import Settings
 from paperqa.types import DocDetails
 
 from aviary.core import (
+    DEFAULT_EVAL_MODEL_NAME,
     TASK_DATASET_REGISTRY,
+    MultipleChoiceQuestion,
     TaskDataset,
     ToolResponseMessage,
-)
-from aviary.utils import (
-    DEFAULT_EVAL_MODEL_NAME,
-    MultipleChoiceQuestion,
 )
 
 from .env import (

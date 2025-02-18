@@ -14,11 +14,9 @@ from paperqa.settings import Settings
 
 from aviary.core import (
     Messages,
-    ToolRequestMessage,
-)
-from aviary.utils import (
     MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
+    ToolRequestMessage,
 )
 
 if sys.version_info >= (3, 13):
@@ -38,18 +36,12 @@ def make_discounted_returns(
     rewards: Mapping[str, float] = DEFAULT_REWARD_MAPPING,
     discount: float = 1.0,
 ) -> list[float]:
-    try:
-        return discounted_returns(
-            # paper-qa has no intermediary rewards
-            [0] * (num_steps - 1) + [rewards[evaluation.value]],
-            terminated=[False] * (num_steps - 1) + [True],
-            discount=discount,
-        )
-    except TypeError as exc:
-        raise ImportError(
-            "Making discounted returns requires the 'ldp' extra for 'ldp'. Please:"
-            " `pip install paper-qa[ldp]`."
-        ) from exc
+    return discounted_returns(
+        # paper-qa has no intermediary rewards
+        [0] * (num_steps - 1) + [rewards[evaluation.value]],
+        terminated=[False] * (num_steps - 1) + [True],
+        discount=discount,
+    )
 
 
 class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):

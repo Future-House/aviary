@@ -14,7 +14,13 @@ from paperqa.agents.env import PaperQAEnvironment
 from paperqa.agents.tools import GenerateAnswer
 from pytest_subtests import SubTests
 
-from aviary.env import TASK_DATASET_REGISTRY, TaskConfig, TaskDataset
+from aviary.core import (
+    TASK_DATASET_REGISTRY,
+    MultipleChoiceEvaluation,
+    MultipleChoiceQuestion,
+    TaskConfig,
+    TaskDataset,
+)
 from aviary.envs.litqa import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
@@ -24,7 +30,6 @@ from aviary.envs.litqa import (
     make_discounted_returns,
     read_litqa_v2_from_hub,
 )
-from aviary.utils import MultipleChoiceEvaluation, MultipleChoiceQuestion
 
 
 @pytest.mark.parametrize(
