@@ -40,7 +40,6 @@ requires-python = ">=3.11"
 cloud = [
     "boto3",
 ]
-datasets = ["datasets"]
 dev = [
     "aviary.gsm8k[typing]",
     "aviary.hotpotqa",

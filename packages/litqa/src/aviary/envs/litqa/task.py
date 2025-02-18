@@ -62,7 +62,7 @@ def read_litqa_v2_from_hub(
     except ImportError as exc:
         raise ImportError(
             "Reading in LitQA2 requires the 'datasets' extra for 'datasets'. Please:"
-            " `pip install fhaviary[datasets]`."
+            " `pip install aviary.litqa[datasets]`."
         ) from exc
 
     train_eval = load_dataset(train_eval_dataset, "LitQA2")["train"].to_pandas()

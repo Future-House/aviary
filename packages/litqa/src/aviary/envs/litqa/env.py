@@ -5,13 +5,12 @@ from copy import deepcopy
 from typing import Any, Generic, Self, cast
 from uuid import UUID
 
+from ldp.utils import discounted_returns
 from llmclient import EmbeddingModel, LiteLLMModel
 from paperqa.agents.env import POPULATE_FROM_SETTINGS, PaperQAEnvironment
 from paperqa.agents.search import SearchIndex, maybe_get_manifest
 from paperqa.docs import Docs
 from paperqa.settings import Settings
-
-from ldp.utils import discounted_returns
 
 from aviary.core import (
     Messages,
@@ -31,6 +30,7 @@ logger = logging.getLogger(__name__)
 TEvaluation = TypeVar("TEvaluation", default=MultipleChoiceEvaluation)
 
 DEFAULT_REWARD_MAPPING = {"correct": 1.0, "unsure": 0.1, "incorrect": -1.0}
+
 
 def make_discounted_returns(
     evaluation: MultipleChoiceEvaluation,

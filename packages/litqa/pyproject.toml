@@ -28,6 +28,9 @@ name = "aviary.litqa"
 readme = "README.md"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+datasets = ["datasets"]
+
 [tool.ruff]
 extend = "../../pyproject.toml"
 

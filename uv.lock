@@ -247,15 +247,22 @@ dependencies = [
     { name = "tenacity" },
 ]
 
+[package.optional-dependencies]
+datasets = [
+    { name = "datasets" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "datasets" },
+    { name = "datasets", marker = "extra == 'datasets'" },
     { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "ldp", specifier = ">=0.20" },
     { name = "paper-qa", git = "https://github.com/Future-House/paper-qa.git" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
+provides-extras = ["datasets"]
 
 [[package]]
 name = "backoff"
@@ -869,9 +876,6 @@ dependencies = [
 cloud = [
     { name = "boto3" },
 ]
-datasets = [
-    { name = "datasets" },
-]
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
@@ -957,7 +961,6 @@ requires-dist = [
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
     { name = "cloudpickle", marker = "extra == 'server'" },
-    { name = "datasets", marker = "extra == 'datasets'" },
     { name = "dicttoxml", marker = "extra == 'xml'" },
     { name = "docstring-parser", specifier = ">=0.16" },
     { name = "fastapi", marker = "extra == 'server'" },
@@ -990,7 +993,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "litqa", "datasets", "llm", "server", "typing", "xml"]
+provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "litqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 codeflash = [
