@@ -23,9 +23,9 @@ jobs:
       - uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
-      - run: |
-          uv export --no-hashes --format requirements-txt > requirements.txt
-          python -m pip install -r requirements.txt
+      - run: echo "UV_PROJECT_ENVIRONMENT=$(python -c "import sysconfig; print(sysconfig.get_config_var('prefix'))")" >> $GITHUB_ENV
+      - run: echo $UV_PROJECT_ENVIRONMENT
+      - run: uv sync --python-preference only-system
       - uses: pre-commit/action@v3.0.1
       - uses: pre-commit-ci/lite-action@v1.1.0
         if: always()
