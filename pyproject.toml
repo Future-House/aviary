@@ -211,6 +211,7 @@ disable = [
     "broad-exception-caught",  # Don't care to enforce this
     "broad-exception-raised",  # Rely on ruff TRY002 for this
     "cyclic-import",  # Let Python blow up
+    "dangerous-default-value",  # Rely on ruff W0102 for this
     "expression-not-assigned",  # Rely on mypy func-returns-value for this
     "fixme",  # codetags are useful
     "function-redefined",  # Rely on mypy no-redef for this
@@ -227,6 +228,7 @@ disable = [
     "protected-access",  # Don't care to enforce this
     "raise-missing-from",  # Rely on ruff B904 for this
     "redefined-builtin",  # Rely on ruff A002 for this
+    "redefined-outer-name",
     "super-init-not-called",  # Don't care to enforce this
     "too-few-public-methods",  # Don't care to enforce this
     "too-many-ancestors",  # Don't care to enforce this
@@ -234,14 +236,12 @@ disable = [
     "too-many-branches",  # Rely on ruff PLR0912 for this
     "too-many-instance-attributes",  # Don't care to enforce this
     "too-many-lines",  # Don't care to enforce this
-    "dangerous-default-value",  # Rely on ruff W0102 for this
     "too-many-locals",  # Rely on ruff PLR0914 for this
     "too-many-positional-arguments",  # Don't care to enforce this
     "too-many-return-statements",  # Rely on ruff PLR0911 for this
     "too-many-statements",  # Rely on ruff PLR0915 for this
     "ungrouped-imports",  # Rely on ruff I001 for this
     "unspecified-encoding",  # Don't care to enforce this
-    "redefined-outer-name",
     "unsubscriptable-object",  # Buggy, SEE: https://github.com/PyCQA/pylint/issues/3637
     "unsupported-membership-test",  # Buggy, SEE: https://github.com/pylint-dev/pylint/issues/3045
     "unused-argument",  # Rely on ruff ARG002 for this
