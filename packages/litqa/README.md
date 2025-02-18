@@ -8,8 +8,8 @@ It is designed to test the LLM's the ability to retrieve information outside of 
 To ensure the questions are not in the pre-training corpus, the questions were collected
 from scientific papers published after September 2021 -- cut-off date of GPT-4's training data.
 
-LitQA2 is part of the [LAB-Bench dataset](https://arxiv.org/abs/2407.10362). 
-LitQA2 contains 248 multiple-choice questions from the literature and was created ensuring that the 
+LitQA2 is part of the [LAB-Bench dataset](https://arxiv.org/abs/2407.10362).
+LitQA2 contains 248 multiple-choice questions from the literature and was created ensuring that the
 questions cannot be answered by recalling from the pre-training corpus only.
 It considered scientific paper published within 36 months from the data of its publication.
 Therefore, LitQA2 is considered a scientific RAG dataset.
