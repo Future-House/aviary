@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
@@ -212,7 +211,6 @@ requires-dist = [
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
-provides-extras = ["typing"]
 
 [[package]]
 name = "aviary-hotpotqa"
@@ -252,7 +250,7 @@ requires-dist = [
     { name = "aviary-litqa", editable = "packages/litqa" },
     { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "fhaviary", editable = "." },
-    { name = "paper-qa" },
+    { name = "paper-qa", specifier = ">=5.12.0" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
 
@@ -283,7 +281,6 @@ requires-dist = [
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
-provides-extras = ["datasets"]
 
 [[package]]
 name = "backoff"
@@ -1020,7 +1017,6 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "litqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 codeflash = [
@@ -2115,7 +2111,7 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.11.1"
+version = "5.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2135,14 +2131,9 @@ dependencies = [
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/0a/975b738e5efe7e13ce8049d14cfc44ef2da5f82b0df9d29cb952f0f10378/paper_qa-5.11.1.tar.gz", hash = "sha256:e1606be3878d3a98f603a5cd9904a4fc278376c1678e8a02d87054e9858b8bba", size = 3286565 }
+sdist = { url = "https://files.pythonhosted.org/packages/94/01/c4c58e3040614693deb054cfe1fb8af1b53a3b621e5ab929e4a19732a571/paper_qa-5.12.0.tar.gz", hash = "sha256:6a522863932bbdc7c085a9ef86266f40cf4ce636f4b921aac0b508d2013551f9", size = 3287827 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/69/63e6b0bf7f38121f8a65998000e8ce44e605039f60e61480d21b425839c7/paper_qa-5.11.1-py3-none-any.whl", hash = "sha256:dceca15f71e1185e9cc63cc183aa998c2817b51c1c26012440e6c84b14d807be", size = 531748 },
-]
-
-[package.optional-dependencies]
-ldp = [
-    { name = "ldp" },
+    { url = "https://files.pythonhosted.org/packages/1e/58/05311e319fd8550a62909c382ec0ce8e0cf3384272643bed2c1d7084b045/paper_qa-5.12.0-py3-none-any.whl", hash = "sha256:e6d1aea9c880810373678ce33f6c0e292be63f57752fe09597b883e4b7464492", size = 532469 },
 ]
 
 [[package]]
