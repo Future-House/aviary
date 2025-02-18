@@ -240,6 +240,7 @@ name = "aviary-litqa"
 source = { editable = "packages/litqa" }
 dependencies = [
     { name = "fh-llm-client" },
+    { name = "fhaviary" },
     { name = "ldp" },
     { name = "paper-qa" },
     { name = "pydantic" },
@@ -255,6 +256,7 @@ datasets = [
 requires-dist = [
     { name = "datasets", marker = "extra == 'datasets'" },
     { name = "fh-llm-client", specifier = ">=0.0.11" },
+    { name = "fhaviary", editable = "." },
     { name = "ldp", specifier = ">=0.20" },
     { name = "paper-qa", specifier = ">=5.12.0" },
     { name = "pydantic", specifier = "~=2.0" },
