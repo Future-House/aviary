@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
@@ -211,7 +210,6 @@ requires-dist = [
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
-provides-extras = ["typing"]
 
 [[package]]
 name = "aviary-hotpotqa"
@@ -252,7 +250,7 @@ requires-dist = [
     { name = "datasets" },
     { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "ldp", specifier = ">=0.20" },
-    { name = "paper-qa" },
+    { name = "paper-qa", git = "https://github.com/Future-House/paper-qa.git" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
@@ -986,7 +984,6 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "litqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 codeflash = [
@@ -2081,17 +2078,15 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.8.0"
-source = { registry = "https://pypi.org/simple" }
+version = "5.11.2.dev12+gbe8918f"
+source = { git = "https://github.com/Future-House/paper-qa.git#be8918f98e7fa15e14deb3610b7d894668b2ca0f" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
-    { name = "coredis" },
+    { name = "fh-llm-client" },
     { name = "fhaviary", extra = ["llm"] },
     { name = "html2text" },
     { name = "httpx" },
-    { name = "limits" },
-    { name = "litellm" },
     { name = "numpy" },
     { name = "pybtex" },
     { name = "pydantic" },
@@ -2102,10 +2097,7 @@ dependencies = [
     { name = "tantivy" },
     { name = "tenacity" },
     { name = "tiktoken" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/49/c7/99fca83ad12c5bda259783300916c050656d4dcce1e530cb2a1748228c97/paper_qa-5.8.0.tar.gz", hash = "sha256:2898a6446e5574ccd6b05ca950ef141efdfa9ed5664b3028adc51ccb078f9fe8", size = 3216980 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/65/7dd04a475fe671104022ea31157e8ce25a9ef4c10bfa5d143bdb8c40edcb/paper_qa-5.8.0-py3-none-any.whl", hash = "sha256:5e3d2c1c09603325e5bfdb560548df19ece98a6f58da09418f940cc98698f2f6", size = 530212 },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 
 [[package]]
