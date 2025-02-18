@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13' and platform_python_implementation == 'PyPy'",
@@ -211,7 +210,6 @@ requires-dist = [
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
-provides-extras = ["typing"]
 
 [[package]]
 name = "aviary-hotpotqa"
@@ -252,7 +250,7 @@ requires-dist = [
     { name = "datasets" },
     { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "ldp", specifier = ">=0.20" },
-    { name = "paper-qa" },
+    { name = "paper-qa", git = "https://github.com/Future-House/paper-qa.git" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
@@ -986,7 +984,6 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "litqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 codeflash = [
@@ -2081,8 +2078,8 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.11.1"
-source = { registry = "https://pypi.org/simple" }
+version = "5.11.2.dev12+gbe8918f"
+source = { git = "https://github.com/Future-House/paper-qa.git#be8918f98e7fa15e14deb3610b7d894668b2ca0f" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -2100,10 +2097,7 @@ dependencies = [
     { name = "tantivy" },
     { name = "tenacity" },
     { name = "tiktoken" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/76/0a/975b738e5efe7e13ce8049d14cfc44ef2da5f82b0df9d29cb952f0f10378/paper_qa-5.11.1.tar.gz", hash = "sha256:e1606be3878d3a98f603a5cd9904a4fc278376c1678e8a02d87054e9858b8bba", size = 3286565 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/69/63e6b0bf7f38121f8a65998000e8ce44e605039f60e61480d21b425839c7/paper_qa-5.11.1-py3-none-any.whl", hash = "sha256:dceca15f71e1185e9cc63cc183aa998c2817b51c1c26012440e6c84b14d807be", size = 531748 },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 
 [[package]]
