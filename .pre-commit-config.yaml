@@ -73,7 +73,7 @@ repos:
     rev: 0.5.31
     hooks:
       - id: uv-lock
-  - repo: local
+  - repo: local # Use local to ensure we don't pull aviary from PyPI
     hooks:
       - id: mypy
         name: mypy
