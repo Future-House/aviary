@@ -24,7 +24,6 @@ jobs:
         with:
           enable-cache: true
       - run: echo "UV_PROJECT_ENVIRONMENT=$(python -c "import sysconfig; print(sysconfig.get_config_var('prefix'))")" >> $GITHUB_ENV
-      - run: echo $UV_PROJECT_ENVIRONMENT
       - run: git checkout .python-version
       - run: uv sync --python-preference only-system
       - uses: pre-commit/action@v3.0.1
