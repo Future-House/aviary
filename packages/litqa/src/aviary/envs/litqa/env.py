@@ -1,17 +1,6 @@
+import logging
 import sys
 from collections.abc import Awaitable, Callable, Mapping
-
-from aviary.utils import (
-    MultipleChoiceEvaluation,
-    MultipleChoiceQuestion,
-)
-
-if sys.version_info >= (3, 13):
-    from typing import TypeVar
-else:
-    from typing_extensions import TypeVar  # For TypeVar.default backport
-
-import logging
 from copy import deepcopy
 from typing import Any, Generic, Self, cast
 from uuid import UUID
@@ -26,6 +15,15 @@ from aviary.core import (
     Messages,
     ToolRequestMessage,
 )
+from aviary.utils import (
+    MultipleChoiceEvaluation,
+    MultipleChoiceQuestion,
+)
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar
+else:
+    from typing_extensions import TypeVar  # For TypeVar.default backport
 
 logger = logging.getLogger(__name__)
 TEvaluation = TypeVar("TEvaluation", default=MultipleChoiceEvaluation)
