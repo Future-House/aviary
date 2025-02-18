@@ -24,6 +24,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --python-preference=only-system # pre-commit/action uses system python
+      - run: python -m pip list
       - uses: pre-commit/action@v3.0.1
       - uses: pre-commit-ci/lite-action@v1.1.0
         if: always()
