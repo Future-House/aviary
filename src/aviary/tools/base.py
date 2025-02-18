@@ -123,9 +123,7 @@ class ToolCall(BaseModel):
 
 
 class ToolRequestMessage(Message):
-    role: Literal["assistant"] = Field(
-        default="assistant", description="Matching LiteLLM structure."
-    )
+    role: str = Field(default="assistant", description="Matching LiteLLM structure.")
     content: str | None = None
     function_call: None = None
     tool_calls: list[ToolCall] = Field(
@@ -148,14 +146,12 @@ class ToolRequestMessage(Message):
 
 
 class ToolResponseMessage(Message):
-    content: str = Field(
+    content: str | None = Field(
         description=(
             "Response message content, required to be a string by OpenAI/Anthropic."
         ),
     )
-    role: Literal["tool"] = Field(
-        default="tool", description="Matching LiteLLM structure."
-    )
+    role: str = Field(default="tool", description="Matching LiteLLM structure.")
     name: str = Field(description="Name of the tool that was called.")
     tool_call_id: str = Field(
         description=(

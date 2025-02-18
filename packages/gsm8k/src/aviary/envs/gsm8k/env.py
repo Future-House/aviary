@@ -2,7 +2,7 @@ import contextlib
 import json
 from enum import StrEnum
 from logging import getLogger
-from typing import TYPE_CHECKING, ClassVar, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
 import datasets
 from pydantic import BaseModel, ConfigDict
@@ -111,10 +111,15 @@ class CalculatorEnv(Environment[None]):
                 total_reward += reward
                 any_done |= done
 
-            return response_msgs + invalid_response_msgs, total_reward, any_done, False
+            return (
+                cast(Messages, response_msgs + invalid_response_msgs),
+                total_reward,
+                any_done,
+                False,
+            )
 
         return (
-            invalid_response_msgs,
+            cast(Messages, invalid_response_msgs),
             self.config.tool_failure_reward * len(invalid_response_msgs),
             self.config.done_on_failure,
             False,
