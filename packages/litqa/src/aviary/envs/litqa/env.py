@@ -11,6 +11,8 @@ from paperqa.agents.search import SearchIndex, maybe_get_manifest
 from paperqa.docs import Docs
 from paperqa.settings import Settings
 
+from ldp.utils import discounted_returns
+
 from aviary.core import (
     Messages,
     ToolRequestMessage,
@@ -29,54 +31,6 @@ logger = logging.getLogger(__name__)
 TEvaluation = TypeVar("TEvaluation", default=MultipleChoiceEvaluation)
 
 DEFAULT_REWARD_MAPPING = {"correct": 1.0, "unsure": 0.1, "incorrect": -1.0}
-
-
-def discounted_returns(
-    rewards: list[float], terminated: list[bool], discount: float = 1.0
-) -> list[float]:
-    # NOTE: This is a _ldq_shim from pqa. How should we handle this?
-    r"""
-    Calculate the discounted returns for a list of rewards, considering termination flags and a discount factor.
-
-    The discounted return represents the future discounted rewards from each time step onwards, taking into account
-    whether an episode has terminated at each step.
-
-    The discounted return \( G_t \) is given by:
-
-    .. math::
-        G_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}
-
-        where:
-        - \( G_t \) is the discounted return starting from time step \( t \).
-        - \( \gamma \) is the discount factor.
-        - \( R_{t+k} \) is the reward received at time step \( t+k \).
-
-    NOTE: this could live in ldp.alg, but it's here to avoid circular imports.
-
-    Args:
-        rewards: A list of rewards at each time step.
-        terminated: A list of boolean flags indicating whether the episode terminated at each time step.
-        discount: Discount factor to apply to future rewards. Defaults to 1.0 which means no discounting is applied.
-
-    Returns:
-        A list of discounted returns (rewards to go), with each element representing the
-            total discounted reward from that step onwards.
-
-    Example:
-        >>> rewards = [1.0, 2.0, 3.0]
-        >>> terminated = [False, False, True]
-        >>> discounted_returns(rewards, terminated, discount=0.9)
-        [5.23, 4.7, 3.0]
-    """
-    returns = []
-    r = 0.0
-    for reward, term in zip(reversed(rewards), reversed(terminated), strict=False):
-        # 1 - term is 0 if the episode has terminated
-        r = reward + discount * r * (1 - term)
-        returns.append(r)
-    returns.reverse()
-    return returns
-
 
 def make_discounted_returns(
     evaluation: MultipleChoiceEvaluation,
