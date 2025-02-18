@@ -15,7 +15,6 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dependencies = [
-    "datasets",
     "fh-llm-client>=0.0.11",
     "ldp>=0.20",
     "paper-qa @ https://github.com/Future-House/paper-qa.git",
