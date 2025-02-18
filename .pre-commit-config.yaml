@@ -78,5 +78,5 @@ repos:
       - id: mypy
         name: mypy
         entry: mypy
-        language: python
+        language: system
         types_or: [python, pyi]
