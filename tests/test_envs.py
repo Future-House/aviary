@@ -58,6 +58,7 @@ class TestDummyEnv:
             action=ToolRequestMessage(tool_calls=[])
         )
         assert not done, "Should not be done after empty action"
+        assert obs[0].content
         assert "no tool calls" in obs[0].content.lower()
 
         action = await my_policy(obs)
@@ -127,7 +128,7 @@ class TestDummyEnv:
         ]
 
     def test_loading_from_name(self):
-        env: DummyEnv = Environment.from_name("dummy")
+        env: DummyEnv = Environment.from_name("dummy")  # type: ignore[assignment]
         assert isinstance(env, DummyEnv)
 
         dataset = TaskDataset.from_name("dummy")
@@ -254,7 +255,7 @@ async def test_invalid_tool_call(
         assert time.perf_counter() - tic > 0.15
     assert obs
     for o, t in zip(obs, tool_calls, strict=True):
-        assert o.tool_call_id == t.id
+        assert o.tool_call_id == t.id  # type: ignore[attr-defined]
 
 
 class SlowEnv(Environment[None]):
@@ -445,7 +446,7 @@ class TestParallelism:
 
         # 2. Now that we have confirmed that, let's make sure exec_tool_calls
         #    can automate this for us
-        obs = await env.exec_tool_calls(
+        obs = await env.exec_tool_calls(  # type: ignore[assignment]
             message=request_msg, state=env.state, handle_tool_exc=True
         )
         (failure_tool_response,) = obs
