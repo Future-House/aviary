@@ -1,14 +1,14 @@
 # aviary.lfrqa
 
-A GradablePaperQAEnvironment to answer LFRQA questions, introduced in RAG-QA-Arena.
+An environment designed to utilize PaperQA for answering questions from the LFRQATaskDataset. LFRQA is a human-annotated dataset introduced in the RAG-QA-Arena, featuring over 1400 questions from various categories, including science.
 
 ## References
 
-[1] (https://arxiv.org/pdf/2407.13998) RAG-QA Arena
+[1] RAG-QA Arena (https://arxiv.org/pdf/2407.13998)
 
 ## Installation
 
-To install the LitQA environment, run:
+To install the LFRQA environment, run:
 
 ```bash
 pip install fhaviary[lfrqa]
