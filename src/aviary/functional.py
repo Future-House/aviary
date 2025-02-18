@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import update_wrapper
-from typing import Any, cast
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -80,7 +80,7 @@ class FunctionalEnvironment(Environment[DynamicState]):
             concurrency=self.allow_concurrency,
             handle_tool_exc=True,
         )
-        return cast(Messages, msgs), self.state.reward, self.state.done, False
+        return msgs, self.state.reward, self.state.done, False  # type: ignore[return-value]
 
     def export_frame(self) -> Frame:
         """Export the current state of the environment."""
