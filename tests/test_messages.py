@@ -1,6 +1,5 @@
 import json
 import pathlib
-from typing import cast
 
 import numpy as np
 import pytest
@@ -235,13 +234,13 @@ class TestToolRequestMessage:
         trm = ToolRequestMessage(
             content="stub", tool_calls=[ToolCall.from_name("stub_name")]
         )
-        trm_inplace = cast(ToolRequestMessage, trm.append_text("text"))
+        trm_inplace = trm.append_text("text")
         assert trm.content == trm_inplace.content == "stub\ntext"
         # Check append performs an in-place change by default
-        assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
+        assert trm.tool_calls[0] is trm_inplace.tool_calls[0]  # type: ignore[attr-defined]
 
-        trm_copy = cast(ToolRequestMessage, trm.append_text("text", inplace=False))
+        trm_copy = trm.append_text("text", inplace=False)
         assert trm_copy.content == "stub\ntext\ntext"
         # Check append performs a deep copy when not inplace
         assert trm.content == "stub\ntext"
-        assert trm.tool_calls[0] is not trm_copy.tool_calls[0]
+        assert trm.tool_calls[0] is not trm_copy.tool_calls[0]  # type: ignore[attr-defined]

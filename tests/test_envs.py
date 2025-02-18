@@ -58,7 +58,8 @@ class TestDummyEnv:
             action=ToolRequestMessage(tool_calls=[])
         )
         assert not done, "Should not be done after empty action"
-        assert "no tool calls" in obs[0].content.lower()  # type: ignore[union-attr]
+        assert obs[0].content
+        assert "no tool calls" in obs[0].content.lower()
 
         action = await my_policy(obs)
         _, reward, done, _ = await dummy_env.step(action)
