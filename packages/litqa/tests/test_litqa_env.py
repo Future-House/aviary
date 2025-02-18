@@ -234,7 +234,7 @@ class TestTaskDataset:
         # in aviary, but for now let's just assign it after TaskConfig construction
         task_config.eval_kwargs["settings"] = agent_task_settings.model_dump()
         original_agent_task_settings = agent_task_settings.model_copy(deep=True)
-        dataset = task_config.make_dataset(split="eval")  # noqa: FURB184
+        dataset: LitQAv2TaskDataset = task_config.make_dataset(split="eval")  # noqa: FURB184
         assert isinstance(dataset, StubLitQADataset), "Test assertions depend on this"
         metrics_callback = MeanMetricsCallback(eval_dataset=dataset)
         store_env_callback = StoreEnvCallback()
@@ -283,9 +283,7 @@ class TestTaskDataset:
             agent_task_settings.answer.max_answer_attempts = 2
             agent_task_settings.answer.get_evidence_if_no_contexts = False
             dataset = LitQAv2TaskDataset(settings=agent_task_settings)
-            dataset.data = dataset.data[  # type: ignore[attr-defined]
-                :2
-            ]  # Save the world: just use two questions
+            dataset.data = dataset.data[:2]  # Save the world: just use two questions
             storage_callback = StoreTrajectoriesCallback()
             evaluator = Evaluator(
                 config=EvaluatorConfig(batch_size=len(dataset), max_rollout_steps=4),
