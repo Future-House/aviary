@@ -14,6 +14,16 @@ questions cannot be answered by recalling from the pre-training corpus only.
 It considered scientific paper published within 36 months from the data of its publication.
 Therefore, LitQA2 is considered a scientific RAG dataset.
 
+## Installation
+
+To install the LitQA environment, run:
+
+```bash
+pip install fhaviary[litqa]
+```
+
+## Usage
+
 In [`litqa/env.py`](litqa/env.py), you will find:
 
 `GradablePaperQAEnvironment`: an environment that can grade answers given an evaluation function.
@@ -59,11 +69,3 @@ async def evaluate(folder_of_litqa_v2_papers: str | os.PathLike) -> None:
 [2] Skarlinski et al. [Language agents achieve superhuman synthesis of scientific knowledge](https://arxiv.org/abs/2409.13740). ArXiv:2409.13740, 2024.
 
 [3] Laurent et al. [LAB-Bench: Measuring Capabilities of Language Models for Biology Research](https://arxiv.org/abs/2407.10362). ArXiv:2407.10362, 2024.
-
-## Installation
-
-To install the LitQA environment, run:
-
-```bash
-pip install fhaviary[litqa]
-```
