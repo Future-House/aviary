@@ -40,7 +40,7 @@ async def test_calculator_env() -> None:
 
 
 def test_loading_from_name() -> None:
-    env: CalculatorEnv = Environment.from_name(
+    env: CalculatorEnv = Environment.from_name(  # type: ignore[assignment]
         "calculator",
         problem_id="rhetorical",
         problem="I had a cake and I ate it. How many cakes do I have?",
