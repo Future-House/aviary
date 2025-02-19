@@ -10,6 +10,7 @@ from uuid import UUID
 
 from llmclient import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
+from paperqa.utils import strip_citations
 from pydantic import BaseModel, model_validator
 
 from aviary.core import (
@@ -114,13 +115,6 @@ lfrqa_prompt_template = (
     "Then, provide your rating inside <rating></rating> tags.\n"
     "Remember your rating should be 0 if you are not sure, and your rating must be either 0, 1, or 2."
 )
-
-
-def strip_citations(text: str) -> str:
-    # Combined regex for identifying citations (see unit tests for examples)
-    citation_regex = r"\b[\w\-]+\set\sal\.\s\([0-9]{4}\)|\((?:[^\)]*?[a-zA-Z][^\)]*?[0-9]{4}[^\)]*?)\)"
-    # Remove the citations from the text
-    return re.sub(citation_regex, "", text, flags=re.MULTILINE)
 
 
 class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
