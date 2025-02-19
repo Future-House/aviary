@@ -6,6 +6,14 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 authors = [
     {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
 ]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python",
+]
 dependencies = [
     "beautifulsoup4",
     "datasets",

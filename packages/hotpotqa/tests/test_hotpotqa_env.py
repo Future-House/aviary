@@ -11,7 +11,7 @@ from aviary.utils import EvalAnswerMode
 
 
 def test_env_construction() -> None:
-    hotpotqa_env: HotPotQAEnv = Environment.from_name(
+    hotpotqa_env: HotPotQAEnv = Environment.from_name(  # type: ignore[assignment]
         "hotpotqa",
         question_id=None,
         question=(
@@ -76,7 +76,7 @@ def test_dataset_from_name() -> None:
 
 @pytest.mark.asyncio
 async def test_tool_results() -> None:
-    hotpotqa_env: HotPotQAEnv = Environment.from_name(
+    hotpotqa_env: HotPotQAEnv = Environment.from_name(  # type: ignore[assignment]
         "hotpotqa",
         question_id=None,
         question="Which country has a larger population: China or France?",
@@ -91,8 +91,8 @@ async def test_tool_results() -> None:
     # Check lookup return format
     match = re.match(lookup_pattern, obs2)
     assert match  # Starts with the right pattern
-    assert (
-        match.group(1) + "\n" in hotpotqa_env.state.page
+    assert match.group(1) + "\n" in (
+        hotpotqa_env.state.page or ""
     )  # Everything after the pattern should be a paragraph in current page
 
     obs3 = await hotpotqa_env.search("France")
@@ -101,7 +101,7 @@ async def test_tool_results() -> None:
     # Check lookup return format
     match = re.match(lookup_pattern, obs4)
     assert match, "Expected lookup"
-    assert match.group(1) + "\n" in hotpotqa_env.state.page, (
+    assert match.group(1) + "\n" in (hotpotqa_env.state.page or ""), (
         "Expected text after the match to be a paragraph"
     )
 
