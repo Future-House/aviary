@@ -80,7 +80,7 @@ class FunctionalEnvironment(Environment[DynamicState]):
             concurrency=self.allow_concurrency,
             handle_tool_exc=True,
         )
-        return msgs, self.state.reward, self.state.done, False
+        return msgs, self.state.reward, self.state.done, False  # type: ignore[return-value]
 
     def export_frame(self) -> Frame:
         """Export the current state of the environment."""

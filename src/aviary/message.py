@@ -87,9 +87,7 @@ class Message(BaseModel):
             dump["content"] = json.loads(dump["content"])
         return dump
 
-    def append_text(
-        self, text: str, delim: str = "\n", inplace: bool = True
-    ) -> Message:
+    def append_text(self, text: str, delim: str = "\n", inplace: bool = True) -> Self:
         """Append text to the content.
 
         Args:

@@ -111,9 +111,14 @@ class CalculatorEnv(Environment[None]):
                 total_reward += reward
                 any_done |= done
 
-            return response_msgs + invalid_response_msgs, total_reward, any_done, False
+            return (  # type: ignore[return-value]
+                response_msgs + invalid_response_msgs,
+                total_reward,
+                any_done,
+                False,
+            )
 
-        return (
+        return (  # type: ignore[return-value]
             invalid_response_msgs,
             self.config.tool_failure_reward * len(invalid_response_msgs),
             self.config.done_on_failure,
