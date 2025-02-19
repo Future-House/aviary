@@ -132,7 +132,7 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
         evaluation, self.state.session.graded_answer = await cast(
             MultipleChoiceQuestion, self._query
         ).grade(self.state.session.answer)
-        return evaluation
+        return evaluation  # type: ignore[return-value]
 
     async def step(
         self, action: ToolRequestMessage

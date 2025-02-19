@@ -8,7 +8,7 @@ from aviary.envs.lfrqa.task import LFRQATaskDataset
 
 def test_env_construction() -> None:
     data: list[LFRQAQuestion] = [
-        LFRQAQuestion(**row)
+        LFRQAQuestion(**row)  # type: ignore[misc]
         for row in pd.read_csv(
             os.path.join("packages", "lfrqa", "tests", "stub_data", "mini_lfrqa.csv")
         )[["qid", "question", "answer", "gold_doc_ids"]].to_dict(orient="records")
