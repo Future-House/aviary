@@ -1,6 +1,6 @@
 # aviary.lfrqa
 
-An environment designed to utilize PaperQA for answering questions from the LFRQATaskDataset. LFRQA is a human-annotated dataset introduced in the RAG-QA-Arena, featuring over 1400 questions from various categories, including science.
+An environment designed to utilize PaperQA for answering questions from the LFRQATaskDataset. Long-form RobustQA (LFRQA) is a human-annotated dataset introduced in the RAG-QA-Arena, featuring over 1400 questions from various categories, including science.
 
 ## Installation
 
