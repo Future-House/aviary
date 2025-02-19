@@ -19,7 +19,7 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.1
+    rev: v0.9.4
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -36,7 +36,7 @@ repos:
         args:
           - --word-list=.secrets.allowlist
           - --exclude-files=.secrets.baseline$
-        exclude: tests/cassettes
+        exclude: tests/cassettes|litqa/tests/stub_data
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
     hooks:
@@ -47,7 +47,7 @@ repos:
       - id: codespell
         additional_dependencies: [".[toml]"]
         exclude_types: [jupyter]
-        exclude: '.*\.b64$'
+        exclude: '.*\.b64$|litqa/tests/stub_data'
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.2
     hooks:
