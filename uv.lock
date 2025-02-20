@@ -250,7 +250,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aviary-litqa", editable = "packages/litqa" },
-    { name = "fh-llm-client", specifier = ">=0.0.11" },
+    { name = "fh-llm-client", specifier = ">=0.0.11,<0.1" },
     { name = "fhaviary", editable = "." },
     { name = "paper-qa", specifier = ">=5.12.0" },
     { name = "pydantic", specifier = "~=2.0" },
@@ -870,7 +870,7 @@ wheels = [
 
 [[package]]
 name = "fh-llm-client"
-version = "0.1.0"
+version = "0.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coredis" },
@@ -881,9 +881,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/e2/0cb5344f9ab2069ab6b68cc487514a2d2983fc7afdac215dca46e52f07b9/fh_llm_client-0.1.0.tar.gz", hash = "sha256:859da187b0e5b24545828fd88f9a16be9ca4f46a2443f6ba3665759609823725", size = 257930 }
+sdist = { url = "https://files.pythonhosted.org/packages/90/c4/e8195b7c9b5139fdfcec8246ee079fb0d1e24599a55c11872b2f4488262c/fh_llm_client-0.0.11.tar.gz", hash = "sha256:4288daba94da3a11b77ff6e45b1e85355f4b0a445a1488ff70636bc519132192", size = 194844 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/df/85f485444aef44cd0cedfb92710af972c079df4b94f8805b6e6e553c826e/fh_llm_client-0.1.0-py3-none-any.whl", hash = "sha256:8bf7ad7a3a0778740c5ce327e37e118c186999ea9ead1688aa7e571e4d3fa18c", size = 33440 },
+    { url = "https://files.pythonhosted.org/packages/29/a6/321cd434ce2c013f38ed1423a85bbf23bb4c47f98f108a0e8d0580f0acb0/fh_llm_client-0.0.11-py3-none-any.whl", hash = "sha256:408073277834c9212883bac731eedcdf52fe2cef7e5eb48fd8d6fcdeb3c0336f", size = 34519 },
 ]
 
 [[package]]
@@ -1533,7 +1533,7 @@ wheels = [
 
 [[package]]
 name = "ldp"
-version = "0.24.0"
+version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
@@ -1550,9 +1550,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
     { name = "usearch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/41/ff/469e5513396a998bd741be8e7af5364d59f8cd2abc268560fc363afbdea6/ldp-0.24.0.tar.gz", hash = "sha256:6b4b2e77dff33ac9615d9301a521e7fa8ddcc67a4d561c27404c6633f5bfe6db", size = 448978 }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/21/7291e47e710156f1e8efb086e649bae2e4106926f7388288b631d281d2f4/ldp-0.23.0.tar.gz", hash = "sha256:d2259380cdd4a09508c5181abac47c3418df198abd8c87c6f7d82a3eb2cab5bf", size = 436232 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/0a/04561998031a734564562da4ef2d044cfd4870963cbdbd8eda3a2ae38350/ldp-0.24.0-py3-none-any.whl", hash = "sha256:b27583e19ba149cc0341bf0916d6240f6931f06882a763c120959392253da966", size = 135389 },
+    { url = "https://files.pythonhosted.org/packages/b2/6d/abd1d2f4216a819a35d184e2fd0d1f4a737cd0bf01e62848e8ff3535b0c0/ldp-0.23.0-py3-none-any.whl", hash = "sha256:5d1adb3ca032b9a4c728753f0273a1af703a9b4635b446d67491c81acab2c259", size = 135256 },
 ]
 
 [[package]]
