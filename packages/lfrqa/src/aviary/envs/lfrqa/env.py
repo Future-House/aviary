@@ -6,7 +6,6 @@ __all__ = [
 import logging
 import random
 import re
-from typing import cast
 from uuid import UUID
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
@@ -161,18 +160,12 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
 
         result = await pairwise_eval_llm.call_single(
             messages=[
-                Message(
-                    role="system",
-                    content=lfrqa_system_prompt,
-                ),
-                Message(
-                    role="user",
-                    content=lfrqa_prompt_template.format(**data),
-                ),
+                Message(role="system", content=lfrqa_system_prompt),
+                Message(role="user", content=lfrqa_prompt_template.format(**data)),
             ],
         )
 
-        best_answer_index = self.extract_best_answer_index(cast(str, result.text))
+        best_answer_index = self.extract_best_answer_index(result.text or "")
         if best_answer_index == pqa_answer_index:
             winner, reward = "paperqa", self._rewards["win"]
         elif best_answer_index != 0:
