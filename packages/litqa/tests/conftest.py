@@ -4,6 +4,10 @@ from typing import Any
 from unittest.mock import patch
 
 import pytest
+from lmi.utils import (
+    ANTHROPIC_API_KEY_HEADER,
+    OPENAI_API_KEY_HEADER,
+)
 from paperqa import Settings
 
 CASSETTES_DIR = Path(__file__).parent / "cassettes"
@@ -43,13 +47,6 @@ def agent_test_settings(agent_index_dir: Path, stub_data_dir: Path) -> Settings:
 def fixture_agent_task_settings(agent_test_settings: Settings) -> Settings:
     agent_test_settings.agent.index.manifest_file = "stub_manifest.csv"
     return agent_test_settings
-
-
-# TODO: Import from llmclient.utils after next llmclient release
-OPENAI_API_KEY_HEADER = "authorization"
-ANTHROPIC_API_KEY_HEADER = "x-api-key"
-# SEE: https://github.com/kevin1024/vcrpy/blob/v6.0.1/vcr/config.py#L43
-VCR_DEFAULT_MATCH_ON = "method", "scheme", "host", "port", "path", "query"
 
 
 @pytest.fixture(scope="session", name="vcr_config")

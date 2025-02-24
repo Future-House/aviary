@@ -12,7 +12,7 @@ from ldp.alg import (
     bulk_evaluate_consensus,
 )
 from ldp.data_structures import Trajectory
-from llmclient import LLMModel
+from lmi import LLMModel
 from paperqa.agents.tools import Complete, EnvironmentState
 from paperqa.docs import Docs
 from paperqa.settings import Settings

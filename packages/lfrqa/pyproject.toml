@@ -18,7 +18,7 @@ dependencies = [
     "aviary.litqa",
     "fhaviary",
     "fhlmi",
-    "paper-qa>=5.12.0",
+    "paper-qa>=5.14.0",  # Pin for lmi migration
     "pydantic~=2.0",
 ]
 description = "LFRQA environment implemented with aviary"
