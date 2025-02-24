@@ -16,8 +16,8 @@ classifiers = [
 ]
 dependencies = [
     "aviary.litqa",
-    "fhlmi",
     "fhaviary",
+    "fhlmi",
     "paper-qa>=5.12.0",
     "pydantic~=2.0",
 ]
