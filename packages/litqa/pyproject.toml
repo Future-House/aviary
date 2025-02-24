@@ -15,10 +15,10 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dependencies = [
-    "fh-llm-client>=0.0.11",
     "fhaviary>=0.14",  # For MultipleChoiceQuestion
-    "ldp>=0.20",
-    "paper-qa>=5.12.0",
+    "fhlmi",
+    "ldp>=0.25.2",  # Pin for lmi migration
+    "paper-qa>=5.14.0",  # Pin for lmi migration
     "pydantic~=2.0",
     "tenacity",
     "typing-extensions; python_version <= '3.12'",  # For TypeVar default

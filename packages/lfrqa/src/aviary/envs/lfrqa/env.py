@@ -8,12 +8,13 @@ import random
 import re
 from uuid import UUID
 
-from llmclient import CommonLLMNames, LiteLLMModel, LLMModel
+from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
 from paperqa.utils import strip_citations
 from pydantic import BaseModel, model_validator
 
 from aviary.core import (
+    Message,
     Messages,
     ToolRequestMessage,
 )
@@ -157,13 +158,14 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             "answer2": self.human_answer if pqa_answer_index == 1 else pqa_answer,
         }
 
-        result = await pairwise_eval_llm.run_prompt(
-            prompt=lfrqa_prompt_template,
-            data=data,
-            system_prompt=lfrqa_system_prompt,
+        result = await pairwise_eval_llm.call_single(
+            messages=[
+                Message(role="system", content=lfrqa_system_prompt),
+                Message(role="user", content=lfrqa_prompt_template.format(**data)),
+            ],
         )
 
-        best_answer_index = self.extract_best_answer_index(result.text)
+        best_answer_index = self.extract_best_answer_index(result.text or "")
         if best_answer_index == pqa_answer_index:
             winner, reward = "paperqa", self._rewards["win"]
         elif best_answer_index != 0:

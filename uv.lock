@@ -241,8 +241,8 @@ name = "aviary-lfrqa"
 source = { editable = "packages/lfrqa" }
 dependencies = [
     { name = "aviary-litqa" },
-    { name = "fh-llm-client" },
     { name = "fhaviary" },
+    { name = "fhlmi" },
     { name = "paper-qa" },
     { name = "pydantic" },
 ]
@@ -250,9 +250,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aviary-litqa", editable = "packages/litqa" },
-    { name = "fh-llm-client", specifier = ">=0.0.11,<0.1" },
     { name = "fhaviary", editable = "." },
-    { name = "paper-qa", specifier = ">=5.12.0" },
+    { name = "fhlmi" },
+    { name = "paper-qa", specifier = ">=5.14.0" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
 
@@ -260,8 +260,8 @@ requires-dist = [
 name = "aviary-litqa"
 source = { editable = "packages/litqa" }
 dependencies = [
-    { name = "fh-llm-client" },
     { name = "fhaviary" },
+    { name = "fhlmi" },
     { name = "ldp" },
     { name = "paper-qa" },
     { name = "pydantic" },
@@ -277,10 +277,10 @@ datasets = [
 [package.metadata]
 requires-dist = [
     { name = "datasets", marker = "extra == 'datasets'" },
-    { name = "fh-llm-client", specifier = ">=0.0.11" },
     { name = "fhaviary", editable = "." },
-    { name = "ldp", specifier = ">=0.20" },
-    { name = "paper-qa", specifier = ">=5.12.0" },
+    { name = "fhlmi" },
+    { name = "ldp", specifier = ">=0.25.2" },
+    { name = "paper-qa", specifier = ">=5.14.0" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
@@ -869,24 +869,6 @@ wheels = [
 ]
 
 [[package]]
-name = "fh-llm-client"
-version = "0.0.11"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "coredis" },
-    { name = "fhaviary" },
-    { name = "limits" },
-    { name = "litellm" },
-    { name = "pydantic" },
-    { name = "tiktoken" },
-    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/90/c4/e8195b7c9b5139fdfcec8246ee079fb0d1e24599a55c11872b2f4488262c/fh_llm_client-0.0.11.tar.gz", hash = "sha256:4288daba94da3a11b77ff6e45b1e85355f4b0a445a1488ff70636bc519132192", size = 194844 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/a6/321cd434ce2c013f38ed1423a85bbf23bb4c47f98f108a0e8d0580f0acb0/fh_llm_client-0.0.11-py3-none-any.whl", hash = "sha256:408073277834c9212883bac731eedcdf52fe2cef7e5eb48fd8d6fcdeb3c0336f", size = 34519 },
-]
-
-[[package]]
 name = "fhaviary"
 source = { editable = "." }
 dependencies = [
@@ -909,6 +891,7 @@ dev = [
     { name = "cloudpickle" },
     { name = "dicttoxml" },
     { name = "fastapi" },
+    { name = "fhlmi" },
     { name = "httpx" },
     { name = "ipython" },
     { name = "litellm" },
@@ -949,6 +932,7 @@ litqa = [
     { name = "aviary-litqa" },
 ]
 llm = [
+    { name = "fhlmi" },
     { name = "litellm" },
 ]
 server = [
@@ -994,6 +978,7 @@ requires-dist = [
     { name = "docstring-parser", specifier = ">=0.16" },
     { name = "fastapi", marker = "extra == 'server'" },
     { name = "fhaviary", extras = ["image", "llm", "server", "typing", "xml"], marker = "extra == 'dev'", editable = "." },
+    { name = "fhlmi", marker = "extra == 'llm'" },
     { name = "httpx" },
     { name = "httpx", marker = "extra == 'dev'", specifier = "<0.28" },
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
@@ -1030,6 +1015,24 @@ codeflash = [
     { name = "fhaviary", extras = ["dev"], editable = "." },
 ]
 dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]
+
+[[package]]
+name = "fhlmi"
+version = "0.25.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coredis" },
+    { name = "fhaviary" },
+    { name = "limits" },
+    { name = "litellm" },
+    { name = "pydantic" },
+    { name = "tiktoken" },
+    { name = "typing-extensions", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/06/e3/1aec444837dc4ff4871dd3bcf4d67f016f228558068cfca486a790af980f/fhlmi-0.25.2.tar.gz", hash = "sha256:0f5522d3c25aa9210d87f342f1a4540cf90cb9490e0366a898ef8ee79820b272", size = 136251 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d6/33/2ebef42074cd26313c830f8555f6b9a9b922e98219674746b4ed965b73fe/fhlmi-0.25.2-py3-none-any.whl", hash = "sha256:03c2db98e294cb9b1c8696643beb05f58fa30186c71c0aeb01b6812bc7c64974", size = 36147 },
+]
 
 [[package]]
 name = "filelock"
@@ -1533,13 +1536,13 @@ wheels = [
 
 [[package]]
 name = "ldp"
-version = "0.23.0"
+version = "0.25.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiofiles" },
     { name = "dm-tree" },
-    { name = "fh-llm-client" },
     { name = "fhaviary" },
+    { name = "fhlmi" },
     { name = "httpx" },
     { name = "networkx", extra = ["default"] },
     { name = "numpy" },
@@ -1550,9 +1553,9 @@ dependencies = [
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
     { name = "usearch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0d/21/7291e47e710156f1e8efb086e649bae2e4106926f7388288b631d281d2f4/ldp-0.23.0.tar.gz", hash = "sha256:d2259380cdd4a09508c5181abac47c3418df198abd8c87c6f7d82a3eb2cab5bf", size = 436232 }
+sdist = { url = "https://files.pythonhosted.org/packages/aa/5c/43faba8aff85cdaad4477f6d407600d2852a67bb2486a83869154809c893/ldp-0.25.2.tar.gz", hash = "sha256:691c0849b53c2535090bdb7b2e3b2040806ba9920cc86d181310cb0292d9128a", size = 579570 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/6d/abd1d2f4216a819a35d184e2fd0d1f4a737cd0bf01e62848e8ff3535b0c0/ldp-0.23.0-py3-none-any.whl", hash = "sha256:5d1adb3ca032b9a4c728753f0273a1af703a9b4635b446d67491c81acab2c259", size = 135256 },
+    { url = "https://files.pythonhosted.org/packages/5e/c2/228bf5719db406bec7f7bc8838c7880cafea5da69f6360bebabe0aabcaf1/ldp-0.25.2-py3-none-any.whl", hash = "sha256:c7e2d7ddd6a0508f1fceac28c5512e184748720412c850b1871789ea39e8928f", size = 135366 },
 ]
 
 [[package]]
@@ -2117,13 +2120,13 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.13.0"
+version = "5.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
-    { name = "fh-llm-client" },
     { name = "fhaviary", extra = ["llm"] },
+    { name = "fhlmi" },
     { name = "html2text" },
     { name = "httpx" },
     { name = "numpy" },
@@ -2137,9 +2140,9 @@ dependencies = [
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/48/33b0e32be2092b393261e5b454dff7741567065b0c5f827834254694d1f0/paper_qa-5.13.0.tar.gz", hash = "sha256:14201657c8aa3a724eb95217a7d88884f7a0a48066261b8410ff0335722b04ce", size = 3268492 }
+sdist = { url = "https://files.pythonhosted.org/packages/54/df/a00b4d685dfa495fbd18d4e15b24d689f31e049e5fe63df8f54b3ab5609f/paper_qa-5.15.0.tar.gz", hash = "sha256:b066b28cf872460fca045b1a27c77c381c5fde383ccff1c098baba96f1db4cef", size = 3271385 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/6b/918979dc8de89fe41960c10d780f95f9e110eb1b0de1c8270f77941526ed/paper_qa-5.13.0-py3-none-any.whl", hash = "sha256:d3372f969ea7d9b58f8977e12ea51770ac4c8efea268aff4c248dc3ef53e9e2b", size = 528522 },
+    { url = "https://files.pythonhosted.org/packages/43/bb/4aeac37d58b5e9ea73898140b1d26bb479c3a855a84f5652bea149a15ef0/paper_qa-5.15.0-py3-none-any.whl", hash = "sha256:3d513460a2bdc1d15748367a23b0fe59fc20e75e79586fbfd2598e26e97dfb6f", size = 529008 },
 ]
 
 [[package]]
@@ -2913,6 +2916,7 @@ wheels = [
 name = "rpds-py"
 version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/0e/4c797078d00dbf1f63af96e4b3beffb67f71230f58442272b4b1962a61c8/rpds_py-0.23.0.tar.gz", hash = "sha256:ffac3b13182dc1bf648cde2982148dc9caf60f3eedec7ae639e05636389ebf5d", size = 26808 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/52/15/23b410a7c69910830334be21c243aecc1e7108fb8e18cbe6d0444c12a3a7/rpds_py-0.23.0-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:827b334702a04df2e1b7fe85ed3784512f6fd3d3a40259180db0c8fdeb20b37f", size = 372317 },
     { url = "https://files.pythonhosted.org/packages/72/8a/d4fcda85b8504b17c5fe0536aef69ba54c72cbf8bfdd4bf204ce7fd7077d/rpds_py-0.23.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:0e1ece346395e127a8024e5c13d304bdd7dbd094e05329a2f4f27ea1fbe14aa3", size = 357029 },

@@ -1,6 +1,6 @@
 from collections.abc import Awaitable, Callable
 
-from llmclient import CommonLLMNames, LLMModel
+from lmi import CommonLLMNames, LLMModel
 from paperqa.settings import Settings
 
 from aviary.core import TASK_DATASET_REGISTRY, TaskDataset
