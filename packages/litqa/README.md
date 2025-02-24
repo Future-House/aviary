@@ -38,12 +38,12 @@ Here is an example of how to use them:
 ```python
 import os
 
-from aviary.env import TaskDataset
 from ldp.agent import SimpleAgent
 from ldp.alg import Evaluator, EvaluatorConfig, MeanMetricsCallback
-
 from paperqa import Settings
-from litqa import TASK_DATASET_NAME
+
+from aviary.env import TaskDataset
+from aviary.envs.litqa.task import TASK_DATASET_NAME
 
 
 async def evaluate(folder_of_litqa_v2_papers: str | os.PathLike) -> None:
