@@ -109,7 +109,7 @@ class StubLitQADataset(LitQATaskDataset):
             (
                 "Politician",
                 ["Technologist", "Plumber"],
-                str(uuid4()),
+                str(uuid4()),  # Emulate how datasets.load_dataset works, it gives a str
                 "Who is Frederick Bates?",
                 "bates.txt",
             ),

@@ -383,7 +383,7 @@ class MultipleChoiceQuestion(BaseModel):
             "question_id": (
                 type(self).model_fields["question_id"].default
                 if self.prompt_without_id
-                else str(self.question_id)
+                else self.question_id
             ),
         }
         if self.prompt_without_options:
