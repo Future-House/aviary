@@ -142,6 +142,58 @@ class LFRQAQuestion(MultipleChoiceQuestion):
 
         return data
 
+    def _extract_best_answer_index(self, text: str) -> int:
+        match = re.search(r"<rating>(\d+)</rating>", text)
+        return int(match.group(1)) if match else 0
+
+    async def grade(  # type: ignore[override]
+        self,
+        proposed_answer: str,
+        paper_search_ids: list[int],
+        llm_name: str,
+        pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
+    ) -> dict:
+        pqa_answer = strip_citations(proposed_answer)
+        pqa_answer_index = 1 if random.random() < 0.5 else 2  # noqa: PLR2004
+        data = {
+            "question": self.question,
+            "answer1": pqa_answer if pqa_answer_index == 1 else self.ideal_answer,
+            "answer2": self.ideal_answer if pqa_answer_index == 1 else pqa_answer,
+        }
+
+        if isinstance(pairwise_eval_llm, str):
+            pairwise_eval_llm = LiteLLMModel(name=pairwise_eval_llm)
+
+        result = await pairwise_eval_llm.call_single(
+            messages=[
+                Message(role="system", content=lfrqa_system_prompt),
+                Message(role="user", content=lfrqa_prompt_template.format(**data)),
+            ],
+        )
+
+        best_answer_index = self._extract_best_answer_index(result.text or "")
+        if best_answer_index == pqa_answer_index:
+            winner, reward = "paperqa", 1
+        elif best_answer_index != 0:
+            winner, reward = "human", 0
+        else:
+            winner, reward = "tie", -1
+
+        return {
+            "llm": llm_name,
+            "evaluator_llm": pairwise_eval_llm.name,
+            "qid": self.question_id,
+            "question": self.question,
+            "pqa_answer": pqa_answer,
+            "human_answer": self.ideal_answer,
+            "winner": winner,
+            "paper_search_ids": paper_search_ids,
+            "gt_doc_ids": self.gt_doc_ids,
+            "pqa_answer_was_answer_1": pqa_answer_index == 1,
+            "complete_evaluator_response": result.text,
+            "reward": reward,
+        }
+
 
 class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
     """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
@@ -160,57 +212,6 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
         self.pairwise_eval_llm = pairwise_eval_llm
 
-    def extract_best_answer_index(self, text: str) -> int:
-        match = re.search(r"<rating>(\d+)</rating>", text)
-        return int(match.group(1)) if match else 0
-
-    async def _evaluate_answer(self) -> dict:
-        """Pairwise evaluation of PaperQA vs Human answer."""
-        paper_search_ids = [int(doc.docname) for doc in self.state.docs.docs.values()]
-
-        pairwise_eval_llm = LiteLLMModel(name=self.pairwise_eval_llm)
-        pqa_answer = strip_citations(self.state.session.answer)
-        pqa_answer_index = 1 if random.random() < 0.5 else 2  # noqa: PLR2004
-        data = {
-            "question": self._query.question,
-            "answer1": pqa_answer
-            if pqa_answer_index == 1
-            else self._query.ideal_answer,
-            "answer2": self._query.ideal_answer
-            if pqa_answer_index == 1
-            else pqa_answer,
-        }
-
-        result = await pairwise_eval_llm.call_single(
-            messages=[
-                Message(role="system", content=lfrqa_system_prompt),
-                Message(role="user", content=lfrqa_prompt_template.format(**data)),
-            ],
-        )
-
-        best_answer_index = self.extract_best_answer_index(result.text or "")
-        if best_answer_index == pqa_answer_index:
-            winner, reward = "paperqa", self._rewards["win"]
-        elif best_answer_index != 0:
-            winner, reward = "human", self._rewards["lose"]
-        else:
-            winner, reward = "tie", self._rewards["tie"]
-
-        return {
-            "llm": self._settings.llm,
-            "evaluator_llm": self.pairwise_eval_llm,
-            "qid": self._query.question_id,
-            "question": self._query.question,
-            "pqa_answer": pqa_answer,
-            "human_answer": self._query.ideal_answer,
-            "winner": winner,
-            "paper_search_ids": paper_search_ids,
-            "gt_doc_ids": self._query.gt_doc_ids,
-            "pqa_answer_was_answer_1": pqa_answer_index == 1,
-            "complete_evaluator_response": result.text,
-            "reward": reward,
-        }
-
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
@@ -218,7 +219,14 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         if not done:
             return messages, reward, done, truncated
 
-        evaluation = await self._evaluate_answer()
+        evaluation = await self._query.grade(
+            proposed_answer=self.state.session.answer,
+            paper_search_ids=[
+                int(doc.docname) for doc in self.state.docs.docs.values()
+            ],
+            llm_name=self._settings.llm,
+            pairwise_eval_llm=self.pairwise_eval_llm,
+        )
         if evaluation_callback := self._evaluation_callback:
             await evaluation_callback(evaluation)
 
