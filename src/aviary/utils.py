@@ -8,6 +8,7 @@ from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
 from pydantic_core import core_schema as cs
@@ -285,10 +286,17 @@ class MultipleChoiceQuestion(BaseModel):
         description="Question to answer (without multiple choice options)."
     )
 
-    question_id: str = Field(
+    question_id: str | UUID = Field(
         default="Q", description="Question identifier used in the prompt."
     )
 
+    prompt_without_id: bool = Field(
+        default=False,
+        description=(
+            "Opt-in flag to exclude question_id from the question_prompt,"
+            " if worried about the model memorizing question IDs."
+        ),
+    )
     prompt_without_options: bool = Field(
         default=False,
         description=(
@@ -370,17 +378,21 @@ class MultipleChoiceQuestion(BaseModel):
 
     @property
     def question_prompt(self) -> str:
+        template_vars = {
+            "question": self.question,
+            "question_id": (
+                type(self).model_fields["question_id"].default
+                if self.prompt_without_id
+                else self.question_id
+            ),
+        }
         if self.prompt_without_options:
-            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(
-                question=self.question,
-                question_id=self.question_id,
-            )
+            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(**template_vars)
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
-            question=self.question,
-            question_id=self.question_id,
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
             ]),
+            **template_vars,
         )
 
     @staticmethod
