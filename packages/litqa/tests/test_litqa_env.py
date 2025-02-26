@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import ClassVar, cast
 from unittest.mock import patch
+from uuid import UUID, uuid4
 
 import pytest
 from ldp.agent import SimpleAgent
@@ -70,10 +71,12 @@ def test_creating_litqa_questions() -> None:
     assert len(eval_split) > 3
     assert [
         MultipleChoiceQuestion(
+            question_id=UUID(cast(str, row.id)),
             question=cast(str, row.question),
             options=cast(list[str], row.distractors),
             ideal_answer=cast(str, row.ideal),
             shuffle_seed=42,
+            prompt_without_id=True,
         ).question_prompt
         for row in eval_split[:3].itertuples()
     ] == [
@@ -102,10 +105,11 @@ class StubLitQADataset(LitQATaskDataset):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.data: list[tuple[str, str | list[str], str, str]] = [
+        self.data: list[tuple[str, str | list[str], str, str, str]] = [
             (
                 "Politician",
                 ["Technologist", "Plumber"],
+                str(uuid4()),
                 "Who is Frederick Bates?",
                 "bates.txt",
             ),
@@ -115,12 +119,14 @@ class StubLitQADataset(LitQATaskDataset):
                     "Generating images of cats",
                     "Simple explanations of internet searches",
                 ],
+                str(uuid4()),
                 "How can you use XAI for chemical property prediction?",
                 "paper.pdf",
             ),
             (
                 "Maple Leaf",
                 ["The Stars and Stripes", "The Blue and Yellow", "The Southern Cross"],
+                str(uuid4()),
                 "What is the national flag of Canada?",
                 "flag_day.html",
             ),
@@ -130,8 +136,9 @@ class StubLitQADataset(LitQATaskDataset):
         return self._make_gradable_environment(
             ideal_answer=self.data[idx][0],
             distractors=self.data[idx][1],
-            question=self.data[idx][2],
-            sources=self.data[idx][3],
+            question_id=UUID(self.data[idx][2]),
+            question=self.data[idx][3],
+            sources=self.data[idx][4],
         )
 
     def __len__(self) -> int:

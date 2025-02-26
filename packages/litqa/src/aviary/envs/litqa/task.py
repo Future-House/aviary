@@ -5,6 +5,7 @@ from abc import ABC
 from collections.abc import Iterable, Mapping, Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, assert_never, cast
+from uuid import UUID
 
 from ldp.alg import (
     Callback,
@@ -254,10 +255,12 @@ class LitQATaskDataset(
         self,
         ideal_answer: str,
         distractors: str | list[str],
+        question_id: str | UUID,
         question: str,
         sources: str | list[str] | None = None,
     ) -> GradablePaperQAEnvironment:
         mc_question = MultipleChoiceQuestion(
+            question_id=question_id,
             question=question,
             options=(
                 distractors
@@ -265,6 +268,7 @@ class LitQATaskDataset(
                 else MultipleChoiceQuestion.split_options(distractors)
             ),
             ideal_answer=ideal_answer,
+            prompt_without_id=True,
             **(self._question_kwargs or {}),
         )
         return GradablePaperQAEnvironment(
@@ -385,6 +389,7 @@ class LitQAv2TaskDataset(LitQATaskDataset):
         return self._make_gradable_environment(
             ideal_answer=self.data.iloc[idx].ideal,
             distractors=self.data.iloc[idx].distractors,
+            question_id=UUID(self.data.iloc[idx].id),
             question=self.data.iloc[idx].question,
             sources=sources,
         )
