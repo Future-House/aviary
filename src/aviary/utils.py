@@ -8,6 +8,7 @@ from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
 from pydantic_core import core_schema as cs
@@ -285,7 +286,7 @@ class MultipleChoiceQuestion(BaseModel):
         description="Question to answer (without multiple choice options)."
     )
 
-    question_id: str = Field(
+    question_id: str | UUID = Field(
         default="Q", description="Question identifier used in the prompt."
     )
 
@@ -373,11 +374,11 @@ class MultipleChoiceQuestion(BaseModel):
         if self.prompt_without_options:
             return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(
                 question=self.question,
-                question_id=self.question_id,
+                question_id=str(self.question_id),
             )
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             question=self.question,
-            question_id=self.question_id,
+            question_id=str(self.question_id),
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
             ]),
