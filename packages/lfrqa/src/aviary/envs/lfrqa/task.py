@@ -31,13 +31,8 @@ class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
 
     def get_new_env_by_idx(self, idx: int) -> LFRQAPairwiseEvalEnv:
         """Create a new environment instance for the given index."""
-        question = self.data[idx]
-
         return LFRQAPairwiseEvalEnv(
-            qid=question.qid,
-            question=question.question,
-            human_answer=question.answer,
-            gt_doc_ids=question.gt_doc_ids,
+            query=self.data[idx],
             pairwise_eval_llm=self.pairwise_eval_llm,
             settings=self._settings,
             rewards=self._rewards,

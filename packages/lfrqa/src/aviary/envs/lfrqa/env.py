@@ -6,16 +6,16 @@ __all__ = [
 import logging
 import random
 import re
-from uuid import UUID
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
 from paperqa.utils import strip_citations
-from pydantic import BaseModel, model_validator
+from pydantic import model_validator
 
 from aviary.core import (
     Message,
     Messages,
+    MultipleChoiceQuestion,
     ToolRequestMessage,
 )
 from aviary.envs.litqa import GradablePaperQAEnvironment
@@ -118,27 +118,46 @@ lfrqa_prompt_template = (
 )
 
 
+class LFRQAQuestion(MultipleChoiceQuestion):
+    gt_doc_ids: list[int]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_fields(cls, data: dict) -> dict:
+        if data.get("gold_doc_ids") and not data.get("gt_doc_ids"):
+            data["gt_doc_ids"] = data["gold_doc_ids"]
+        if isinstance(data["gt_doc_ids"], str):
+            data["gt_doc_ids"] = data["gt_doc_ids"].strip("[]").split(",")
+            data["gt_doc_ids"] = [int(_id) for _id in data["gt_doc_ids"]]
+        del data["gold_doc_ids"]
+
+        data["ideal_answer"] = data["answer"]
+        del data["answer"]
+
+        data["question_id"] = data["qid"]
+        del data["qid"]
+
+        data["options"] = []
+        data["prompt_without_options"] = True
+
+        return data
+
+
 class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
     """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
 
     def __init__(
         self,
+        query: LFRQAQuestion,
         *args,
-        qid: str | UUID,
-        question: str,
-        human_answer: str,
-        gt_doc_ids: list[int],
         pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
         **kwargs,
     ):
-        kwargs["query"] = question
+        kwargs["query"] = query
         kwargs["docs"] = Docs()
         super().__init__(*args, **kwargs)
 
-        self.qid = qid
-        self.question = question
-        self.human_answer = human_answer
-        self.gt_doc_ids = gt_doc_ids
+        self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
         self.pairwise_eval_llm = pairwise_eval_llm
 
     def extract_best_answer_index(self, text: str) -> int:
@@ -153,9 +172,13 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         pqa_answer = strip_citations(self.state.session.answer)
         pqa_answer_index = 1 if random.random() < 0.5 else 2  # noqa: PLR2004
         data = {
-            "question": self.question,
-            "answer1": pqa_answer if pqa_answer_index == 1 else self.human_answer,
-            "answer2": self.human_answer if pqa_answer_index == 1 else pqa_answer,
+            "question": self._query.question,
+            "answer1": pqa_answer
+            if pqa_answer_index == 1
+            else self._query.ideal_answer,
+            "answer2": self._query.ideal_answer
+            if pqa_answer_index == 1
+            else pqa_answer,
         }
 
         result = await pairwise_eval_llm.call_single(
@@ -176,13 +199,13 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         return {
             "llm": self._settings.llm,
             "evaluator_llm": self.pairwise_eval_llm,
-            "qid": self.qid,
-            "question": self.question,
+            "qid": self._query.question_id,
+            "question": self._query.question,
             "pqa_answer": pqa_answer,
-            "human_answer": self.human_answer,
+            "human_answer": self._query.ideal_answer,
             "winner": winner,
             "paper_search_ids": paper_search_ids,
-            "gt_doc_ids": self.gt_doc_ids,
+            "gt_doc_ids": self._query.gt_doc_ids,
             "pqa_answer_was_answer_1": pqa_answer_index == 1,
             "complete_evaluator_response": result.text,
             "reward": reward,
@@ -200,20 +223,3 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             await evaluation_callback(evaluation)
 
         return messages, evaluation["reward"], done, truncated
-
-
-class LFRQAQuestion(BaseModel):
-    qid: str | UUID
-    question: str
-    answer: str
-    gt_doc_ids: list[int]
-
-    @model_validator(mode="before")
-    @classmethod
-    def _validate_gt_doc_ids(cls, data: dict) -> dict:
-        if data.get("gold_doc_ids") and not data.get("gt_doc_ids"):
-            data["gt_doc_ids"] = data["gold_doc_ids"]
-        if isinstance(data["gt_doc_ids"], str):
-            data["gt_doc_ids"] = data["gt_doc_ids"].strip("[]").split(",")
-            data["gt_doc_ids"] = [int(_id) for _id in data["gt_doc_ids"]]
-        return data

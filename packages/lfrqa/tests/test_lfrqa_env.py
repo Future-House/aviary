@@ -14,9 +14,7 @@ def test_env_construction() -> None:
         )[["qid", "question", "answer", "gold_doc_ids"]].to_dict(orient="records")
     ]
 
-    dataset = LFRQATaskDataset(
-        data=data,
-    )
+    dataset = LFRQATaskDataset(data=data)
 
     env = dataset.get_new_env_by_idx(0)
     assert isinstance(env, LFRQAPairwiseEvalEnv)
