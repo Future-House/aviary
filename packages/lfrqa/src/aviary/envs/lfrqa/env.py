@@ -12,7 +12,7 @@ from copy import deepcopy
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
 from paperqa.utils import strip_citations
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from aviary.core import (
     Message,
@@ -122,6 +122,9 @@ lfrqa_prompt_template = (
 
 class LFRQAQuestion(MultipleChoiceQuestion):
     gt_doc_ids: list[int]
+    grading_rewards: dict[str, float] = Field(
+        default_factory=lambda: {"win": 1.0, "tie": 0.0, "lose": -1.0}
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -176,13 +179,13 @@ class LFRQAQuestion(MultipleChoiceQuestion):
         )
 
         best_answer_index = self._extract_best_answer_index(result.text or "")
-        if best_answer_index == pqa_answer_index:
-            winner, reward = "paperqa", 1
-        elif best_answer_index != 0:
-            winner, reward = "human", 0
-        else:
-            winner, reward = "tie", -1
-
+        winner = (
+            "paperqa"
+            if best_answer_index == pqa_answer_index
+            else "human"
+            if best_answer_index != 0
+            else "tie"
+        )
         return {
             "evaluator_llm": pairwise_eval_llm.name,
             "qid": self.question_id,
@@ -194,7 +197,6 @@ class LFRQAQuestion(MultipleChoiceQuestion):
             "gt_doc_ids": self.gt_doc_ids,
             "pqa_answer_was_answer_1": pqa_answer_index == 1,
             "complete_evaluator_response": result.text,
-            "reward": reward,
         }
 
 
@@ -230,7 +232,17 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             pairwise_eval_llm=self.pairwise_eval_llm,
         )
         evaluation["llm"] = self._settings.llm
+        reward = (
+            self._rewards["win"]
+            if evaluation["winner"] == "paperqa"
+            else (
+                self._rewards["lose"]
+                if evaluation["winner"] == "human"
+                else self._rewards["unsure"]
+            )
+        )
+        evaluation["reward"] = reward
         if evaluation_callback := self._evaluation_callback:
             await evaluation_callback(evaluation)
 
-        return messages, evaluation["reward"], done, truncated
+        return messages, reward, done, truncated
