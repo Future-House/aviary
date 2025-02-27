@@ -10,7 +10,6 @@ from collections.abc import Mapping
 from typing import Any
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
-from paperqa.docs import Docs
 from paperqa.utils import strip_citations
 from pydantic import Field, model_validator
 
@@ -215,7 +214,6 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         **kwargs,
     ):
         kwargs["query"] = query
-        kwargs["docs"] = Docs()
         super().__init__(*args, **kwargs)
 
         self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
