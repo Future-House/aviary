@@ -217,13 +217,7 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
         self.pairwise_eval_llm = pairwise_eval_llm
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
-        messages, reward, done, truncated = await super().step(action)
-        if not done:
-            return messages, reward, done, truncated
-
+    async def _evaluate_answer(self) -> dict:
         evaluation = await self._query.grade(
             proposed_answer=self.state.session.answer,
             paper_search_ids=[
@@ -242,7 +236,18 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             )
         )
         evaluation["reward"] = reward
+
+        return evaluation
+
+    async def step(
+        self, action: ToolRequestMessage
+    ) -> tuple[Messages, float, bool, bool]:
+        messages, reward, done, truncated = await super(
+            GradablePaperQAEnvironment, self
+        ).step(action)
+        if not done:
+            return messages, reward, done, truncated
+        evaluation = await self._evaluate_answer()
         if evaluation_callback := self._evaluation_callback:
             await evaluation_callback(evaluation)
-
-        return messages, reward, done, truncated
+        return messages, evaluation["reward"], done, truncated
