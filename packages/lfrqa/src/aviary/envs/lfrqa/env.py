@@ -6,6 +6,8 @@ __all__ = [
 import logging
 import random
 import re
+from collections.abc import Mapping
+from copy import deepcopy
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
@@ -123,7 +125,10 @@ class LFRQAQuestion(MultipleChoiceQuestion):
 
     @model_validator(mode="before")
     @classmethod
-    def _validate_fields(cls, data: dict) -> dict:
+    def _validate_fields(cls, data: Mapping) -> dict:
+        data = deepcopy(data)  # Avoid mutating input
+        data = dict(data)
+
         if data.get("gold_doc_ids") and not data.get("gt_doc_ids"):
             data["gt_doc_ids"] = data["gold_doc_ids"]
         if isinstance(data["gt_doc_ids"], str):
