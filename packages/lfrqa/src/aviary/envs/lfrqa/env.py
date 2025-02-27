@@ -7,6 +7,7 @@ import logging
 import random
 import re
 from collections.abc import Mapping
+from typing import Any
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
