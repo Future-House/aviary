@@ -150,7 +150,6 @@ class LFRQAQuestion(MultipleChoiceQuestion):
         self,
         proposed_answer: str,
         paper_search_ids: list[int],
-        llm_name: str,
         pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
     ) -> dict:
         pqa_answer = strip_citations(proposed_answer)
@@ -180,7 +179,6 @@ class LFRQAQuestion(MultipleChoiceQuestion):
             winner, reward = "tie", -1
 
         return {
-            "llm": llm_name,
             "evaluator_llm": pairwise_eval_llm.name,
             "qid": self.question_id,
             "question": self.question,
@@ -224,9 +222,9 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             paper_search_ids=[
                 int(doc.docname) for doc in self.state.docs.docs.values()
             ],
-            llm_name=self._settings.llm,
             pairwise_eval_llm=self.pairwise_eval_llm,
         )
+        evaluation["llm"] = self._settings.llm
         if evaluation_callback := self._evaluation_callback:
             await evaluation_callback(evaluation)
 
