@@ -6,16 +6,18 @@ __all__ = [
 import logging
 import random
 import re
-from uuid import UUID
+from collections.abc import Mapping
+from typing import Any
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
 from paperqa.utils import strip_citations
-from pydantic import BaseModel, model_validator
+from pydantic import Field, model_validator
 
 from aviary.core import (
     Message,
     Messages,
+    MultipleChoiceQuestion,
     ToolRequestMessage,
 )
 from aviary.envs.litqa import GradablePaperQAEnvironment
@@ -118,45 +120,60 @@ lfrqa_prompt_template = (
 )
 
 
-class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
-    """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
+class LFRQAQuestion(MultipleChoiceQuestion):
+    gt_doc_ids: list[int]
+    grading_rewards: dict[str, float] = Field(
+        default_factory=lambda: {"win": 1.0, "tie": 0.0, "lose": -1.0}
+    )
 
-    def __init__(
-        self,
-        *args,
-        qid: str | UUID,
-        question: str,
-        human_answer: str,
-        gt_doc_ids: list[int],
-        pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
-        **kwargs,
-    ):
-        kwargs["query"] = question
-        kwargs["docs"] = Docs()
-        super().__init__(*args, **kwargs)
+    @model_validator(mode="before")
+    @classmethod
+    def _validate_fields(cls, data: Mapping[str, Any]) -> dict[str, Any]:
+        processed_data = {
+            "options": [],
+            "prompt_without_options": True,
+        }
 
-        self.qid = qid
-        self.question = question
-        self.human_answer = human_answer
-        self.gt_doc_ids = gt_doc_ids
-        self.pairwise_eval_llm = pairwise_eval_llm
+        for k, v in data.items():
+            if k == "answer":
+                processed_data["ideal_answer"] = v
+            elif k == "qid":
+                processed_data["question_id"] = v
+            elif k == "gold_doc_ids":
+                processed_data["gt_doc_ids"] = v
+            else:
+                processed_data[k] = v
 
-    def extract_best_answer_index(self, text: str) -> int:
+        if isinstance(processed_data["gt_doc_ids"], str):
+            processed_data["gt_doc_ids"] = (
+                processed_data["gt_doc_ids"].strip("[]").split(",")
+            )
+            processed_data["gt_doc_ids"] = [
+                int(_id) for _id in processed_data["gt_doc_ids"]
+            ]
+
+        return processed_data
+
+    def _extract_best_answer_index(self, text: str) -> int:
         match = re.search(r"<rating>(\d+)</rating>", text)
         return int(match.group(1)) if match else 0
 
-    async def _evaluate_answer(self) -> dict:
-        """Pairwise evaluation of PaperQA vs Human answer."""
-        paper_search_ids = [int(doc.docname) for doc in self.state.docs.docs.values()]
-
-        pairwise_eval_llm = LiteLLMModel(name=self.pairwise_eval_llm)
-        pqa_answer = strip_citations(self.state.session.answer)
+    async def grade(  # type: ignore[override]
+        self,
+        proposed_answer: str,
+        paper_search_ids: list[int],
+        pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
+    ) -> dict[str, Any]:
+        pqa_answer = strip_citations(proposed_answer)
         pqa_answer_index = 1 if random.random() < 0.5 else 2  # noqa: PLR2004
         data = {
             "question": self.question,
-            "answer1": pqa_answer if pqa_answer_index == 1 else self.human_answer,
-            "answer2": self.human_answer if pqa_answer_index == 1 else pqa_answer,
+            "answer1": pqa_answer if pqa_answer_index == 1 else self.ideal_answer,
+            "answer2": self.ideal_answer if pqa_answer_index == 1 else pqa_answer,
         }
+
+        if isinstance(pairwise_eval_llm, str):
+            pairwise_eval_llm = LiteLLMModel(name=pairwise_eval_llm)
 
         result = await pairwise_eval_llm.call_single(
             messages=[
@@ -165,55 +182,76 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             ],
         )
 
-        best_answer_index = self.extract_best_answer_index(result.text or "")
-        if best_answer_index == pqa_answer_index:
-            winner, reward = "paperqa", self._rewards["win"]
-        elif best_answer_index != 0:
-            winner, reward = "human", self._rewards["lose"]
-        else:
-            winner, reward = "tie", self._rewards["tie"]
-
+        best_answer_index = self._extract_best_answer_index(result.text or "")
+        winner = (
+            "paperqa"
+            if best_answer_index == pqa_answer_index
+            else "human"
+            if best_answer_index != 0
+            else "tie"
+        )
         return {
-            "llm": self._settings.llm,
-            "evaluator_llm": self.pairwise_eval_llm,
-            "qid": self.qid,
+            "evaluator_llm": pairwise_eval_llm.name,
+            "qid": self.question_id,
             "question": self.question,
             "pqa_answer": pqa_answer,
-            "human_answer": self.human_answer,
+            "human_answer": self.ideal_answer,
             "winner": winner,
             "paper_search_ids": paper_search_ids,
             "gt_doc_ids": self.gt_doc_ids,
             "pqa_answer_was_answer_1": pqa_answer_index == 1,
             "complete_evaluator_response": result.text,
-            "reward": reward,
         }
+
+
+class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
+    """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
+
+    def __init__(
+        self,
+        query: LFRQAQuestion,
+        *args,
+        pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
+        **kwargs,
+    ):
+        kwargs["query"] = query
+        kwargs["docs"] = Docs()
+        super().__init__(*args, **kwargs)
+
+        self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
+        self.pairwise_eval_llm = pairwise_eval_llm
+
+    async def _evaluate_answer(self) -> dict:
+        evaluation = await self._query.grade(
+            proposed_answer=self.state.session.answer,
+            paper_search_ids=[
+                int(doc.docname) for doc in self.state.docs.docs.values()
+            ],
+            pairwise_eval_llm=self.pairwise_eval_llm,
+        )
+        evaluation["llm"] = self._settings.llm
+        reward = (
+            self._rewards["win"]
+            if evaluation["winner"] == "paperqa"
+            else (
+                self._rewards["lose"]
+                if evaluation["winner"] == "human"
+                else self._rewards["unsure"]
+            )
+        )
+        evaluation["reward"] = reward
+
+        return evaluation
 
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[Messages, float, bool, bool]:
-        messages, reward, done, truncated = await super().step(action)
+        messages, reward, done, truncated = await super(
+            GradablePaperQAEnvironment, self
+        ).step(action)
         if not done:
             return messages, reward, done, truncated
-
         evaluation = await self._evaluate_answer()
         if evaluation_callback := self._evaluation_callback:
             await evaluation_callback(evaluation)
-
         return messages, evaluation["reward"], done, truncated
-
-
-class LFRQAQuestion(BaseModel):
-    qid: str | UUID
-    question: str
-    answer: str
-    gt_doc_ids: list[int]
-
-    @model_validator(mode="before")
-    @classmethod
-    def _validate_gt_doc_ids(cls, data: dict) -> dict:
-        if data.get("gold_doc_ids") and not data.get("gt_doc_ids"):
-            data["gt_doc_ids"] = data["gold_doc_ids"]
-        if isinstance(data["gt_doc_ids"], str):
-            data["gt_doc_ids"] = data["gt_doc_ids"].strip("[]").split(",")
-            data["gt_doc_ids"] = [int(_id) for _id in data["gt_doc_ids"]]
-        return data
