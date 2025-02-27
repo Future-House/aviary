@@ -206,6 +206,8 @@ class LFRQAQuestion(MultipleChoiceQuestion):
 class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
     """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
 
+    _query: LFRQAQuestion  # type: ignore[mutable-override]
+
     def __init__(
         self,
         query: LFRQAQuestion,
@@ -215,8 +217,6 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
     ):
         kwargs["query"] = query
         super().__init__(*args, **kwargs)
-
-        self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
         self.pairwise_eval_llm = pairwise_eval_llm
 
     async def _evaluate_answer(self) -> dict:
