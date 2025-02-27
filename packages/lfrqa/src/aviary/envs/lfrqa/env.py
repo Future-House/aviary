@@ -162,7 +162,7 @@ class LFRQAQuestion(MultipleChoiceQuestion):
         proposed_answer: str,
         paper_search_ids: list[int],
         pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
-    ) -> dict:
+    ) -> dict[str, Any]:
         pqa_answer = strip_citations(proposed_answer)
         pqa_answer_index = 1 if random.random() < 0.5 else 2  # noqa: PLR2004
         data = {
