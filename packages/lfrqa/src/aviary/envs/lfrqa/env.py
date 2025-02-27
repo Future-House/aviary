@@ -10,7 +10,6 @@ from collections.abc import Mapping
 from typing import Any
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
-from paperqa.docs import Docs
 from paperqa.utils import strip_citations
 from pydantic import Field, model_validator
 
@@ -207,6 +206,8 @@ class LFRQAQuestion(MultipleChoiceQuestion):
 class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
     """Environment to evaluate paperqa's vs human's answers on Long Form RAG QA questions."""
 
+    _query: LFRQAQuestion  # type: ignore[mutable-override]
+
     def __init__(
         self,
         query: LFRQAQuestion,
@@ -215,10 +216,7 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         **kwargs,
     ):
         kwargs["query"] = query
-        kwargs["docs"] = Docs()
         super().__init__(*args, **kwargs)
-
-        self._query: LFRQAQuestion = query  # type: ignore[mutable-override]
         self.pairwise_eval_llm = pairwise_eval_llm
 
     async def _evaluate_answer(self) -> dict:
