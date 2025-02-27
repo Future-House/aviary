@@ -151,6 +151,18 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
             truncated,
         )
 
+    async def get_id(self) -> str | UUID:
+        if (
+            isinstance(self._query, str)
+            or self._query.question_id
+            == MultipleChoiceQuestion.model_fields["question_id"].default
+        ):
+            raise ValueError(
+                "A multiple choice question with a non-default question ID was not"
+                " configured."
+            )
+        return self._query.question_id
+
     def __deepcopy__(self, memo) -> Self:
         copy_state = deepcopy(self.state, memo)
         # We don't know the side effects of deep copying a litellm.Router,
