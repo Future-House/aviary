@@ -127,7 +127,7 @@ class LFRQAQuestion(MultipleChoiceQuestion):
 
     @model_validator(mode="before")
     @classmethod
-    def _validate_fields(cls, data: Mapping) -> dict:
+    def _validate_fields(cls, data: Mapping[str, Any]) -> dict[str, Any]:
         processed_data = {
             "options": [],
             "prompt_without_options": True,
