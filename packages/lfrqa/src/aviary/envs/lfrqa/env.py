@@ -7,7 +7,6 @@ import logging
 import random
 import re
 from collections.abc import Mapping
-from copy import deepcopy
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.docs import Docs
@@ -129,26 +128,30 @@ class LFRQAQuestion(MultipleChoiceQuestion):
     @model_validator(mode="before")
     @classmethod
     def _validate_fields(cls, data: Mapping) -> dict:
-        data = deepcopy(data)  # Avoid mutating input
-        data = dict(data)
+        processed_data = {
+            "options": [],
+            "prompt_without_options": True,
+        }
 
-        if data.get("gold_doc_ids") and not data.get("gt_doc_ids"):
-            data["gt_doc_ids"] = data["gold_doc_ids"]
-        if isinstance(data["gt_doc_ids"], str):
-            data["gt_doc_ids"] = data["gt_doc_ids"].strip("[]").split(",")
-            data["gt_doc_ids"] = [int(_id) for _id in data["gt_doc_ids"]]
-        del data["gold_doc_ids"]
+        for k, v in data.items():
+            if k == "answer":
+                processed_data["ideal_answer"] = v
+            elif k == "qid":
+                processed_data["question_id"] = v
+            elif k == "gold_doc_ids":
+                processed_data["gt_doc_ids"] = v
+            else:
+                processed_data[k] = v
 
-        data["ideal_answer"] = data["answer"]
-        del data["answer"]
+        if isinstance(processed_data["gt_doc_ids"], str):
+            processed_data["gt_doc_ids"] = (
+                processed_data["gt_doc_ids"].strip("[]").split(",")
+            )
+            processed_data["gt_doc_ids"] = [
+                int(_id) for _id in processed_data["gt_doc_ids"]
+            ]
 
-        data["question_id"] = data["qid"]
-        del data["qid"]
-
-        data["options"] = []
-        data["prompt_without_options"] = True
-
-        return data
+        return processed_data
 
     def _extract_best_answer_index(self, text: str) -> int:
         match = re.search(r"<rating>(\d+)</rating>", text)
