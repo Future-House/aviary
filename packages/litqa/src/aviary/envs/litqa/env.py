@@ -130,7 +130,7 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
         # - Don't suppress the exception, which leads to the trajectory failing, and
         #   removes it from the learnable pool. This is the only safe default behavior.
         evaluation, self.state.session.graded_answer = await cast(
-            MultipleChoiceQuestion, self._query
+            "MultipleChoiceQuestion", self._query
         ).grade(self.state.session.answer)
         return evaluation  # type: ignore[return-value]
 
@@ -146,7 +146,7 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
 
         return (
             messages,
-            reward + self._rewards[cast(MultipleChoiceEvaluation, evaluation).value],
+            reward + self._rewards[cast("MultipleChoiceEvaluation", evaluation).value],
             done,
             truncated,
         )

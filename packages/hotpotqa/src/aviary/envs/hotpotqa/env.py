@@ -77,8 +77,10 @@ class HotPotQAEnvState(BaseModel):
     )
     last_action_is_lookup: bool = Field(
         default=False,
-        description="Whether the last action was a lookup action."
-        "Default is False, as after reset the agent has not yet taken any action.",
+        description=(
+            "Whether the last action was a lookup action."
+            "Default is False, as after reset the agent has not yet taken any action."
+        ),
     )
     last_lookup: str | None = Field(
         default=None, description="The last lookup keyword."
@@ -315,7 +317,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         # We accumulate reward across all tool calls in a step
         self.state.reward = 0.0
         response_messages = cast(
-            Messages,
+            "Messages",
             # Non-concurrent since things like search -> lookup need to be run in order.
             # NOTE: Handling tool exceptions here keeps the trajectory going, but I don't
             # think the returned message is useful to the agent/learning. Disabling for now.
@@ -414,7 +416,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         if result_divs:  # mismatch
             result_titles = [clean_str(div.get_text().strip()) for div in result_divs]
             self.state.page = None
-            return f"Search for {entity!r} returned no results. Similar: {result_titles[:5]}."
+            return (
+                f"Search for {entity!r} returned no results. Similar:"
+                f" {result_titles[:5]}."
+            )
 
         page = [p.get_text().strip() for p in soup.find_all("p") + soup.find_all("ul")]
         if any("may refer to:" in p for p in page):  # Recurse

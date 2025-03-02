@@ -71,10 +71,10 @@ def test_creating_litqa_questions() -> None:
     assert len(eval_split) > 3
     assert [
         MultipleChoiceQuestion(
-            question_id=UUID(cast(str, row.id)),
-            question=cast(str, row.question),
-            options=cast(list[str], row.distractors),
-            ideal_answer=cast(str, row.ideal),
+            question_id=UUID(cast("str", row.id)),
+            question=cast("str", row.question),
+            options=cast("list[str]", row.distractors),
+            ideal_answer=cast("str", row.ideal),
             shuffle_seed=42,
             prompt_without_id=True,
         ).question_prompt
@@ -373,7 +373,7 @@ class TestGradablePaperQAEnvironment:
                 max_year=2024,
             ),
             ToolCall.from_name(
-                "gather_evidence", question=cast(str, stub_gradable_env._query)
+                "gather_evidence", question=cast("str", stub_gradable_env._query)
             ),
         ):
             await stub_gradable_env.step(ToolRequestMessage(tool_calls=[tool_call]))

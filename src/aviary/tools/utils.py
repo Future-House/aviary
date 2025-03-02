@@ -47,7 +47,7 @@ class ToolSelector:
                     " Please: `pip install aviary[llm]`."
                 ) from e
         self._model_name = model_name
-        self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
+        self._bound_acompletion = partial(cast("Callable", acompletion), model_name)
         self._ledger = ToolSelectorLedger() if accum_messages else None
 
     # SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
