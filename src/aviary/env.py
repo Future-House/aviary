@@ -150,7 +150,7 @@ class Environment(ABC, Generic[TEnvState]):
             else:
                 invalid.append(tool_call)
         return cast(
-            tuple[ToolRequestMessage, ToolRequestMessage],
+            "tuple[ToolRequestMessage, ToolRequestMessage]",
             tuple(
                 ToolRequestMessage(
                     role=message.role,
