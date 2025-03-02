@@ -73,7 +73,8 @@ class CalculatorEnv(Environment[None]):
                 [
                     Message(
                         content=(
-                            f"Must call one of the provided tools ({self.calculator.__name__} or"
+                            "Must call one of the provided tools"
+                            f" ({self.calculator.__name__} or"
                             f" {self.submit_answer.__name__})."
                         )
                     )

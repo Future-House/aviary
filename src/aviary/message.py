@@ -145,10 +145,12 @@ class Message(BaseModel):
                 {
                     "type": "image_url",
                     "image_url": {
-                        "url": validate_base64_image(image)
-                        # If image is a string, assume it's already a base64 encoded image
-                        if isinstance(image, str)
-                        else encode_image_to_base64(image)
+                        "url": (
+                            validate_base64_image(image)
+                            # If image is a string, assume it's already a base64 encoded image
+                            if isinstance(image, str)
+                            else encode_image_to_base64(image)
+                        )
                     },
                 }
                 for image in images

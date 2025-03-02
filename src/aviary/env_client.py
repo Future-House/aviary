@@ -160,4 +160,4 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
         if self._len is None:
             raise TypeError("Server did not define dataset length.")
 
-        return cast(int, self._len)
+        return cast("int", self._len)

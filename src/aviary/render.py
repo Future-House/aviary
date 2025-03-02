@@ -45,14 +45,16 @@ class Renderer(BaseModel):
     def _render(self) -> dict[str, dict[str, Any]]:
         """Get a mapping of filenames to serialized frame with renderer metadata."""
         return {
-            self._make_filename(i): frame.model_dump()
-            | {
-                "index": i + 1,
-                "prev_frame": self._make_filename(i - 1) if i > 0 else None,
-                "next_frame": (
-                    self._make_filename(i + 1) if i + 1 < len(self.frames) else None
-                ),
-            }
+            self._make_filename(i): (
+                frame.model_dump()
+                | {
+                    "index": i + 1,
+                    "prev_frame": self._make_filename(i - 1) if i > 0 else None,
+                    "next_frame": (
+                        self._make_filename(i + 1) if i + 1 < len(self.frames) else None
+                    ),
+                }
+            )
             for i, frame in enumerate(self.frames)
         }
 
