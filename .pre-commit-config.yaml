@@ -19,13 +19,13 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.6
+    rev: v0.9.9
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.1
+    rev: v3.5.3
     hooks:
       - id: prettier
   - repo: https://github.com/Yelp/detect-secrets
@@ -66,11 +66,11 @@ repos:
       - id: nb-clean
         args: [--preserve-cell-outputs, --remove-empty-cells]
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.01.10
+    rev: 2025.02.24
     hooks:
       - id: validate-pyproject
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.0
+    rev: 0.6.3
     hooks:
       - id: uv-lock
   - repo: local # Use local to ensure we don't pull aviary from PyPI

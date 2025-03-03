@@ -36,7 +36,8 @@ from tests.conftest import VCR_DEFAULT_MATCH_ON
         pytest.param(
             "Based on all factors considered, the most compelling answer is Gerald, C",
             "C",
-            "Which of the following is most likely true:\n\nA) Piggie, B) Pigeon, C) Gerald\n",
+            "Which of the following is most likely true:\n\nA) Piggie, B) Pigeon, C)"
+            " Gerald\n",
             "llm",
             True,
             id="llm basic",
@@ -59,12 +60,13 @@ async def test_eval_answer(
         pytest.param("F", ["B", "C"], None, id="not in options"),
         pytest.param("A or B", ["A", "B", "C"], None, id="gave-two"),
         pytest.param(
-            "Based on the context given, Serif et al. (2026) claim that "
-            "the overwhelming cause of regime collapse arises from economic factors. "
-            "Yet, most other scholars (Gerald and Robinson for example) believe the collapse "
-            "was due to social unrest because of the prolonged epidemic of 2025. I tend to agree "
-            "with the majority - although I can see both sides. Thus my response "
-            "is that the social unrest was the significant factor in the collapse of the regime.",
+            "Based on the context given, Serif et al. (2026) claim that the"
+            " overwhelming cause of regime collapse arises from economic factors. Yet,"
+            " most other scholars (Gerald and Robinson for example) believe the"
+            " collapse was due to social unrest because of the prolonged epidemic of"
+            " 2025. I tend to agree with the majority - although I can see both sides."
+            " Thus my response is that the social unrest was the significant factor in"
+            " the collapse of the regime.",
             ["Economic factors", "Social unrest", "Political corruption"],
             "Social unrest",
             id="complex",

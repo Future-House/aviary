@@ -155,7 +155,7 @@ async def eval_answer(
             raise ValueError("Question must be provided for LLM evaluation mode.")
         default_config = eval_mode.get_default_config()
         config = llm_eval_config or default_config
-        prompt = cast(str, config.get("prompt", default_config["prompt"])).format(
+        prompt = cast("str", config.get("prompt", default_config["prompt"])).format(
             question=question,
             correct_answer=correct,
             proposed_answer=proposed,
@@ -231,8 +231,8 @@ class RandomAnnotation:
 
         plain_val_schema = cs.no_info_plain_validator_function(val_func)
         plain_val_schema_json = plain_val_schema.copy() | {
-            "serialization": (
-                cs.plain_serializer_function_ser_schema(lambda inst: inst.getstate())
+            "serialization": cs.plain_serializer_function_ser_schema(
+                lambda inst: inst.getstate()
             )
         }
         return cs.json_or_python_schema(
@@ -417,9 +417,10 @@ class MultipleChoiceQuestion(BaseModel):
         extracted_answer = await extract_answer(
             proposed_answer=proposed_answer, options=self.options
         )
-        return MultipleChoiceEvaluation.from_answer(
-            extracted_answer, self
-        ), extracted_answer
+        return (
+            MultipleChoiceEvaluation.from_answer(extracted_answer, self),
+            extracted_answer,
+        )
 
 
 class MultipleChoiceEvaluation(StrEnum):
@@ -440,7 +441,7 @@ class MultipleChoiceEvaluation(StrEnum):
         Returns:
             Two-tuple of accuracy = (num correct) / (num questions) and
                 precision = (num correct) / ((num questions) - (num unsure)).
-        """
+        """  # noqa: DOC502
         evaluations = [e if isinstance(e, cls) else cls(e) for e in evaluations]
         num_correct = sum(e == cls.CORRECT for e in evaluations)
         accuracy = num_correct / len(evaluations)

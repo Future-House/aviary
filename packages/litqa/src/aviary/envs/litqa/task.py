@@ -99,7 +99,7 @@ async def evaluate_consensus_sampling(
         ses: PQASession | dict[str, Any] = (
             x.state.session
             if isinstance(x.state, EnvironmentState)
-            else cast(PQASession | dict[str, Any], x.state["session"])  # type: ignore[call-overload,index]
+            else cast("PQASession | dict[str, Any]", x.state["session"])  # type: ignore[call-overload,index]
         )
         graded_answer = (
             ses.graded_answer if isinstance(ses, PQASession) else ses["graded_answer"]
@@ -194,7 +194,7 @@ def read_litqa_v2_from_hub(
     Raises:
         DatasetNotFoundError: If any of the datasets are not found, or the
             user is unauthenticated.
-    """
+    """  # noqa: DOC502
     try:
         from datasets import load_dataset
     except ImportError as exc:

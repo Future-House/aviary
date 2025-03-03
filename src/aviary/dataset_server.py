@@ -25,9 +25,11 @@ logger = logging.getLogger(__name__)
 class StartRequest(BaseModel):
     task_idx: int | None = Field(
         default=None,
-        description="Index of the dataset to start. "
-        "If provided, will call TaskDataset.get_new_env_by_idx(); "
-        "otherwise, TaskDataset.get_new_env().",
+        description=(
+            "Index of the dataset to start. "
+            "If provided, will call TaskDataset.get_new_env_by_idx(); "
+            "otherwise, TaskDataset.get_new_env()."
+        ),
     )
 
 
