@@ -404,9 +404,7 @@ class Tool(BaseModel):
                 continue
             d = next(
                 (
-                    cls._get_param_desc(
-                        p, include_type=types_in_param_descriptions
-                    ).replace("\n", " ")
+                    cls._get_param_desc(p, include_type=types_in_param_descriptions)
                     for p in docstring.params
                     if p.arg_name == pname
                 ),
