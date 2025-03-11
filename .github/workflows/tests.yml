@@ -61,16 +61,7 @@ jobs:
           path: packages/hotpotqa
           upload-name-suffix: -hotpotqa
       - run: uv sync --python-preference=only-managed
-      - name: Run refurb
-        run: | # Go with this until https://github.com/astral-sh/uv/issues/6459
-          cd src
-          uv run refurb .
-          cd ../packages/gsm8k/src
-          uv run refurb .
-          cd ../../hotpotqa/src
-          uv run refurb .
-          cd ../../..
-          uv run refurb tests packages/gsm8k/tests packages/hotpotqa/tests
+      - run: uv run refurb .
       - run: uv run pylint src packages
       - if: matrix.python-version == '3.11' # Only need to run this on one version
         uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.1
