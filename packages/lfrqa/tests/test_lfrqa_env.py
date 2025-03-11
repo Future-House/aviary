@@ -19,5 +19,5 @@ def test_env_construction() -> None:
 
     dataset = LFRQATaskDataset(data=data)
 
-    env = dataset.get_new_env_by_idx(0)
+    env = dataset.get_new_env_by_idx(0)  # noqa: FURB184
     assert isinstance(env, LFRQAPairwiseEvalEnv)

@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 # Jitter in case we have lots of requests at once, to space them out slightly
-@retry(stop=stop_after_attempt(2), wait=wait_exponential_jitter(initial=1, max=4))
+@retry(stop=stop_after_attempt(2), wait=wait_exponential_jitter(max=4))
 async def fetch_with_retry(
     client: httpx.AsyncClient, url: str, **kwargs
 ) -> httpx.Response:
