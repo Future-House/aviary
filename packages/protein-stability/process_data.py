@@ -28,7 +28,7 @@ async def fix_pdb_file(pdb_file_path: str, chain_id: str) -> str:
             "https://future-house--openmm-make-app.modal.run/fixpdb",
             json={"pdb_string": pdb_str},
             headers={
-                "Authorization": "Bearer e0311794-04de-4f0a-8c43-8a9967285d54",
+                "Authorization": "",
                 "Content-Type": "application/json",
             },
             # Adding timeout to 600 seconds, fix pdb is much faster than alphafold and rfdiffusion
