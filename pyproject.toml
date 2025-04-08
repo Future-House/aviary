@@ -54,7 +54,7 @@ dev = [
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
     "pylint>=3.3.3",  # Pin for Python>=3.13.1's 'collections.abc' import error
-    "pytest-asyncio",
+    "pytest-asyncio<0.26",  # Down pin for https://github.com/pytest-dev/pytest-asyncio/issues/1090
     "pytest-recording",
     "pytest-subtests",
     "pytest-sugar",
