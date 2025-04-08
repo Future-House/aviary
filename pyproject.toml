@@ -53,7 +53,7 @@ dev = [
     "pre-commit>=3.4",  # Pin to keep recent
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
-    "pylint>=3.2",  # Pin to keep recent
+    "pylint>=3.3.3",  # Pin for Python>=3.13.1's 'collections.abc' import error
     "pytest-asyncio",
     "pytest-recording",
     "pytest-subtests",

@@ -996,7 +996,7 @@ requires-dist = [
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.4" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "pydantic", marker = "extra == 'dev'", specifier = "~=2.9" },
-    { name = "pylint", marker = "extra == 'dev'", specifier = ">=3.2" },
+    { name = "pylint", marker = "extra == 'dev'", specifier = ">=3.3.3" },
     { name = "pylint-pydantic", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
