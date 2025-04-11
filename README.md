@@ -1,9 +1,10 @@
 # aviary
 
-![PyPI Version](https://img.shields.io/pypi/v/fhaviary)
-![PyPI Python Versions](https://img.shields.io/pypi/pyversions/fhaviary)
+[![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Future-House/aviary)
+[![PyPI version](https://badge.fury.io/py/fhaviary.svg)](https://badge.fury.io/py/fhaviary)
+[![tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)](https://github.com/Future-House/aviary)
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
-![Tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)
+![PyPI Python Versions](https://img.shields.io/pypi/pyversions/fhaviary)
 
 Gymnasium framework for training language model agents on constructive tasks.
 
