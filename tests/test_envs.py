@@ -6,6 +6,7 @@ import tempfile
 import time
 from collections.abc import Sequence
 from typing import ClassVar
+from uuid import UUID
 
 import litellm
 import pytest
@@ -49,6 +50,10 @@ class TestDummyEnv:
                     ToolCall.from_name("print_story", story="Once upon a time done")
                 ],
             )
+
+        assert isinstance(await dummy_env.get_id(), str | UUID), (
+            "Expected getting ID to work before reset"
+        )
 
         obs, _ = await dummy_env.reset()
         assert isinstance(obs, list)
@@ -349,7 +354,7 @@ class TestRendering:
             with frame_path.open() as f:
                 rehydrated = json.load(f)
             assert rehydrated["state"]["messages"] == [
-                "Write a 5 word story via print_story"
+                "Write a 5 word story via print_story about applesauce"
             ]
 
 
