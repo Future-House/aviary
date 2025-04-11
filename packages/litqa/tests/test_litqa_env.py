@@ -200,6 +200,8 @@ class TestTaskDataset:
         # Now let's check we could use the sources in a validation
         for i in range(len(task_dataset)):
             env = task_dataset.get_new_env_by_idx(i)
+            env_id = await env.get_id()
+            assert await env.get_id() == UUID("dbfbae3d-62f6-4710-8d13-8ce4c8485567")
             if i == 0 and split == LitQAv2TaskSplit.TRAIN:
                 # Yes this assertion is somewhat brittle, but it reliably
                 # checks the seeding's behavior so we keep it
