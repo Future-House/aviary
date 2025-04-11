@@ -53,8 +53,8 @@ dev = [
     "pre-commit>=3.4",  # Pin to keep recent
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
-    "pylint>=3.2",  # Pin to keep recent
-    "pytest-asyncio",
+    "pylint>=3.3.3",  # Pin for Python>=3.13.1's 'collections.abc' import error
+    "pytest-asyncio<0.26",  # Down pin for https://github.com/pytest-dev/pytest-asyncio/issues/1090
     "pytest-recording",
     "pytest-subtests",
     "pytest-sugar",
@@ -225,6 +225,8 @@ disable = [
     "expression-not-assigned",  # Rely on mypy func-returns-value for this
     "fixme",  # codetags are useful
     "function-redefined",  # Rely on mypy no-redef for this
+    "global-statement",  # Rely on ruff PLW0603 for this
+    "global-variable-not-assigned",  # Rely on ruff PLW0602 for this
     "import-outside-toplevel",  # Rely on ruff PLC0415 for this
     "invalid-name",  # Don't care to enforce this
     "keyword-arg-before-vararg",  # Rely on ruff B026 for this
@@ -245,6 +247,7 @@ disable = [
     "too-few-public-methods",  # Don't care to enforce this
     "too-many-ancestors",  # Don't care to enforce this
     "too-many-arguments",  # Don't care to enforce this
+    "too-many-boolean-expressions",  # Rely on ruff PLR0916 for this
     "too-many-branches",  # Rely on ruff PLR0912 for this
     "too-many-instance-attributes",  # Don't care to enforce this
     "too-many-lines",  # Don't care to enforce this
@@ -255,8 +258,9 @@ disable = [
     "too-many-statements",  # Rely on ruff PLR0915 for this
     "ungrouped-imports",  # Rely on ruff I001 for this
     "unidiomatic-typecheck",  # Rely on ruff E721 for this
+    "unnecessary-dict-index-lookup",  # Rely on ruff PLR1733 for this
     "unreachable",  # Rely on mypy unreachable for this
-    "unspecified-encoding",  # Don't care to enforce this
+    "unspecified-encoding",  # Rely on ruff PLW1514 for this
     "unsubscriptable-object",  # Buggy, SEE: https://github.com/pylint-dev/pylint/issues/3637
     "unsupported-membership-test",  # Buggy, SEE: https://github.com/pylint-dev/pylint/issues/3045
     "unused-argument",  # Rely on ruff ARG002 for this
@@ -323,9 +327,9 @@ preview = true
 [tool.ruff.lint]
 explicit-preview-rules = true
 extend-select = [
+    "AIR002",
     "AIR301",
     "AIR302",
-    "AIR303",
     "ASYNC116",
     "B901",
     "B903",
@@ -447,7 +451,6 @@ extend-select = [
     "RUF028",
     "RUF029",
     "RUF031",
-    "RUF035",
     "RUF036",
     "RUF037",
     "RUF038",
@@ -468,6 +471,7 @@ extend-select = [
     "RUF056",
     "RUF057",
     "RUF058",
+    "RUF059",
     "SIM905",
     "TC006",
     "TC007",
@@ -541,6 +545,7 @@ ignore = [
     "TC001",  # TC001, TC002, TC003: don't care to enforce type checking blocks
     "TC002",
     "TC003",
+    "TC006",  # Strings in cast don't work with PyCharm CE 2024.3.4's jump-to-definition
     "TD002",  # Don't care for TODO author
     "TD003",  # Don't care for TODO links
     "TRY003",  # Overly pedantic
@@ -566,6 +571,7 @@ mypy-init-return = true
     "N802",  # Tests function names can match class names
     "PLR2004",  # Tests can have magic values
     "PLR6301",  # Test classes can ignore self
+    "RUF059",  # Tests can have unused unpacks, for readability
     "S101",  # Tests can have assertions
 ]
 "docs/**.ipynb" = [

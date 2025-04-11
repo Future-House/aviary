@@ -351,6 +351,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         """
         return Frame(
             info={
+                "question_id": self.question_id,
+                "question": self.question,
                 "steps": self.state.steps,
                 "done": self.state.done,
                 "reward": self.state.reward,
