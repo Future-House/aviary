@@ -9,7 +9,6 @@ from typing import ClassVar
 
 import litellm
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient
 from pydantic import BaseModel
 from pytest_subtests import SubTests
@@ -541,7 +540,7 @@ class TestParallelism:
         ]
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest.fixture
 def server_async_client() -> AsyncClient:
     dataset = TaskDataset.from_name("dummy")
     server = TaskDatasetServer[DummyEnv](dataset)
