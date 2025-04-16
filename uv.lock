@@ -993,6 +993,7 @@ requires-dist = [
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "litellm", marker = "python_full_version >= '3.13' and extra == 'llm'", specifier = ">=1.49.1" },
     { name = "litellm", marker = "python_full_version < '3.13' and extra == 'llm'" },
+    { name = "litellm", marker = "extra == 'dev'", specifier = ">=1.65.5" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
     { name = "numpy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "numpy", marker = "extra == 'typing'" },
