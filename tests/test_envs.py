@@ -524,16 +524,6 @@ class TestParallelism:
         assert any(not t.info.get_properties() for t in tools), (
             "Test requires empty properties"
         )
-        # Google gemini/gemini-1.5-flash fails to support empty dict properties
-        # SEE: https://github.com/BerriAI/litellm/issues/7634
-        with pytest.raises(litellm.BadRequestError, match="INVALID_ARGUMENT"):
-            await selector(messages=obs, tools=tools)
-
-        # Show we can manually work around this bug by nullifying parameters
-        for t in tools:
-            if not t.info.get_properties():
-                t.info.parameters = None
-        # Voila, Google gemini/gemini-1.5-flash can be an agent
         tool_request_message = await selector(messages=obs, tools=tools)
         assert [tc.function for tc in tool_request_message.tool_calls] == [
             expected_tool_call_fn

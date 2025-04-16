@@ -48,6 +48,7 @@ dev = [
     "fhaviary[image,llm,server,typing,xml]",
     "httpx<0.28",  # Pin until we remove app argument in clients that was deprecated in 0.28
     "ipython>=8",  # Pin to keep recent
+    "litellm>=1.65.5",  # Pin for sending tool schemae title in completions
     "mypy>=1.8",  # Pin for mutable-override
     "numpy>=1",  # Pin to keep recent
     "pre-commit>=3.4",  # Pin to keep recent
@@ -62,6 +63,7 @@ dev = [
     "pytest-xdist",
     "pytest>=8",  # Pin to keep recent
     "refurb>=2",  # Pin to keep recent
+    "tantivy<=0.22.0",  # Pin until https://github.com/quickwit-oss/tantivy-py/issues/371 is resolved
     "typeguard",
     "vcrpy>=6",  # Pin for https://github.com/kevin1024/vcrpy/issues/884
 ]
