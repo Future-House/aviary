@@ -234,7 +234,7 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             else (
                 self._rewards["lose"]
                 if evaluation["winner"] == "human"
-                else self._rewards["unsure"]
+                else self._rewards["tie"]
             )
         )
         evaluation["reward"] = reward
