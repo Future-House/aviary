@@ -32,7 +32,6 @@ class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
         if isinstance(base_docs, dict):
             base_docs = Docs(**base_docs)
         self._base_docs = base_docs
-        self._rewards = {"win": 1, "tie": 0, "lose": -1}
         self._evaluation_callback = evaluation_callback
 
     def get_new_env_by_idx(self, idx: int) -> LFRQAPairwiseEvalEnv:
@@ -42,7 +41,6 @@ class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
             pairwise_eval_llm=self.pairwise_eval_llm,
             settings=self._settings,
             docs=self._base_docs.model_copy(),
-            rewards=self._rewards,
             evaluation_callback=self._evaluation_callback,
         )
 

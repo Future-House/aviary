@@ -215,8 +215,11 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
         **kwargs,
     ):
-        kwargs["query"] = query
-        super().__init__(*args, **kwargs)
+        # Let rewards be overridden by kwargs for customizability,
+        # but not the query as this is the central piece of an environment
+        super().__init__(
+            *args, **({"rewards": query.grading_rewards} | kwargs | {"query": query})
+        )
         self.pairwise_eval_llm = pairwise_eval_llm
 
     async def _evaluate_answer(self) -> dict:
