@@ -9,7 +9,7 @@ from typing import ClassVar
 
 import litellm
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel
 from pytest_subtests import SubTests
 
@@ -534,7 +534,7 @@ class TestParallelism:
 def server_async_client() -> AsyncClient:
     dataset = TaskDataset.from_name("dummy")
     server = TaskDatasetServer[DummyEnv](dataset)
-    return AsyncClient(app=server.app, base_url="http://test")
+    return AsyncClient(transport=ASGITransport(app=server.app), base_url="http://test")
 
 
 class TestTaskDatasetServer:
