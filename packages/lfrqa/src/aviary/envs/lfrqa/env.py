@@ -7,7 +7,8 @@ import logging
 import random
 import re
 from collections.abc import Mapping
-from typing import Any
+from enum import StrEnum, unique
+from typing import Any, assert_never
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.utils import strip_citations
@@ -119,10 +120,30 @@ lfrqa_prompt_template = (
 )
 
 
+@unique
+class LFRQAEvaluation(StrEnum):
+    WIN = "win"
+    TIE = "tie"
+    LOSE = "lose"
+
+    @property
+    def reward(self) -> float:
+        if self == LFRQAEvaluation.WIN:
+            return 1.0
+        if self == LFRQAEvaluation.TIE:
+            return 0.0
+        if self == LFRQAEvaluation.LOSE:
+            return -1.0
+        assert_never(self)
+
+
 class LFRQAQuestion(MultipleChoiceQuestion):
     gt_doc_ids: list[int]
     grading_rewards: dict[str, float] = Field(
-        default_factory=lambda: {"win": 1.0, "tie": 0.0, "lose": -1.0}
+        default_factory=lambda: {
+            str(k): k.reward
+            for k in (LFRQAEvaluation.WIN, LFRQAEvaluation.TIE, LFRQAEvaluation.LOSE)
+        }
     )
 
     @model_validator(mode="before")
@@ -215,8 +236,11 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
         **kwargs,
     ):
-        kwargs["query"] = query
-        super().__init__(*args, **kwargs)
+        # Let rewards be overridden by kwargs for customizability,
+        # but not the query as this is the central piece of an environment
+        super().__init__(
+            *args, **({"rewards": query.grading_rewards} | kwargs | {"query": query})
+        )
         self.pairwise_eval_llm = pairwise_eval_llm
 
     async def _evaluate_answer(self) -> dict:
@@ -229,12 +253,12 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         )
         evaluation["llm"] = self._settings.llm
         reward = (
-            self._rewards["win"]
+            self._rewards[LFRQAEvaluation.WIN]
             if evaluation["winner"] == "paperqa"
             else (
-                self._rewards["lose"]
+                self._rewards[LFRQAEvaluation.LOSE]
                 if evaluation["winner"] == "human"
-                else self._rewards["tie"]
+                else self._rewards[LFRQAEvaluation.TIE]
             )
         )
         evaluation["reward"] = reward
