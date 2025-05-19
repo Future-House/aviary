@@ -24,10 +24,5 @@
       matchUpdateTypes: ["minor", "patch"],
       automerge: true,
     },
-    {
-      // Allow 'widen' range strategy while matching pyproject.toml
-      matchPackageNames: ["httpx"],
-      allowedVersions: "<0.28",
-    },
   ],
 }
