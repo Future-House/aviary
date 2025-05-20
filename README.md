@@ -1,12 +1,15 @@
-# aviary
+# Aviary
 
 [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Future-House/aviary)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
+[![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](https://aviary.bio/)
 [![PyPI version](https://badge.fury.io/py/fhaviary.svg)](https://badge.fury.io/py/fhaviary)
 [![tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)](https://github.com/Future-House/aviary)
-![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
-![PyPI Python Versions](https://img.shields.io/pypi/pyversions/fhaviary)
+[![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/overview/main)
+[![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
-Gymnasium framework for training language model agents on constructive tasks.
+**Aviary** is an open-source gymnasium for defining custom language agent RL environments. The library features pre-existing environments
 
 <!--TOC-->
 
@@ -344,3 +347,15 @@ Here are a few environments implemented with aviary:
 | HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation) |     |
 | LitQA       | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)       | `fhaviary[litqa]`    | [`README.md`](packages/litqa/README.md#installation)    |     |
 | LFRQA       | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)       | `fhaviary[lfrqa]`    | [`README.md`](packages/lfrqa/README.md#installation)    |     |
+
+## References
+
+\[1] Narayanan, S., Braza, J.D., Griffiths, R.R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S.G. and White, A.D., 2024. [Aviary: training language agents on challenging scientific tasks.](https://arxiv.org/abs/2412.21154) arXiv preprint arXiv:2412.21154.
+
+\[2] Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., Plappert, M., Tworek, J., Hilton, J., Nakano, R. and Hesse, C., 2021. [Training verifiers to solve math word problems.](https://arxiv.org/abs/2110.14168) arXiv preprint arXiv:2110.14168.
+
+\[3] Yang, Z., Qi, P., Zhang, S., Bengio, Y., Cohen, W., Salakhutdinov, R. and Manning, C.D., 2018. [HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering.](https://aclanthology.org/D18-1259/) EMNLP 2018 (pp. 2369-2380).
+
+\[4] Laurent, J.M., Janizek, J.D., Ruzo, M., Hinks, M.M., Hammerling, M.J., Narayanan, S., Ponnapati, M., White, A.D. and Rodriques, S.G., 2024. [Lab-Bench: Measuring capabilities of language models for biology research.](https://arxiv.org/abs/2407.10362) arXiv preprint arXiv:2407.10362.
+
+\[5] Skarlinski, M.D., Cox, S., Laurent, J.M., Braza, J.D., Hinks, M., Hammerling, M.J., Ponnapati, M., Rodriques, S.G. and White, A.D., 2024. [Language agents achieve superhuman synthesis of scientific knowledge.](https://arxiv.org/abs/2409.13740) arXiv preprint arXiv:2409.13740.
