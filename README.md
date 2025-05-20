@@ -9,29 +9,22 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/overview/main)
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
-**Aviary** is an open-source gymnasium for defining custom language agent RL environments. The library features pre-existing environments
+<p align="left">
+  <a href="https://arxiv.org/abs/2212.04450">
+    <img src="aviary_art.png"/>
+  </a>
+</p>
 
-<!--TOC-->
+**Aviary** \[1] is a gymnasium for defining custom language agent RL environments. The library features pre-existing environments on math \[2], general knowledge \[3], biological sequences \[4], scientific literature search \[5], and protein stability.
 
-- [Installation](#installation)
-  - [Google Colab](#google-colab)
-  - [Developer Installation](#developer-installation)
-- [Messages](#messages)
-- [Environment](#environment)
-- [Functional Environments](#functional-environments)
-- [Subclass Environments](#subclass-environments)
-  - [Common environments](#common-environments)
-  - [Tool](#tool)
-    - [Advanced tool descriptions](#advanced-tool-descriptions)
-  - [Environment `reset` method](#environment-reset-method)
-  - [Environment `step` method](#environment-step-method)
-  - [Environment `export_frame` method](#environment-export_frame-method)
-  - [View Environment Tools](#view-environment-tools)
-- [Environments](#environments)
+[Overview](#overview) | [Getting Started](#getting-started) | [Documentation](https://aviary.bio/) | [Paper](https://arxiv.org/abs/2412.21154)
 
-<!--TOC-->
+## What's New?
 
-## Installation
+* Check out our new [Tutorial](https://github.com/leojklarner/gauche/blob/main/notebooks/Molecular%20Preference%20Learning.ipynb) notebooks!
+* The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
+
+## Getting Started
 
 To install aviary (note `fh` stands for FutureHouse):
 
@@ -347,6 +340,20 @@ Here are a few environments implemented with aviary:
 | HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation) |     |
 | LitQA       | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)       | `fhaviary[litqa]`    | [`README.md`](packages/litqa/README.md#installation)    |     |
 | LFRQA       | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)       | `fhaviary[lfrqa]`    | [`README.md`](packages/lfrqa/README.md#installation)    |     |
+
+## Citing Aviary
+
+If Aviary is useful for your work please consider citing the following paper:
+
+```bibtex
+@article{narayanan2024aviary,
+  title={Aviary: training language agents on challenging scientific tasks},
+  author={Narayanan, Siddharth and Braza, James D and Griffiths, Ryan-Rhys and Ponnapati, Manu and Bou, Albert and Laurent, Jon and Kabeli, Ori and Wellawatte, Geemi and Cox, Sam and Rodriques, Samuel G and others},
+  journal={arXiv preprint arXiv:2412.21154},
+  year={2024}
+}
+
+```
 
 ## References
 
