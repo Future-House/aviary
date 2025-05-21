@@ -47,6 +47,7 @@ dev = [
     "aviary.litqa",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
+    "jupyter>=1.0.0",  # For running notebooks
     "litellm>=1.65.5",  # Pin for sending tool schemae title in completions
     "mypy>=1.8",  # Pin for mutable-override
     "numpy>=1",  # Pin to keep recent
@@ -65,7 +66,6 @@ dev = [
     "tantivy<=0.22.0",  # Pin until https://github.com/quickwit-oss/tantivy-py/issues/371 is resolved
     "typeguard",
     "vcrpy>=6",  # Pin for https://github.com/kevin1024/vcrpy/issues/884
-    "jupyter>=1.0.0", # For running notebooks
 ]
 gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]

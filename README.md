@@ -24,8 +24,8 @@ Aviary is designed to work in tandem with its sister library LDP (https://github
 
 ## What's New?
 
-* Check out our new [Tutorial](https://github.com) notebook on running an LDP agent in an Aviary environment!
-* The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
+- Check out our new [Tutorial](https://github.com) notebook on running an LDP agent in an Aviary environment!
+- The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
 
 ## Overview
 
@@ -73,7 +73,7 @@ Also, note that `async` code works in Google Colab.
 
 ## Defining a Custom Environment
 
-The example below walks through defining a custom language agent environment in Aviary. 
+The example below walks through defining a custom language agent environment in Aviary.
 We define a simple environment where an agent takes actions to modify a counter.
 The example is also featured in the following notebook TODO: Fill in.
 
@@ -82,31 +82,32 @@ from collections import namedtuple
 from aviary.core import Environment, Message, ToolRequestMessage, Tool
 
 # State in this example is simply a counter
-CounterEnvState = namedtuple('CounterEnvState', ['count'])
+CounterEnvState = namedtuple("CounterEnvState", ["count"])
+
 
 class CounterEnv(Environment[CounterEnvState]):
     """A simple environment that allows an agent to modify a counter."""
-    
+
     async def reset(self):
         """Initialize the environment with a counter set to 0."""
         self.state = CounterEnvState(count=0)
-        
+
         # Create tools allowing the agent to increment and decrement counter
         self.tools = [
             Tool.from_function(self.incr),
             Tool.from_function(self.decr),
         ]
-        
+
         # Return an observation message with the counter and available tools
         return [Message(content=f"counter={self.state.count}")], self.tools
 
     async def step(self, action: ToolRequestMessage):
         """Executes the tool call requested by the agent."""
         obs = self.exec_tool_calls(action)
-        
+
         # The reward is the square of the current count
-        reward = self.state.count ** 2
-        
+        reward = self.state.count**2
+
         # Returns observations, reward, done, truncated
         return obs, reward, reward < 0, False
 
@@ -131,11 +132,14 @@ from ldp.agent import Agent
 from ldp.graph import LLMCallOp
 from ldp.alg.rollout import RolloutManager
 
+
 class AgentState:
     """A container for maintaining agent state across interactions."""
+
     def __init__(self, messages, tools):
         self.messages = messages
         self.tools = tools
+
 
 class SimpleAgent(Agent):
     def __init__(self, **kwargs):
@@ -152,11 +156,12 @@ class SimpleAgent(Agent):
             tools=agent_state.tools,
         )
         new_state = AgentState(
-            messages=agent_state.messages + obs + [action], 
+            messages=agent_state.messages + obs + [action],
             tools=agent_state.tools,
         )
         # Return action, state, value
         return action, new_state, 0.0
+
 
 # Create a simple agent and perform rollouts on the environment
 
@@ -166,10 +171,9 @@ agent = SimpleAgent(config={"model": "my_llm_endpoint"})
 runner = RolloutManager(agent=agent)
 
 trajectories = await runner.sample_trajectories(
-    environment_factory=CounterEnv, 
+    environment_factory=CounterEnv,
     batch_size=2,
 )
-
 ```
 
 Below we expand on some of the core components of the Aviary library together with more advanced usage examples.
@@ -183,12 +187,12 @@ obs_msgs, tools = await env.reset()
 new_obs_msgs, reward, done, truncated = await env.step(action_msg)
 ```
 
-Communication is achieved through messages. 
+Communication is achieved through messages.
 
 The `action_msg` is an instance of `ToolRequestMessage` which comprises one or more calls
-to the `tools` returned by `env.reset` method. 
+to the `tools` returned by `env.reset` method.
 
-The `obs_msgs` are either general obseravation messages or instances of `ToolResponseMessage` returned from the environment. 
+The `obs_msgs` are either general obseravation messages or instances of `ToolResponseMessage` returned from the environment.
 while `reward` is a scalar value, and `done` and `truncated`
 are Boolean values.
 
@@ -229,7 +233,7 @@ You can change around roles as desired,
 except for `tool` which has a special meaning in aviary.
 
 | Role      | Host                                             | Example(s)                                                       |
-| --------- |--------------------------------------------------|------------------------------------------------------------------|
+| --------- | ------------------------------------------------ | ---------------------------------------------------------------- |
 | assistant | Agent                                            | An agent's tool selection message                                |
 | system    | Agent system prompt                              | "You are an agent."                                              |
 | user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
@@ -239,7 +243,7 @@ The `Message` class is extended in `ToolRequestMessage` and `ToolResponseMessage
 
 ### Subclassing Environments
 
-If you need more control over Environments and tools, you may wish to subclass `Environment`. We illustrate this 
+If you need more control over Environments and tools, you may wish to subclass `Environment`. We illustrate this
 with an example environment in which an agent is tasked to write a story.
 
 We subclass `Environment` and defining a `state`. The `state` consists of all variables
@@ -265,7 +269,7 @@ tasks, etc. attached to it.
 
 ### Defining Tools
 
-We will define a single tool that prints a story. Tools may optionally take a final argument 
+We will define a single tool that prints a story. Tools may optionally take a final argument
 `state` which is the environment state. This argument will not be
 exposed to the agent as a parameter but will be injected by the environment (if part of the function
 signature).
@@ -379,7 +383,7 @@ def export_frame(self):
 
 ### Viewing Environment Tools
 
-If an environment can be instantiated without anything other than the task 
+If an environment can be instantiated without anything other than the task
 (i.e., it implements `from_task`), you can start a server to view its tools:
 
 ```sh
@@ -394,7 +398,7 @@ This will start a server that allows you to view the tools and call them, viewin
 Below we list some pre-existing environments implemented in Aviary:
 
 | Environment       | PyPI                                                                 | Extra                         | README                                                           |     |
-|-------------------|----------------------------------------------------------------------|-------------------------------|------------------------------------------------------------------| --- |
+| ----------------- | -------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------- | --- |
 | GSM8k             | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)             | `fhaviary[gsm8k]`             | [`README.md`](packages/gsm8k/README.md#installation)             |     |
 | HotPotQA          | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/)       | `fhaviary[hotpotqa]`          | [`README.md`](packages/hotpotqa/README.md#installation)          |     |
 | LitQA             | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)             | `fhaviary[litqa]`             | [`README.md`](packages/litqa/README.md#installation)             |     |
@@ -415,7 +419,7 @@ dataset = HotPotQADataset(split="dev")
 
 ### Functional Environments
 
-An alternative way to create an environment is using the functional interface, 
+An alternative way to create an environment is using the functional interface,
 which uses functions and decorators to define environments. Let's define an environment that requires an agent to write a story
 about a particular topic by implementing its `start` function:
 
@@ -430,11 +434,11 @@ def my_env(topic):
     return f"Write a story about {topic}", {}
 ```
 
-The `start` decorator begins the definition of an environment. 
+The `start` decorator begins the definition of an environment.
 
-The function, `my_env`, 
-takes an arbitrary input and returns a tuple containing the first observation 
-and any information you wish to store about the environment state (used to persist/share information between tools). 
+The function, `my_env`,
+takes an arbitrary input and returns a tuple containing the first observation
+and any information you wish to store about the environment state (used to persist/share information between tools).
 
 The state will always have an optional `reward` and a Boolean `done` that indicate if the environment episode is complete. Next we define some tools:
 
@@ -453,13 +457,13 @@ def print_story(story: str | bytes, state) -> None:
     state.done = True
 ```
 
-The tools will be converted into objects visible for LLMs using the type hints and the variable descriptions. 
-Thus, the type hinting can be valuable for an agent that uses it correctly. 
+The tools will be converted into objects visible for LLMs using the type hints and the variable descriptions.
+Thus, the type hinting can be valuable for an agent that uses it correctly.
 The docstrings are also passed to the LLM and is the primary means (along with the function name) for communicating the intended tool usage.
 
 You can access the `state` variable in tools, which will have any fields you passed in the return tuple of `start()`. For example, if you returned `{'foo': 'bar'}`, then you could access `state.foo` in the tools.
 
-You may stop an environment or set a reward via the `state` variable as shown in the second `print_story` tool. If the reward is not set, it is treated as zero.  Next we illustrate how to use our environment:
+You may stop an environment or set a reward via the `state` variable as shown in the second `print_story` tool. If the reward is not set, it is treated as zero. Next we illustrate how to use our environment:
 
 ```python
 env = my_env(topic="foo")
