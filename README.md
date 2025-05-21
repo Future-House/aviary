@@ -24,7 +24,7 @@ Aviary is designed to work in tandem with its sister library LDP (https://github
 
 ## What's New?
 
-* Check out our new [Tutorial](https://github.com/leojklarner/gauche/blob/main/notebooks/Molecular%20Preference%20Learning.ipynb) notebook on running an LDP agent in an Aviary environment!
+* Check out our new [Tutorial](https://github.com) notebook on running an LDP agent in an Aviary environment!
 * The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
 
 ## Overview
