@@ -7,22 +7,27 @@
 [![PyPI version](https://badge.fury.io/py/fhaviary.svg)](https://badge.fury.io/py/fhaviary)
 [![tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)](https://github.com/Future-House/aviary)
 [![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/overview/main)
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+[![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
 <p align="left">
   <a href="https://arxiv.org/abs/2212.04450">
-    <img src="aviary_art.png"/>
+    <img src="assets/aviary_art.png"/>
   </a>
 </p>
 
 **Aviary** \[1] is a gymnasium for defining custom language agent RL environments. The library features pre-existing environments on math \[2], general knowledge \[3], biological sequences \[4], scientific literature search \[5], and protein stability.
+Aviary is designed to work in tandem with its sister library LDP (https://github.com/Future-House/ldp) which enables the user to define custom language agents as Language Decision Processes. See the following tutorial for an example of how to run an LDP language agent on an Aviary environment.
 
 [Overview](#overview) | [Getting Started](#getting-started) | [Documentation](https://aviary.bio/) | [Paper](https://arxiv.org/abs/2412.21154)
 
 ## What's New?
 
-* Check out our new [Tutorial](https://github.com/leojklarner/gauche/blob/main/notebooks/Molecular%20Preference%20Learning.ipynb) notebooks!
+* Check out our new [Tutorial](https://github.com/leojklarner/gauche/blob/main/notebooks/Molecular%20Preference%20Learning.ipynb) notebook on running an LDP agent in an Aviary environment!
 * The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
+
+## Overview
 
 ## Getting Started
 
@@ -32,8 +37,22 @@ To install aviary (note `fh` stands for FutureHouse):
 pip install fhaviary
 ```
 
-To install aviary with the bundled environments,
-please see the [Environments section below](#environments).
+To install aviary together with the incumbent environments:
+
+```bash
+pip install 'fhaviary[gsm8k]'
+pip install 'fhaviary[hotpotqa]'
+pip install 'fhaviary[litqa]'
+pip install 'fhaviary[lfrqa]'
+```
+
+### Developer Installation
+
+For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Tutorial Notebooks
+
+Check out our tutorial notebooks.
 
 ### Google Colab
 
@@ -46,21 +65,139 @@ https://colab.research.google.com/drive/1mejZ5cxgKZrMpYEe0iRoanaGGQ0Cr6WI?usp=sh
 
 Also, note that `async` code works in Google Colab.
 
-### Developer Installation
+## Definining a Custom Environment
 
-For local development, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
+The example below walks through defining a custom language agent environment in Aviary. 
+We define a simple environment where an agent takes actions to modify a counter.
+The example is also featured in the following notebook TODO: Fill in.
 
-## Messages
+```python
+from collections import namedtuple
+from aviary.core import Environment, Message, ToolRequestMessage, Tool
 
-Communication between the agent and environment is done through messages.
+# State in this example is simply a counter
+CounterEnvState = namedtuple('CounterEnvState', ['count'])
+
+class CounterEnv(Environment[CounterEnvState]):
+    """A simple environment that allows an agent to modify a counter."""
+    
+    async def reset(self):
+        """Initialize the environment with a counter set to 0."""
+        self.state = CounterEnvState(count=0)
+        
+        # Create tools allowing the agent to increment and decrement counter
+        self.tools = [
+            Tool.from_function(self.incr),
+            Tool.from_function(self.decr),
+        ]
+        
+        # Return an observation message with the counter and available tools
+        return [Message(content=f"counter={self.state.count}")], self.tools
+
+    async def step(self, action: ToolRequestMessage):
+        """Executes the tool call requested by the agent."""
+        obs = self.exec_tool_calls(action)
+        
+        # The reward is the square of the current count
+        reward = self.state.count ** 2
+        
+        # Returns observations, reward, done, truncated
+        return obs, reward, reward < 0, False
+
+    def incr(self):
+        """Increment the counter."""
+        self.state.count += 1
+        return f"counter={self.state.count}"
+
+    def decr(self):
+        """Decrement the counter."""
+        self.state.count -= 1
+        return f"counter={self.state.count}"
+```
+
+## Evaluating an Agent on the Environment
+
+Following the definition of our custom environment, we can now evaluate a language agent
+on the environment using Aviary's sister library LDP (https://github.com/Future-House/ldp).
+
+```python
+from ldp.agent import Agent
+from ldp.graph import LLMCallOp
+from ldp.runners import RolloutManager
+
+class AgentState:
+    """A container for maintaining agent state across interactions."""
+    def __init__(self, messages, tools):
+        self.messages = messages
+        self.tools = tools
+
+class SimpleAgent(Agent):
+    def __init__(self, **kwargs):
+        self.llm_call_op = LLMCallOp(**kwargs)
+
+    async def init_state(self, tools):
+        return AgentState([], tools)
+
+    async def get_asv(self, agent_state, obs):
+        """Take an action, observe new state, return value"""
+        action = await self.llm_call_op(
+            config={"model": "gpt-4o", "temperature": 0.1},
+            msgs=agent_state.messages + obs,
+            tools=agent_state.tools,
+        )
+        new_state = AgentState(
+            messages=agent_state.messages + obs + [action], 
+            tools=agent_state.tools,
+        )
+        # Return action, state, value
+        return action, new_state, 0.0
+
+# Create a simple agent and perform rollouts on the environment
+
+# Endpoint can be model identifier e.g. "claude-3-opus" depending on service
+agent = SimpleAgent(config={"model": "my_llm_endpoint"})
+
+runner = RolloutManager(agent=agent)
+
+trajectories = await runner.sample_trajectories(
+    environment_factory=CounterEnv, 
+    batch_size=2,
+)
+
+```
+
+Below we expand on some of the core components of the Aviary library together with more advanced usage examples.
+
+### Environment
+
+An environment should have two methods, `env.reset` and `env.step`:
+
+```py
+obs_msgs, tools = await env.reset()
+new_obs_msgs, reward, done, truncated = await env.step(action_msg)
+```
+
+Communication is achieved through messages. 
+
+The `action_msg` is an instance of `ToolRequestMessage` which comprises one or more calls
+to the `tools` returned by `env.reset` method. 
+
+The `obs_msgs` are either general obseravation messages or instances of `ToolResponseMessage` returned from the environment. 
+while `reward` is a scalar value, and `done` and `truncated`
+are Boolean values.
+
+We explain the message formalism in further detail below.
+
+### Messages
+
+Communication between the agent and environment is achieved via messages. We follow the [OpenAI](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images) standard.
 Messages have two attributes:
 
 ```py
 msg = Message(content="Hello, world!", role="assistant")
 ```
 
-The `content` is a string with a text, a JSON serializable list of `dict`s, or a null value.
-A list of dicts is used to encode multi-modal content. The method `create_message` can be used to create a message with images:
+The `content` attribute can be a string but can also comprise objects such as images. For example, the `create_message` method can be used to create a message with images:
 
 ```py
 from PIL import Image
@@ -72,7 +209,7 @@ img_array = np.array(img)
 msg = Message.create_message(role="user", text="Hello, world!", images=[img_array])
 ```
 
-`create_message` supports images as numpy array or base64 encoded images. In this case, `content` will be a list of dictionaries with the keys `text` and `image_url`.
+In this case, `content` will be a list of dictionaries with the keys `text` and `image_url`.
 
 ```py
 {
@@ -81,89 +218,27 @@ msg = Message.create_message(role="user", text="Hello, world!", images=[img_arra
 }
 ```
 
-We follow the structure adopted by [OpenAI](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images).
-
-For the meaning of role, see the table below.
+The role, see the table below.
 You can change around roles as desired,
 except for `tool` which has a special meaning in aviary.
 
 | Role      | Host                                             | Example(s)                                                       |
-| --------- | ------------------------------------------------ | ---------------------------------------------------------------- |
-| assistant | Agent                                            | A tool selector agent's tool selection message                   |
+| --------- |--------------------------------------------------|------------------------------------------------------------------|
+| assistant | Agent                                            | An agent's tool selection message                                |
 | system    | Agent system prompt                              | "You are an agent."                                              |
 | user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
-| tool      | Result of tool run in the environment            | Some number crunching program's output                           |
+| tool      | Result of a tool run in the environment          | The output of the calculator tool for a GSM8K question           |
 
-`Message` is extended in `ToolRequestMessage` and `ToolResponseMessage` to include the relevant tool name and arguments.
+The `Message` class is extended in `ToolRequestMessage` and `ToolResponseMessage` to include the relevant tool name and arguments.
 
-## Environment
+### Subclassing Environments
 
-An environment should have two functions:
+If you need more control over Environments and tools, you may wish to subclass `Environment`. We illustrate this 
+with an example environment in which an agent is tasked to write a story.
 
-```py
-obs_msgs, tools = await env.reset()
-new_obs_msgs, reward, done, truncated = await env.step(action_msg)
-```
-
-where messages are how communication is passed. The `action_msg` should be `ToolRequestMessage` which is 1 or more calls
-to tools provided by the `reset`. The `obs_msgs` returned from the environment are `ToolResponseMessage` or other
-general messages that are observations. The `reward` is a scalar value. The `done` is a boolean value. The `truncated`
-is a boolean value.
-
-## Functional Environments
-
-The easiest way to create an environment is using the functional interface, which just uses functions and decorators to define environments. First, let's define what the environment looks like by defining its `start` function:
-
-```py
-from aviary.core import fenv
-
-
-@fenv.start()
-def my_env(topic):
-    # return first observation, and the starting environment state
-    # (empty in this case)
-    return f"Write a story about {topic}", {}
-```
-
-Note that the decorator is a call (`start()`). The `start` decorator starts the definition of an environment. The function, `my_env`, can take whatever you would like and should return a tuple containing the first observation and anything you would like to store about the state of the environment (used to persist/share things between tools). The state will always automatically have an optional `reward` and a boolean `done` that indicates if the environment is complete.
-
-Now we can define some tools:
-
-```py
-@my_env.tool()
-def multiply(x: float, y: float) -> float:
-    """Multiply two numbers."""
-    return x * y
-
-
-@my_env.tool()
-def print_story(story: str | bytes, state) -> None:
-    """Print a story to user and complete task."""
-    print(story)
-    state.reward = 1
-    state.done = True
-```
-
-The tools will be converted into things visible for LLMs using the type hints and the variable descriptions. Thus, the type hinting can be valuable for the agent using it correctly. The docstrings are also passed to the LLM, and is the primary way (along with function name) for communicating about intended tool usage.
-
-You can access the `state` variable in tools, which will have any fields you passed in the return tuple of `start()`. For example, if you returned `{'foo': 'bar'}`, then you could access `state.foo` in the tools.
-
-Stop an environment or set a reward via the `state` variable as shown the second tool. If the reward is not set, it is treated as zero.
-
-Now we can use our environment:
-
-```python
-env = my_env(topic="foo")
-obs, tools = await env.reset()
-```
-
-## Subclass Environments
-
-If you need more control over Environments and tools, you'll want to subclass the `Environment`
-
-First we define an environment by subclassing the `Environment` and defining a `state`. The `state` is all variables
-that change per step and we want to keep together. It will be accessible in your tools, so you can use it to store
-information that you want to persist between steps and between tools.
+We subclass `Environment` and defining a `state`. The `state` consists of all variables
+that change per step that we wish to bundle together. It will be accessible in tools, so you can use `state` to store
+information you want to persist between steps and tool calls.
 
 ```py
 from pydantic import BaseModel
@@ -179,38 +254,14 @@ class ExampleEnv(Environment[ExampleState]):
     state: ExampleState
 ```
 
-We do not have other variables aside from `state` for this environment. We could have things like configuration, a name,
+We do not have other variables aside from `state` for this environment, although we could also have variables like configuration, a name,
 tasks, etc. attached to it.
 
-### Common environments
+### Defining Tools
 
-We expose a simple interface to some commonly-used environments that are included in the aviary codebase. You can instantiate one by referring to its name and passing keyword arguments:
-
-```py
-from aviary.core import Environment
-
-env = Environment.from_name(
-    "calculator",
-    problem_id="example-problem",
-    problem="What is 2+3?",
-    answer=5,
-)
-```
-
-Included with some environments are collections of problems that define training or evaluation datasets.
-We refer to these as `TaskDataset`s, and expose them with a similar interface:
-
-```py
-from aviary.core import TaskDataset
-
-dataset = TaskDataset.from_name("hotpotqa", split="dev")
-```
-
-### Tool
-
-Now let's define our functions that will make up our tools. We'll just have one tool. Tools can optionally have their
-last argument be `state` which is the environment state. This is how you can access the state. This argument will not be
-exposed to the agent as a possible parameter and will be injected by the environment (if part of the function
+We will define a single tool that prints a story. Tools may optionally take a final argument 
+`state` which is the environment state. This argument will not be
+exposed to the agent as a parameter but will be injected by the environment (if part of the function
 signature).
 
 ```py
@@ -219,25 +270,26 @@ def print_story(story: str, state: ExampleState):
 
     Args:
         story: Story to print.
-        state: Environment state (hidden from agent - can put this string to shutup linter).
+        state: Environment state (hidden from agent).
     """
     print(story)
     state.reward = 1
     state.done = True
 ```
 
-There is special syntax we use for defining a tool. The tool is built from the following parts of the function: its
-name, its arguments names, the arguments types, and the docstring. The docstring is parsed to get a description of the
-function and its arguments, so match the syntax carefully.
+The tool is built from the following parts of the function: its
+name, its argument's names, the arguments types, and the docstring. The docstring is parsed to obtain a description of the
+function and its arguments, so be sure to match the syntax carefully.
 
-Setting the `state.done = True` is how we indicate completion. This example terminates immediately. You can use other
-ways to decide to terminate.
+Environment episode completion is indicated by setting `state.done = True`.
+This example terminates immediately - other
+termination conditions are also possible.
 
-You can make the function `async` - the environment will account for that when the tool is called.
+It is also possible make the function `async` - the environment will account for that when the tool is called.
 
-#### Advanced tool descriptions
+### Advanced Tool Descriptions
 
-We support more sophisticated signatures, for those who want to use them:
+Aviary also supports more sophisticated signatures:
 
 - Multiline docstrings
 - Non-primitive type hints (e.g. type unions)
@@ -245,7 +297,7 @@ We support more sophisticated signatures, for those who want to use them:
 - Exclusion of info below `\f` (see below)
 
 If you have summary-level information that belongs in the docstring,
-but you don't want it part of the `Tool.info.description`,
+but you don't want it to be part of the `Tool.info.description`,
 add a `r` prefix to the docstring
 and inject `\f` before the summary information to exclude.
 This convention was created by FastAPI ([docs][1]).
@@ -271,10 +323,10 @@ def print_story(story: str | bytes, state: ExampleState):
     state.done = True
 ```
 
-### Environment `reset` method
+### The Environment `reset` Method
 
-Now we'll define the `reset` function which should set-up the tools,
-and return one or more initial observations and the tools.
+Next we define the `reset` function which initializes the tools
+and returns one or more initial observations as well as the tools.
 The `reset` function is `async` to allow for database interactions or HTTP requests.
 
 ```py
@@ -287,10 +339,10 @@ async def reset(self):
     return [start], self.tools
 ```
 
-### Environment `step` method
+### The Environment `step` Method
 
-Now we can define the `step` function which should take an action and return the next observation, reward, done, and if
-the episode was truncated.
+Next we define the `step` function which takes an action and returns
+the next observation, reward, done, and whether the episode was truncated.
 
 ```py
 from aviary.core import Message
@@ -303,7 +355,7 @@ async def step(self, action: Message):
 
 You will probably often use this specific syntax for calling the tools - calling `exec_tool_calls` with the action.
 
-### Environment `export_frame` method
+### Environment `export_frame` Method
 
 Optionally, we can define a function to export a snapshot of the environment
 and its state for visualization or debugging purposes.
@@ -319,9 +371,10 @@ def export_frame(self):
     )
 ```
 
-### View Environment Tools
+### Viewing Environment Tools
 
-If an environment can be instantiated without anything other than a task (i.e., it implements `from_task`), you can start a server to view its tools:
+If an environment can be instantiated without anything other than the task 
+(i.e., it implements `from_task`), you can start a server to view its tools:
 
 ```sh
 pip install fhaviary[server]
@@ -330,16 +383,82 @@ aviary tools [env name]
 
 This will start a server that allows you to view the tools and call them, viewing the descriptions/types and output that an agent would see when using the tools.
 
-## Environments
+### Incumbent Environments
 
-Here are a few environments implemented with aviary:
+Below we list some pre-existing environments implemented in Aviary:
 
-| Environment | PyPI                                                           | Extra                | README                                                  |     |
-| ----------- | -------------------------------------------------------------- | -------------------- | ------------------------------------------------------- | --- |
-| GSM8k       | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)       | `fhaviary[gsm8k]`    | [`README.md`](packages/gsm8k/README.md#installation)    |     |
-| HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation) |     |
-| LitQA       | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)       | `fhaviary[litqa]`    | [`README.md`](packages/litqa/README.md#installation)    |     |
-| LFRQA       | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)       | `fhaviary[lfrqa]`    | [`README.md`](packages/lfrqa/README.md#installation)    |     |
+| Environment       | PyPI                                                                 | Extra                         | README                                                           |     |
+|-------------------|----------------------------------------------------------------------|-------------------------------|------------------------------------------------------------------| --- |
+| GSM8k             | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)             | `fhaviary[gsm8k]`             | [`README.md`](packages/gsm8k/README.md#installation)             |     |
+| HotPotQA          | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/)       | `fhaviary[hotpotqa]`          | [`README.md`](packages/hotpotqa/README.md#installation)          |     |
+| LitQA             | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)             | `fhaviary[litqa]`             | [`README.md`](packages/litqa/README.md#installation)             |     |
+| Cloning           | [`aviary.cloning`](https://pypi.org/project/aviary.litqa/)           | `fhaviary[cloning]`           | [`README.md`](packages/cloning/README.md#installation)           |     |
+| Protein Stability | [`aviary.protein_stability`](https://pypi.org/project/aviary.litqa/) | `fhaviary[protein_stability]` | [`README.md`](packages/protein_stability/README.md#installation) |     |
+| LFRQA             | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)             | `fhaviary[lfrqa]`             | [`README.md`](packages/lfrqa/README.md#installation)             |     |
+
+### Task Datasets
+
+Included with some environments are collections of problems that define training or evaluation datasets.
+We refer to these as `TaskDataset`s, e.g. for the `HotpotQADataset` subclass of `TaskDataset`:
+
+```py
+from aviary.envs.hotpotqa import HotPotQADataset
+
+dataset = HotPotQADataset(split="dev")
+```
+
+### Functional Environments
+
+An alternative way to create an environment is using the functional interface, 
+which uses functions and decorators to define environments. Let's define an environment that requires an agent to write a story
+about a particular topic by implementing its `start` function:
+
+```python
+from aviary.core import fenv
+
+
+@fenv.start()
+def my_env(topic):
+    # return the first observation and starting environment state
+    # (empty in this case)
+    return f"Write a story about {topic}", {}
+```
+
+The `start` decorator begins the definition of an environment. 
+
+The function, `my_env`, 
+takes an arbitrary input and returns a tuple containing the first observation 
+and any information you wish to store about the environment state (used to persist/share information between tools). 
+
+The state will always have an optional `reward` and a Boolean `done` that indicate if the environment episode is complete. Next we define some tools:
+
+```python
+@my_env.tool()
+def multiply(x: float, y: float) -> float:
+    """Multiply two numbers."""
+    return x * y
+
+
+@my_env.tool()
+def print_story(story: str | bytes, state) -> None:
+    """Print a story to the user and complete episode."""
+    print(story)
+    state.reward = 1
+    state.done = True
+```
+
+The tools will be converted into objects visible for LLMs using the type hints and the variable descriptions. 
+Thus, the type hinting can be valuable for an agent that uses it correctly. 
+The docstrings are also passed to the LLM and is the primary means (along with the function name) for communicating the intended tool usage.
+
+You can access the `state` variable in tools, which will have any fields you passed in the return tuple of `start()`. For example, if you returned `{'foo': 'bar'}`, then you could access `state.foo` in the tools.
+
+You may stop an environment or set a reward via the `state` variable as shown in the second `print_story` tool. If the reward is not set, it is treated as zero.  Next we illustrate how to use our environment:
+
+```python
+env = my_env(topic="foo")
+obs, tools = await env.reset()
+```
 
 ## Citing Aviary
 
@@ -361,7 +480,7 @@ If Aviary is useful for your work please consider citing the following paper:
 
 \[2] Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., Plappert, M., Tworek, J., Hilton, J., Nakano, R. and Hesse, C., 2021. [Training verifiers to solve math word problems.](https://arxiv.org/abs/2110.14168) arXiv preprint arXiv:2110.14168.
 
-\[3] Yang, Z., Qi, P., Zhang, S., Bengio, Y., Cohen, W., Salakhutdinov, R. and Manning, C.D., 2018. [HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering.](https://aclanthology.org/D18-1259/) EMNLP 2018 (pp. 2369-2380).
+\[3] Yang, Z., Qi, P., Zhang, S., Bengio, Y., Cohen, W., Salakhutdinov, R. and Manning, C.D., 2018. [HotpotQA: A dataset for diverse, explainable multi-hop question answering.](https://aclanthology.org/D18-1259/) EMNLP 2018 (pp. 2369-2380).
 
 \[4] Laurent, J.M., Janizek, J.D., Ruzo, M., Hinks, M.M., Hammerling, M.J., Narayanan, S., Ponnapati, M., White, A.D. and Rodriques, S.G., 2024. [Lab-Bench: Measuring capabilities of language models for biology research.](https://arxiv.org/abs/2407.10362) arXiv preprint arXiv:2407.10362.
 

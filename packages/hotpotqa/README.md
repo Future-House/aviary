@@ -12,5 +12,5 @@ Explainable Multi-Hop Question Answering](https://aclanthology.org/D18-1259/). E
 To install the HotPotQA environment, run the following command:
 
 ```bash
-pip install fhaviary[hotpotqa]
+pip install 'fhaviary[hotpotqa]'
 ```

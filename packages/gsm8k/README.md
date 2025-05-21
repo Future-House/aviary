@@ -27,5 +27,5 @@ R. and Hesse, C., 2021.
 To install the GSM8k environment, run the following command:
 
 ```bash
-pip install fhaviary[gsm8k]
+pip install 'fhaviary[gsm8k]'
 ```
