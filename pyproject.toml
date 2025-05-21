@@ -65,6 +65,7 @@ dev = [
     "tantivy<=0.22.0",  # Pin until https://github.com/quickwit-oss/tantivy-py/issues/371 is resolved
     "typeguard",
     "vcrpy>=6",  # Pin for https://github.com/kevin1024/vcrpy/issues/884
+    "jupyter>=1.0.0", # For running notebooks
 ]
 gsm8k = ["aviary.gsm8k"]
 hotpotqa = ["aviary.hotpotqa"]

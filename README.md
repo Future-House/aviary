@@ -46,6 +46,12 @@ pip install 'fhaviary[litqa]'
 pip install 'fhaviary[lfrqa]'
 ```
 
+To run the tutorial notebooks:
+
+```bash
+pip install "fhaviary[dev]"
+```
+
 ### Developer Installation
 
 For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -65,7 +71,7 @@ https://colab.research.google.com/drive/1mejZ5cxgKZrMpYEe0iRoanaGGQ0Cr6WI?usp=sh
 
 Also, note that `async` code works in Google Colab.
 
-## Definining a Custom Environment
+## Defining a Custom Environment
 
 The example below walks through defining a custom language agent environment in Aviary. 
 We define a simple environment where an agent takes actions to modify a counter.
@@ -123,7 +129,7 @@ on the environment using Aviary's sister library LDP (https://github.com/Future-
 ```python
 from ldp.agent import Agent
 from ldp.graph import LLMCallOp
-from ldp.runners import RolloutManager
+from ldp.alg.rollout import RolloutManager
 
 class AgentState:
     """A container for maintaining agent state across interactions."""
@@ -133,15 +139,15 @@ class AgentState:
 
 class SimpleAgent(Agent):
     def __init__(self, **kwargs):
-        self.llm_call_op = LLMCallOp(**kwargs)
+        self._llm_call_op = LLMCallOp(**kwargs)
 
     async def init_state(self, tools):
         return AgentState([], tools)
 
     async def get_asv(self, agent_state, obs):
         """Take an action, observe new state, return value"""
-        action = await self.llm_call_op(
-            config={"model": "gpt-4o", "temperature": 0.1},
+        action = await self._llm_call_op(
+            config={"name": "gpt-4o", "temperature": 0.1},
             msgs=agent_state.messages + obs,
             tools=agent_state.tools,
         )
