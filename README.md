@@ -17,15 +17,15 @@
   </a>
 </p>
 
-**Aviary** \[1] is a gymnasium for defining custom language agent RL environments. The library features pre-existing environments on math \[2], general knowledge \[3], biological sequences \[4], scientific literature search \[5], and protein stability.
+**Aviary** [^1] is a gymnasium for defining custom language agent RL environments. The library features pre-existing environments on math [^2], general knowledge [^3], biological sequences [^4], scientific literature search [^5], and protein stability.
 Aviary is designed to work in tandem with its sister library LDP (https://github.com/Future-House/ldp) which enables the user to define custom language agents as Language Decision Processes. See the following tutorial for an example of how to run an LDP language agent on an Aviary environment.
 
 [Overview](#overview) | [Getting Started](#getting-started) | [Documentation](https://aviary.bio/) | [Paper](https://arxiv.org/abs/2412.21154)
 
 ## What's New?
 
-- Check out our new [Tutorial](https://github.com) notebook on running an LDP agent in an Aviary environment!
-- The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
+* Check out our new [Tutorial](https://github.com) notebook on running an LDP agent in an Aviary environment!
+* The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
 
 ## Overview
 
@@ -59,17 +59,6 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Tutorial Notebooks
 
 Check out our tutorial notebooks.
-
-### Google Colab
-
-As of 10/25/2024, unfortunately Google Colab does not yet support Python 3.11 or 3.12
-([issue](https://github.com/googlecolab/colabtools/issues/3190)).
-
-Thus, as a workaround, you will need to install Python 3.11 into your notebook.
-Here is a sample notebook showing how to do this:
-https://colab.research.google.com/drive/1mejZ5cxgKZrMpYEe0iRoanaGGQ0Cr6WI?usp=sharing
-
-Also, note that `async` code works in Google Colab.
 
 ## Defining a Custom Environment
 
@@ -486,12 +475,12 @@ If Aviary is useful for your work please consider citing the following paper:
 
 ## References
 
-\[1]: Narayanan, S., Braza, J.D., Griffiths, R.R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S.G. and White, A.D., 2024. [Aviary: training language agents on challenging scientific tasks.](https://arxiv.org/abs/2412.21154) arXiv preprint arXiv:2412.21154.
+[^1]: Narayanan, S., Braza, J.D., Griffiths, R.R., Ponnapati, M., Bou, A., Laurent, J., Kabeli, O., Wellawatte, G., Cox, S., Rodriques, S.G. and White, A.D., 2024. [Aviary: training language agents on challenging scientific tasks.](https://arxiv.org/abs/2412.21154) arXiv preprint arXiv:2412.21154.
 
-\[2] Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., Plappert, M., Tworek, J., Hilton, J., Nakano, R. and Hesse, C., 2021. [Training verifiers to solve math word problems.](https://arxiv.org/abs/2110.14168) arXiv preprint arXiv:2110.14168.
+[^2]: Cobbe, K., Kosaraju, V., Bavarian, M., Chen, M., Jun, H., Kaiser, L., Plappert, M., Tworek, J., Hilton, J., Nakano, R. and Hesse, C., 2021. [Training verifiers to solve math word problems.](https://arxiv.org/abs/2110.14168) arXiv preprint arXiv:2110.14168.
 
-\[3] Yang, Z., Qi, P., Zhang, S., Bengio, Y., Cohen, W., Salakhutdinov, R. and Manning, C.D., 2018. [HotpotQA: A dataset for diverse, explainable multi-hop question answering.](https://aclanthology.org/D18-1259/) EMNLP 2018 (pp. 2369-2380).
+[^3]: Yang, Z., Qi, P., Zhang, S., Bengio, Y., Cohen, W., Salakhutdinov, R. and Manning, C.D., 2018. [HotpotQA: A dataset for diverse, explainable multi-hop question answering.](https://aclanthology.org/D18-1259/) EMNLP 2018 (pp. 2369-2380).
 
-\[4] Laurent, J.M., Janizek, J.D., Ruzo, M., Hinks, M.M., Hammerling, M.J., Narayanan, S., Ponnapati, M., White, A.D. and Rodriques, S.G., 2024. [Lab-Bench: Measuring capabilities of language models for biology research.](https://arxiv.org/abs/2407.10362) arXiv preprint arXiv:2407.10362.
+[^4]: Laurent, J.M., Janizek, J.D., Ruzo, M., Hinks, M.M., Hammerling, M.J., Narayanan, S., Ponnapati, M., White, A.D. and Rodriques, S.G., 2024. [Lab-Bench: Measuring capabilities of language models for biology research.](https://arxiv.org/abs/2407.10362) arXiv preprint arXiv:2407.10362.
 
-\[5] Skarlinski, M.D., Cox, S., Laurent, J.M., Braza, J.D., Hinks, M., Hammerling, M.J., Ponnapati, M., Rodriques, S.G. and White, A.D., 2024. [Language agents achieve superhuman synthesis of scientific knowledge.](https://arxiv.org/abs/2409.13740) arXiv preprint arXiv:2409.13740.
+[^5]: Skarlinski, M.D., Cox, S., Laurent, J.M., Braza, J.D., Hinks, M., Hammerling, M.J., Ponnapati, M., Rodriques, S.G. and White, A.D., 2024. [Language agents achieve superhuman synthesis of scientific knowledge.](https://arxiv.org/abs/2409.13740) arXiv preprint arXiv:2409.13740.
