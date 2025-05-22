@@ -8,12 +8,11 @@
 [![tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)](https://github.com/Future-House/aviary)
 [![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/overview/main)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
-[![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
 <p align="left">
   <a href="https://arxiv.org/abs/2212.04450">
-    <img src="assets/aviary_art.png"/>
+    <img src="docs/assets/aviary_art.png"/>
   </a>
 </p>
 
@@ -40,10 +39,7 @@ pip install fhaviary
 To install aviary together with the incumbent environments:
 
 ```bash
-pip install 'fhaviary[gsm8k]'
-pip install 'fhaviary[hotpotqa]'
-pip install 'fhaviary[litqa]'
-pip install 'fhaviary[lfrqa]'
+pip install 'fhaviary[gsm8k,hotpotqa,litqa,lfrqa]'
 ```
 
 To run the tutorial notebooks:
@@ -78,7 +74,7 @@ class CounterEnv(Environment[CounterEnvState]):
     """A simple environment that allows an agent to modify a counter."""
 
     async def reset(self):
-        """Initialize the environment with a counter set to 0."""
+        """Initialize the environment with a counter set to 0. Goal is to count to 10"""
         self.state = CounterEnvState(count=0)
 
         # Create tools allowing the agent to increment and decrement counter
@@ -119,7 +115,7 @@ on the environment using Aviary's sister library LDP (https://github.com/Future-
 ```python
 from ldp.agent import Agent
 from ldp.graph import LLMCallOp
-from ldp.alg.rollout import RolloutManager
+from ldp.alg import RolloutManager
 
 
 class AgentState:
