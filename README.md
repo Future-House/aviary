@@ -1,12 +1,12 @@
 # Aviary
 
 [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Future-House/aviary)
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
 [![Docs](https://assets.readthedocs.org/static/projects/badges/passing-flat.svg)](https://aviary.bio/)
 [![PyPI version](https://badge.fury.io/py/fhaviary.svg)](https://badge.fury.io/py/fhaviary)
 [![tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)](https://github.com/Future-House/aviary)
-[![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/overview/main)
+[![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/)
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
@@ -58,7 +58,7 @@ Check out our tutorial notebooks.
 
 ## Defining a Custom Environment
 
-The example below walks through defining a custom language agent environment in Aviary.
+The example below walks through defining a custom environment in Aviary.
 We define a simple environment where an agent takes actions to modify a counter.
 The example is also featured in the following notebook TODO: Fill in.
 
@@ -76,6 +76,9 @@ class CounterEnv(Environment[CounterEnvState]):
     async def reset(self):
         """Initialize the environment with a counter set to 0. Goal is to count to 10"""
         self.state = CounterEnvState(count=0)
+        
+        # Target value
+        self.target = 10
 
         # Create tools allowing the agent to increment and decrement counter
         self.tools = [
@@ -84,17 +87,17 @@ class CounterEnv(Environment[CounterEnvState]):
         ]
 
         # Return an observation message with the counter and available tools
-        return [Message(content=f"counter={self.state.count}")], self.tools
+        return [Message(content=f"Count to 10. counter={self.state.count}")], self.tools
 
     async def step(self, action: ToolRequestMessage):
         """Executes the tool call requested by the agent."""
         obs = self.exec_tool_calls(action)
 
         # The reward is the square of the current count
-        reward = self.state.count**2
+        reward = int(self.state.count == self.target)
 
         # Returns observations, reward, done, truncated
-        return obs, reward, reward < 0, False
+        return obs, reward, reward == 1, False
 
     def incr(self):
         """Increment the counter."""
@@ -185,7 +188,7 @@ We explain the message formalism in further detail below.
 
 ### Messages
 
-Communication between the agent and environment is achieved via messages. We follow the [OpenAI](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images) standard.
+Communication between the agent and environment is achieved via messages. We follow the [OpenAI](https://platform.openai.com/docs/api-reference/messages/createMessage) standard.
 Messages have two attributes:
 
 ```py
@@ -231,7 +234,7 @@ The `Message` class is extended in `ToolRequestMessage` and `ToolResponseMessage
 If you need more control over Environments and tools, you may wish to subclass `Environment`. We illustrate this
 with an example environment in which an agent is tasked to write a story.
 
-We subclass `Environment` and defining a `state`. The `state` consists of all variables
+We subclass `Environment` and define a `state`. The `state` consists of all variables
 that change per step that we wish to bundle together. It will be accessible in tools, so you can use `state` to store
 information you want to persist between steps and tool calls.
 
@@ -466,7 +469,6 @@ If Aviary is useful for your work please consider citing the following paper:
   journal={arXiv preprint arXiv:2412.21154},
   year={2024}
 }
-
 ```
 
 ## References
