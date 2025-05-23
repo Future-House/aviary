@@ -76,7 +76,7 @@ class CounterEnv(Environment[CounterEnvState]):
     async def reset(self):
         """Initialize the environment with a counter set to 0. Goal is to count to 10"""
         self.state = CounterEnvState(count=0)
-        
+
         # Target value
         self.target = 10
 
