@@ -7,7 +7,7 @@ An environment designed to utilize PaperQA for answering questions from the LFRQ
 To install the LFRQA environment, run:
 
 ```bash
-pip install fhaviary[lfrqa]
+pip install 'fhaviary[lfrqa]'
 ```
 
 ## Usage

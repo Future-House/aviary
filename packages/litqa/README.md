@@ -19,7 +19,7 @@ Therefore, LitQA2 is considered a scientific RAG dataset.
 To install the LitQA environment, run:
 
 ```bash
-pip install fhaviary[litqa]
+pip install 'fhaviary[litqa]'
 ```
 
 ## Usage
