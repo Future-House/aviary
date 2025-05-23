@@ -195,7 +195,8 @@ Messages have two attributes:
 msg = Message(content="Hello, world!", role="assistant")
 ```
 
-The `content` attribute can be a string but can also comprise objects such as images. For example, the `create_message` method can be used to create a message with images:
+The `content` attribute can be a string but can also comprise objects such as [images](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images). 
+For example, the `create_message` method can be used to create a message with images:
 
 ```py
 from PIL import Image
