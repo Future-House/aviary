@@ -77,7 +77,7 @@ class CounterEnv(Environment[CounterEnvState]):
         """Initialize the environment with a counter set to 0. Goal is to count to 10"""
         self.state = CounterEnvState(count=0)
 
-        # Target value
+        # Target count
         self.target = 10
 
         # Create tools allowing the agent to increment and decrement counter
