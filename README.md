@@ -17,16 +17,24 @@
 </p>
 
 **Aviary** [^1] is a gymnasium for defining custom language agent RL environments. The library features pre-existing environments on math [^2], general knowledge [^3], biological sequences [^4], scientific literature search [^5], and protein stability.
-Aviary is designed to work in tandem with its sister library LDP (https://github.com/Future-House/ldp) which enables the user to define custom language agents as Language Decision Processes. See the following tutorial for an example of how to run an LDP language agent on an Aviary environment.
+Aviary is designed to work in tandem with its sister library LDP (https://github.com/Future-House/ldp) which enables the user to define custom language agents as Language Decision Processes. See the following [tutorial](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb) for an example of how to run an LDP language agent on an Aviary environment.
 
 [Overview](#overview) | [Getting Started](#getting-started) | [Documentation](https://aviary.bio/) | [Paper](https://arxiv.org/abs/2412.21154)
 
 ## What's New?
 
-- Check out our new [Tutorial](https://github.com) notebook on running an LDP agent in an Aviary environment!
+- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/docs/agent_tutorial.ipynb) notebook on running an LDP agent in an Aviary environment!
 - The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
 
 ## Overview
+
+<p align="left">
+  <a href="https://arxiv.org/abs/2212.04450">
+    <img src="docs/assets/Aviary.png"/>
+  </a>
+</p>
+
+A pictorial overview of the five implemented Aviary environments and the language decision process framework.
 
 ## Getting Started
 
@@ -54,7 +62,10 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Tutorial Notebooks
 
-Check out our tutorial notebooks.
+1. [Building a Custom Environment in Aviary](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb)
+2. [Building a GSM8K Environment in Aviary](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb)
+3. [Creating Language Agents to Interact with Aviary Environments](https://github.com/Future-House/ldp/blob/main/docs/agent_tutorial.ipynb)
+4. [Evaluate a Llama Agent on GSM8K](https://github.com/Future-House/ldp/blob/main/docs/gsm8k_llama_eval.ipynb)
 
 ## Defining a Custom Environment
 
