@@ -28,6 +28,14 @@ Aviary is designed to work in tandem with its sister library LDP (https://github
 
 ## Overview
 
+<p align="left">
+  <a href="https://arxiv.org/abs/2212.04450">
+    <img src="docs/assets/Aviary.png"/>
+  </a>
+</p>
+
+A pictorial overview of the five implemented Aviary environments and the language decision process framework.
+
 ## Getting Started
 
 To install aviary (note `fh` stands for FutureHouse):
