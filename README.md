@@ -71,7 +71,7 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The example below walks through defining a custom environment in Aviary.
 We define a simple environment where an agent takes actions to modify a counter.
-The example is also featured in the following notebook TODO: Fill in.
+The example is also featured in the following [notebook](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb)
 
 ```python
 from collections import namedtuple
