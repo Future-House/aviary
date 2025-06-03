@@ -4,16 +4,22 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import pytest
 import vcr.request
 
-from aviary.core import DummyEnv
-
 from . import CASSETTES_DIR
 
 if TYPE_CHECKING:
     import vcr.request
 
+    from aviary.core import DummyEnv
+
 
 @pytest.fixture(name="dummy_env")
-def fixture_dummy_env() -> DummyEnv:
+def fixture_dummy_env() -> "DummyEnv":
+    # Lazily import from aviary so typeguard doesn't throw:
+    # > /path/to/.venv/lib/python3.12/site-packages/typeguard/_pytest_plugin.py:93:
+    # > InstrumentationWarning: typeguard cannot check these packages because they
+    # > are already imported: aviary
+    from aviary.core import DummyEnv
+
     return DummyEnv()
 
 
