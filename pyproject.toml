@@ -116,7 +116,7 @@ tests-root = "tests"
 [tool.codespell]
 check-filenames = true
 check-hidden = true
-ignore-words-list = "astroid,ser"
+ignore-words-list = "astroid,ser,AciI"
 
 [tool.mypy]
 # Type-checks the interior of functions without type annotations.
@@ -550,6 +550,7 @@ ignore = [
     "TC006",  # Strings in cast don't work with PyCharm CE 2024.3.4's jump-to-definition
     "TD002",  # Don't care for TODO author
     "TD003",  # Don't care for TODO links
+    "TID252",  # Relative imports are useful
     "TRY003",  # Overly pedantic
     "W505",  # Overly pedantic for Tool.__doc__
 ]
@@ -614,6 +615,7 @@ spaces_indent_inline_array = 4  # Match Python PEP 8
 trailing_comma_inline_array = true
 
 [tool.uv.sources]
+"aviary.cloning" = {workspace = true}
 "aviary.gsm8k" = {workspace = true}
 "aviary.hotpotqa" = {workspace = true}
 "aviary.lfrqa" = {workspace = true}
