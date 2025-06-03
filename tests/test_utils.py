@@ -124,7 +124,11 @@ def test_shuffle(
 
 def test_random_annotation() -> None:
     class SomeModel(BaseModel):
-        rng: Annotated[random.Random, RandomAnnotation()]
+        # Include str so we can test failing over for non-Random values
+        rng: Annotated[random.Random, RandomAnnotation()] | str
+
+    model = SomeModel(rng="SEED_SENTINEL")
+    assert model.rng == "SEED_SENTINEL"
 
     model = SomeModel(rng=random.Random(5))
     assert isinstance(model.rng, random.Random)
@@ -150,6 +154,7 @@ def test_random_annotation() -> None:
             # Sample original model once so RNG aligns for both deserialized
             # models in the `for` loop
             sampled_original = model.rng.sample(list(range(10)), k=6)
+        assert isinstance(deserialized_model.rng, random.Random)
         sampled_deserialized = deserialized_model.rng.sample(list(range(10)), k=6)
         assert sampled_original == sampled_deserialized, (
             "Deserialization seeding failed"
