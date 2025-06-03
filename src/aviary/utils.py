@@ -220,7 +220,9 @@ class RandomAnnotation:
     def __get_pydantic_core_schema__(
         cls, source: type[random.Random], handler: GetCoreSchemaHandler
     ) -> cs.CoreSchema:
-        def val_func(state: list) -> random.Random:
+        def val_func(
+            state: Any,  # Any enables Pydantic validations can fail over on errors
+        ) -> random.Random:
             random_inst = source()
             # `Random.setstate()` raises `ValueError`s if the state is invalid,
             # so no need to handle validation on our own. But we do need to
