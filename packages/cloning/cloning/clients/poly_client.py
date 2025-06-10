@@ -104,7 +104,7 @@ async def optimize_translation(
     auth_token = os.environ["MODAL_DEPLOY_TOKEN"]
 
     # very likely to just fail if it's too low
-    min_repeat_length = max(12, int(min_repeat_length))
+    min_repeat_length = max(12, int(min_repeat_length))  # noqa: FURB123
 
     async with httpx.AsyncClient() as client:
         response = await client.post(

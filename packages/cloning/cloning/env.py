@@ -53,14 +53,14 @@ if _BINARIES_FOUND:
     }
 
     # Download the rebase.withref file if it doesn't exist
-    if not os.path.exists(output_path):
+    if not output_path.exists():
         with httpx.Client(headers=headers) as client:
             # Send a GET request
             response = client.get(url)
         try:
             response.raise_for_status()  # Check for HTTP errors
             os.makedirs(GO_BINARIES_PATH, exist_ok=True)
-            with open(output_path, "wb") as f:  # noqa: FURB103
+            with output_path.open("wb") as f:  # noqa: FURB103
                 f.write(response.content)
             _USE_LOCAL_BINARIES = True
         except httpx.HTTPStatusError:

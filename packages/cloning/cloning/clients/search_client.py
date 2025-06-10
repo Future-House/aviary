@@ -77,7 +77,7 @@ def search_genes(query: str) -> BioSequences:
         Up to 5 matching genes as a BioSequences object.
     """
     # TODO: rewrite this using httpx.AsyncClient and bypass biopython.
-    Entrez.email = "hello@futurehouse.org"  # TODO: configurable?
+    Entrez.email = os.environ.get("NCBI_EMAIL", None)
     Entrez.api_key = os.environ.get("NCBI_API_KEY", None)
     # we will handle retries with tenacity, for jittering & exp backoff
     Entrez.max_tries = 1

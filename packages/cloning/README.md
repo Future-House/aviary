@@ -21,7 +21,7 @@ cd aviary
 uv python pin 3.12
 uv venv
 uv pip install -e .
-uv pip install -e envs/cloning
+uv pip install -e packages/cloning
 ```
 
 Next, we need to deploy tool endpoints for the environment to use.

@@ -53,8 +53,8 @@ def convert_seqqa_to_task(
                 sequence=match, type=SequenceType.DNA, name=f"seq-{name_hash}"
             )
             # only replace 1 - since we can have homologous sequences
-            text = text.replace(match, f"{s.name}", 1)
-            answer_ = answer_.replace(match, f"{s.name}", 1)
+            text = text.replace(match, str(s.name), 1)
+            answer_ = answer_.replace(match, str(s.name), 1)
             seqs.append(s)
 
         return text, seqs, answer_

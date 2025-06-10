@@ -153,7 +153,7 @@ explicit_package_bases = true
 # Useful if you'd like to keep stubs in your repo, along with the config file.
 # Multiple paths are always separated with a : or , regardless of the platform.
 # User home directory and environment variables will be expanded.
-mypy_path = "$MYPY_CONFIG_FILE_DIR/src,$MYPY_CONFIG_FILE_DIR/packages/gsm8k/src,$MYPY_CONFIG_FILE_DIR/packages/hotpotqa/src,$MYPY_CONFIG_FILE_DIR/packages/lfrqa/src,$MYPY_CONFIG_FILE_DIR/packages/litqa/src"
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src,$MYPY_CONFIG_FILE_DIR/packages/gsm8k/src,$MYPY_CONFIG_FILE_DIR/packages/hotpotqa/src,$MYPY_CONFIG_FILE_DIR/packages/lfrqa/src,$MYPY_CONFIG_FILE_DIR/packages/litqa/src,$MYPY_CONFIG_FILE_DIR/packages/cloning"
 # Specifies the OS platform for the target program, for example darwin or win32
 # (meaning OS X or Windows, respectively). The default is the current platform
 # as revealed by Python’s sys.platform variable.
@@ -186,11 +186,18 @@ warn_unused_ignores = true
 ignore_missing_imports = true
 # Per-module configuration options
 module = [
+    "ahocorasick",
     "cloudpickle",  # SEE: https://github.com/cloudpipe/cloudpickle/issues/541
     "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
     "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
     "vcr.*",  # SEE: https://github.com/kevin1024/vcrpy/issues/780
 ]
+
+[[tool.mypy.overrides]]
+follow_imports = "skip"
+ignore_missing_imports = true
+# Special-case Bio so that mypy doesn't complain about things like Bio.Restriction
+module = "Bio.*"
 
 [tool.pylint]
 

@@ -150,7 +150,7 @@ async def optimize_translation(
        An optimized DNA sequence
     """
     # very likely to just fail if it's too low
-    min_repeat_length = max(12, int(min_repeat_length))
+    min_repeat_length = max(12, int(min_repeat_length))  # noqa: FURB123
 
     if cg_content < 10 or cg_content > 90:
         raise ValueError("cg_content must an integer between 10 and 90")
