@@ -339,7 +339,7 @@ def _create_feature(ann: Annotation, seq_length: int) -> SeqFeature:
 
     qualifiers = {
         "note": ann.name.replace("/", "|"),
-        "full_name": f"{ann.full_name}".replace("/", "|"),
+        "full_name": str(ann.full_name).replace("/", "|"),
     }
 
     return SeqFeature(location, type=ann.type, qualifiers=qualifiers)

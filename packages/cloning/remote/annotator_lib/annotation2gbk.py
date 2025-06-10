@@ -33,7 +33,7 @@ class Annotation:
             for line_number, line in enumerate(file, 1):
                 fields = line.strip().split("\t")
                 if not (
-                    len(fields) == FRAME_COL_NUM or len(fields) == NO_FRAME_COL_NUM
+                    len(fields) == FRAME_COL_NUM or len(fields) == NO_FRAME_COL_NUM  # noqa: FURB108
                 ):
                     raise ValueError(
                         f"Error on line {line_number}: Expected {FRAME_COL_NUM} tab-separated fields, but got {len(fields)}.\n"

@@ -21,11 +21,6 @@ dynamic = ["version"]
 name = "aviary.cloning"
 requires-python = ">=3.11"
 
-[tool.refurb]
-ignore = [
-    "FURB120",  # Explicit defaults are useful
-]
-
 [tool.ruff]
 extend = "../../pyproject.toml"
 lint.ignore = [

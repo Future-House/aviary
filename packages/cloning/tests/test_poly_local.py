@@ -3,7 +3,6 @@ import re
 import httpx
 import pytest
 from aviary.core import argref_by_name
-from envs.cloning.cloning.sequence_models import BioSequence, BioSequences, SequenceType
 
 from cloning.env import _BINARIES_FOUND  # noqa: PLC2701
 from cloning.poly_local import (
@@ -16,6 +15,7 @@ from cloning.poly_local import (
     optimize_translation,
     simulate_pcr,
 )
+from cloning.sequence_models import BioSequence, BioSequences, SequenceType
 
 
 @pytest.mark.skipif(not _BINARIES_FOUND, reason="Binary files missing")
@@ -49,7 +49,7 @@ async def test_find_orfs():
         min_length=1000,
         **find_orfs_kws,
     )
-    assert len(result.sequences) == 0
+    assert not result.sequences
 
     # check a reference from the ORF finder
     # https://www.ncbi.nlm.nih.gov/orffinder/
@@ -152,7 +152,7 @@ async def test_goldengate():
 
     result = await goldengate(seqs, "BsaI")
 
-    assert len(result.sequences) > 0, "No sequences returned"
+    assert result.sequences, "No sequences returned"
 
 
 @pytest.mark.skipif(not _BINARIES_FOUND, reason="Binary files missing")
@@ -175,7 +175,7 @@ async def test_digest():
     )
 
     result = await digest_and_ligate(seqs, "SexAI,BsaI")
-    assert len(result.sequences) > 0, "No sequences returned"
+    assert result.sequences, "No sequences returned"
 
 
 @pytest.mark.skipif(not _BINARIES_FOUND, reason="Binary files missing")

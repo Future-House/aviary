@@ -59,7 +59,7 @@ if _BINARIES_FOUND:
             response = client.get(url)
         try:
             response.raise_for_status()  # Check for HTTP errors
-            os.makedirs(GO_BINARIES_PATH, exist_ok=True)
+            GO_BINARIES_PATH.mkdir(parents=True, exist_ok=True)
             with output_path.open("wb") as f:  # noqa: FURB103
                 f.write(response.content)
             _USE_LOCAL_BINARIES = True

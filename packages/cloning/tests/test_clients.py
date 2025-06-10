@@ -93,7 +93,7 @@ async def test_find_orfs():
         min_length=1000,
         **find_orfs_kws,
     )
-    assert len(result.sequences) == 0
+    assert not result.sequences
 
     # check a reference from the ORF finder
     # https://www.ncbi.nlm.nih.gov/orffinder/
@@ -192,7 +192,7 @@ async def test_goldengate():
 
     result = await goldengate(seqs, "BsaI")
 
-    assert len(result.sequences) > 0, "No sequences returned"
+    assert result.sequences, "No sequences returned"
 
 
 @pytest.mark.asyncio
@@ -214,7 +214,7 @@ async def test_digest():
     )
 
     result = await digest_and_ligate(seqs, "SexAI,BsaI")
-    assert len(result.sequences) > 0, "No sequences returned"
+    assert result.sequences, "No sequences returned"
 
 
 @pytest.mark.asyncio
