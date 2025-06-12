@@ -116,7 +116,7 @@ tests-root = "tests"
 [tool.codespell]
 check-filenames = true
 check-hidden = true
-ignore-words-list = "astroid,ser"
+ignore-words-list = "astroid,ser,AciI"
 
 [tool.mypy]
 # Type-checks the interior of functions without type annotations.
@@ -153,7 +153,7 @@ explicit_package_bases = true
 # Useful if you'd like to keep stubs in your repo, along with the config file.
 # Multiple paths are always separated with a : or , regardless of the platform.
 # User home directory and environment variables will be expanded.
-mypy_path = "$MYPY_CONFIG_FILE_DIR/src,$MYPY_CONFIG_FILE_DIR/packages/gsm8k/src,$MYPY_CONFIG_FILE_DIR/packages/hotpotqa/src,$MYPY_CONFIG_FILE_DIR/packages/lfrqa/src,$MYPY_CONFIG_FILE_DIR/packages/litqa/src"
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src,$MYPY_CONFIG_FILE_DIR/packages/gsm8k/src,$MYPY_CONFIG_FILE_DIR/packages/hotpotqa/src,$MYPY_CONFIG_FILE_DIR/packages/lfrqa/src,$MYPY_CONFIG_FILE_DIR/packages/litqa/src,$MYPY_CONFIG_FILE_DIR/packages/cloning"
 # Specifies the OS platform for the target program, for example darwin or win32
 # (meaning OS X or Windows, respectively). The default is the current platform
 # as revealed by Python’s sys.platform variable.
@@ -186,11 +186,18 @@ warn_unused_ignores = true
 ignore_missing_imports = true
 # Per-module configuration options
 module = [
+    "ahocorasick",
     "cloudpickle",  # SEE: https://github.com/cloudpipe/cloudpickle/issues/541
     "datasets",  # SEE: https://github.com/huggingface/datasets/issues/3841
     "dicttoxml",  # SEE: https://github.com/quandyfactory/dicttoxml/issues/106
     "vcr.*",  # SEE: https://github.com/kevin1024/vcrpy/issues/780
 ]
+
+[[tool.mypy.overrides]]
+follow_imports = "skip"
+ignore_missing_imports = true
+# Special-case Bio so that mypy doesn't complain about things like Bio.Restriction
+module = "Bio.*"
 
 [tool.pylint]
 
@@ -312,7 +319,14 @@ ignore = [
     "FURB147",  # Rely on ruff PTH118 for this
     "FURB150",  # Rely on ruff PTH102 for this
     "FURB155",  # Rely on ruff PTH202 for this
+    "FURB184",  # Too pedantic; chained assignments can hide semantics
 ]
+
+[[tool.refurb.amend]]
+ignore = [
+    "FURB120",  # Explicit defaults are useful for tools
+]
+path = "packages/cloning"
 
 [tool.ruff]
 # Line length to use when enforcing long-lines violations (like `E501`).
@@ -550,6 +564,7 @@ ignore = [
     "TC006",  # Strings in cast don't work with PyCharm CE 2024.3.4's jump-to-definition
     "TD002",  # Don't care for TODO author
     "TD003",  # Don't care for TODO links
+    "TID252",  # Relative imports are useful
     "TRY003",  # Overly pedantic
     "W505",  # Overly pedantic for Tool.__doc__
 ]
@@ -614,6 +629,7 @@ spaces_indent_inline_array = 4  # Match Python PEP 8
 trailing_comma_inline_array = true
 
 [tool.uv.sources]
+"aviary.cloning" = {workspace = true}
 "aviary.gsm8k" = {workspace = true}
 "aviary.hotpotqa" = {workspace = true}
 "aviary.lfrqa" = {workspace = true}

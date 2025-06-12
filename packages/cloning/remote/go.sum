@@ -1,0 +1,12 @@
+github.com/klauspost/cpuid v1.3.1 h1:5JNjFYYQrZeKRJ0734q51WCEEn2huer72Dc7K+R/b6s=
+github.com/klauspost/cpuid v1.3.1/go.mod h1:bYW4mA6ZgKPob1/Dlai2LviZJO7KGI3uoWLd42rAQw4=
+github.com/lunny/log v0.0.0-20160921050905-7887c61bf0de h1:nyxwRdWHAVxpFcDThedEgQ07DbcRc5xgNObtbTp76fk=
+github.com/lunny/log v0.0.0-20160921050905-7887c61bf0de/go.mod h1:3q8WtuPQsoRbatJuy3nvq/hRSvuBJrHHr+ybPPiNvHQ=
+github.com/mitchellh/go-wordwrap v1.0.1 h1:TLuKupo69TCn6TQSyGxwI1EblZZEsQ0vMlAFQflz0v0=
+github.com/mitchellh/go-wordwrap v1.0.1/go.mod h1:R62XHJLzvMFRBbcrT7m7WgmE1eOyTSsCt+hzestvNj0=
+github.com/mroth/weightedrand v0.4.1 h1:rHcbUBopmi/3x4nnrvwGJBhX9d0vk+KgoLUZeDP6YyI=
+github.com/mroth/weightedrand v0.4.1/go.mod h1:3p2SIcC8al1YMzGhAIoXD+r9olo/g/cdJgAD905gyNE=
+github.com/whitead/poly v0.0.0-20240924200143-f92359b10f3e h1:lwSTiWlFleox0httg2+x8+vS+EFQ9xCDlJU7EuHIrE8=
+github.com/whitead/poly v0.0.0-20240924200143-f92359b10f3e/go.mod h1:D4cg/mQSSP1MuvoDOET/QzEC9lV+dc5358kUUDRulM8=
+lukechampine.com/blake3 v1.1.5 h1:hsACfxWvLdGmjYbWGrumQIphOvO+ZruZehWtgd2fxoM=
+lukechampine.com/blake3 v1.1.5/go.mod h1:hE8RpzdO8ttZ7446CXEwDP1eu2V4z7stv0Urj1El20g=

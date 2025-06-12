@@ -1,0 +1,42 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+
+[project]
+authors = [
+    {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
+]
+# keep aviary-internal off if possible
+# because deployment scripts do not install it
+dependencies = [
+    "biopython",
+    "click",
+    "fhaviary>=0.8.1",  # Pin for EnvStateMessage
+    "httpx",
+    "pyahocorasick",
+    "tenacity",
+]
+description = "Molecular cloning environment"
+dynamic = ["version"]
+name = "aviary.cloning"
+requires-python = ">=3.11"
+
+[tool.ruff]
+extend = "../../pyproject.toml"
+lint.ignore = [
+    "PLR2004",  # Convenient
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+cloning = ["bin/*"]
+
+[tool.setuptools.packages.find]
+exclude = ["scripts*", "tests*"]
+include = ["cloning*"]
+
+[tool.setuptools_scm]
+root = "../.."
+version_file = "cloning/version.py"
