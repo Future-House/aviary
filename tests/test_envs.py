@@ -455,6 +455,29 @@ class TestParallelism:
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
 
+        # 3. Let's check how the string formatting works for ExceptionGroup
+        async def dance(style: str) -> None:  # noqa: ARG001
+            """Dance in a given style."""
+
+            async def inner1() -> None:  # noqa: RUF029
+                """Inner function that raises an Exception."""
+                raise RuntimeError("BOOM, blew out an ACL.")
+
+            async with asyncio.TaskGroup() as tg:  # Leads to ExceptionGroup
+                _ = tg.create_task(inner1())
+
+        dance_tool = Tool.from_function(dance, allow_empty_param_descriptions=True)
+        env.tools.append(dance_tool)
+        (tool_response_msg,) = await env.exec_tool_calls(
+            ToolRequestMessage(
+                tool_calls=[ToolCall.from_tool(dance_tool, style="salsa")]
+            ),
+            handle_tool_exc=True,
+        )
+        assert "BOOM" in tool_response_msg.content, (
+            "Expected sub-exceptions to be displayed"
+        )
+
     @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
