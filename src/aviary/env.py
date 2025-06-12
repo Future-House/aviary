@@ -29,7 +29,7 @@ from aviary.tools import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
-from aviary.utils import is_coroutine_callable
+from aviary.utils import format_exc, is_coroutine_callable
 
 logger = logging.getLogger(__name__)
 
@@ -236,8 +236,8 @@ class Environment(ABC, Generic[TEnvState]):
                 if not handle_tool_exc:
                     raise
                 logger_msg = (
-                    f"Encountered exception during tool call for tool {tool.info.name}:"
-                    f" {exc!r}"
+                    f"Encountered exception during tool call"
+                    f" for tool {tool.info.name}: {format_exc(exc)}"
                 )
                 # logger.exception is just too verbose and clogs up console logging. This is a
                 # more human-friendly version: log a readable error message and emit the exception
@@ -247,7 +247,9 @@ class Environment(ABC, Generic[TEnvState]):
                 tool_exc = exc
             if tool_exc:
                 # No need to mention tool.info.name here, since it'll get wrapped in a ToolResponseMessage
-                s_content = f"Encountered exception during tool call: {tool_exc}"
+                s_content = (
+                    f"Encountered exception during tool call: {format_exc(tool_exc)}"
+                )
             elif isinstance(content, str):
                 s_content = content
             elif isinstance(content, BaseModel):

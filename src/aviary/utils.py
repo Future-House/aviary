@@ -470,3 +470,13 @@ class MultipleChoiceEvaluation(StrEnum):
         if question.unsure_answer and extracted_answer == question.unsure_answer:
             return MultipleChoiceEvaluation.UNSURE
         return MultipleChoiceEvaluation.INCORRECT
+
+
+def format_exc(exc: BaseException) -> str:
+    """Format an exception to be friendly for concise and human-readable logs."""
+    if isinstance(exc, ExceptionGroup):  # Expand sub-exceptions
+        return (
+            f"{exc}, where sub-exceptions are:"
+            f" {', '.join(repr(e) for e in exc.exceptions)}"
+        )
+    return repr(exc)
