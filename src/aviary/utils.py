@@ -472,7 +472,7 @@ class MultipleChoiceEvaluation(StrEnum):
         return MultipleChoiceEvaluation.INCORRECT
 
 
-def format_exc(exc: Exception) -> str:
+def format_exc(exc: BaseException) -> str:
     """Format an exception to be friendly for concise and human-readable logs."""
     if isinstance(exc, ExceptionGroup):  # Expand sub-exceptions
         return (
