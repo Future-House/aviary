@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator
 from copy import deepcopy
 from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
-from uuid import UUID
 
 from pydantic import (
     BaseModel,
@@ -131,11 +130,13 @@ class Environment(ABC, Generic[TEnvState]):
             Two-tuple of initial observations and tools.
         """
 
-    async def get_id(self) -> str | UUID:
+    async def get_id(self) -> str:
         """
-        Get a unique identifier for this environment.
+        Get an identifier for this environment.
 
         The main use case is something like the ID of the task from a dataset.
+        Since datasets may not enforce uniqueness in their IDs, we cannot ensure the IDs
+        returned from this method are unique either.
 
         The return should not be affected by state, in other words across reset/step,
         the return value should not change.
@@ -480,7 +481,7 @@ class DummyEnv(Environment[DummyEnvState]):
         self.task = task
         self.concurrent_tool_calls = concurrent_tool_calls
 
-    async def get_id(self) -> str | UUID:
+    async def get_id(self) -> str:
         if self.task is None:
             raise ValueError("No task (to reuse as an ID) was configured.")
         return self.task
