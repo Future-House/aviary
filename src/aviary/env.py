@@ -61,7 +61,7 @@ class Frame(BaseModel):
     )
 
     @staticmethod
-    def _custom_serializer(value: Serializable, handler, info):  # noqa: ARG004
+    def _custom_serializer(value: Serializable | None, handler, info):  # noqa: ARG004
         if isinstance(value, BaseModel):
             return value.model_dump()
         return handler(value)
@@ -79,7 +79,9 @@ class Frame(BaseModel):
 
     @field_validator("state", "info")
     @classmethod
-    def make_deepcopy(cls, v: Serializable, info: ValidationInfo) -> Serializable:
+    def make_deepcopy(
+        cls, v: Serializable | None, info: ValidationInfo
+    ) -> Serializable | None:
         if info.data["deepcopy"]:
             return deepcopy(v)
         return v
