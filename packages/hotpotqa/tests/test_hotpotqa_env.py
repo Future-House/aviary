@@ -35,7 +35,7 @@ async def test_question_id_uniqueness() -> None:
     dataset = TaskDataset.from_name("hotpotqa", split="dev")
 
     question_ids: set[UUID] = set()
-    env_ids: set[str | UUID] = set()
+    env_ids: set[str] = set()
     for i in range(len(dataset)):
         env = dataset.get_new_env_by_idx(i)
         assert isinstance(env, HotPotQAEnv)
@@ -60,7 +60,7 @@ async def test_dataset_from_name() -> None:
     env_0 = dataset.get_new_env_by_idx(0)
     assert isinstance(dataset.get_new_env_by_idx(0), HotPotQAEnv)
     assert isinstance(env_0.question_id, UUID)
-    assert isinstance(await env_0.get_id(), str | UUID)
+    assert isinstance(await env_0.get_id(), str)
 
     # double-check we can load with various options
     dataset = TaskDataset.from_name(

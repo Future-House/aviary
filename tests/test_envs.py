@@ -6,7 +6,6 @@ import tempfile
 import time
 from collections.abc import Sequence
 from typing import ClassVar
-from uuid import UUID
 
 import litellm
 import pytest
@@ -50,7 +49,7 @@ class TestDummyEnv:
                 ],
             )
 
-        assert isinstance(await dummy_env.get_id(), str | UUID), (
+        assert isinstance(await dummy_env.get_id(), str), (
             "Expected getting ID to work before reset"
         )
 

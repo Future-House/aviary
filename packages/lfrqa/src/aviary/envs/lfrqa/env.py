@@ -9,7 +9,6 @@ import re
 from collections.abc import Mapping
 from enum import StrEnum, unique
 from typing import Any, assert_never
-from uuid import UUID
 
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.utils import strip_citations
@@ -279,10 +278,10 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             await evaluation_callback(evaluation)
         return messages, evaluation["reward"], done, truncated
 
-    async def get_id(self) -> str | UUID:
+    async def get_id(self) -> str:
         if (
             self._query.question_id
             == MultipleChoiceQuestion.model_fields["question_id"].default
         ):
             raise ValueError("No question ID was configured.")
-        return self._query.question_id
+        return str(self._query.question_id)

@@ -202,9 +202,7 @@ class TestTaskDataset:
             env = task_dataset.get_new_env_by_idx(i)
             if i == 0 and split == LitQAv2TaskSplit.TRAIN:
                 # Getting ID can work before reset
-                assert await env.get_id() == UUID(
-                    "dbfbae3d-62f6-4710-8d13-8ce4c8485567"
-                )
+                assert await env.get_id() == "dbfbae3d-62f6-4710-8d13-8ce4c8485567"
                 # Yes this assertion is somewhat brittle, but it reliably
                 # checks the seeding's behavior so we keep it
                 obs, _ = await env.reset()

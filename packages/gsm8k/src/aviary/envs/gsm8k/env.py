@@ -3,7 +3,6 @@ import json
 from enum import StrEnum
 from logging import getLogger
 from typing import TYPE_CHECKING, ClassVar, Literal
-from uuid import UUID
 
 import datasets
 from pydantic import BaseModel, ConfigDict
@@ -127,7 +126,7 @@ class CalculatorEnv(Environment[None]):
             False,
         )
 
-    async def get_id(self) -> str | UUID:
+    async def get_id(self) -> str:
         if self.problem_id is None:
             raise ValueError("No problem ID was configured.")
         return self.problem_id
