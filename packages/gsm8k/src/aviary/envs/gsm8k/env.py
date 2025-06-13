@@ -8,8 +8,6 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import datasets
-from pydantic import BaseModel, ConfigDict
-
 from aviary.core import (
     Environment,
     Frame,
@@ -20,6 +18,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -56,9 +55,27 @@ class SafeMathEvaluator:
     def evaluate(cls, expr: str) -> float | int:
         """Safely evaluate a mathematical expression."""
         try:
+            # Fast path for just a number (most common for simple cases)
+            expr_strip = expr.strip()
+            # Use direct float/int conversion when possible to avoid AST overhead
+            if expr_strip.isdigit():  # Int shortcut
+                return int(expr_strip)
+            if (
+                expr_strip.replace(".", "", 1).isdigit()
+                and expr_strip.count(".") < 2
+                and expr_strip.replace(".", "", 1).replace("-", "", 1).isdigit()
+            ):
+                try:
+                    return float(expr_strip)
+                except ValueError:
+                    pass
+
             # Parse the expression into an AST
+            # Move these as local for attribute access speedup (static caches)
+            safe_operators = cls.SAFE_OPERATORS
+            safe_functions = cls.SAFE_FUNCTIONS
             node = ast.parse(expr, mode="eval")
-            return cls._eval_node(node.body)
+            return _fast_eval_node(node.body, safe_operators, safe_functions)
         except ZeroDivisionError as e:
             raise ValueError("Division by zero is not allowed") from e
         except (ValueError, TypeError, SyntaxError, KeyError) as e:
@@ -337,3 +354,45 @@ class GSM8kDataset(TaskDataset):
 
     def __len__(self) -> int:
         return len(self.src_df)
+
+
+def _fast_eval_node(node, safe_operators, safe_functions):
+    """Fast recursive AST evaluator using direct closure locals for operator/func tables."""
+    # For numeric constants only (Python >= 3.8: ast.Constant), also support ast.Num for <3.8
+    if isinstance(node, ast.Constant):
+        value = node.value
+        if isinstance(value, (int, float)):
+            return value
+        raise ValueError(f"Unsupported constant type: {type(value)}")
+    if isinstance(node, ast.Num):  # type: ignore
+        return node.n
+
+    if isinstance(node, ast.BinOp):
+        op_t = type(node.op)
+        if op_t not in safe_operators:
+            raise ValueError(f"Unsupported operation: {op_t}")
+        left = _fast_eval_node(node.left, safe_operators, safe_functions)
+        right = _fast_eval_node(node.right, safe_operators, safe_functions)
+        return safe_operators[op_t](left, right)
+
+    if isinstance(node, ast.UnaryOp):
+        op_t = type(node.op)
+        if op_t not in safe_operators:
+            raise ValueError(f"Unsupported unary operation: {op_t}")
+        operand = _fast_eval_node(node.operand, safe_operators, safe_functions)
+        return safe_operators[op_t](operand)
+
+    if isinstance(node, ast.Call):
+        func_node = node.func
+        if not isinstance(func_node, ast.Name):
+            raise TypeError("Only simple function calls are supported")
+        func_name = func_node.id
+        if func_name not in safe_functions:
+            raise ValueError(f"Unsupported function: {func_name}")
+        # Process arguments as a for-loop for lower memory overhead
+        args = [
+            _fast_eval_node(arg, safe_operators, safe_functions) for arg in node.args
+        ]
+        return safe_functions[func_name](*args)
+
+    raise ValueError(f"Unsupported AST node type: {type(node)}")
