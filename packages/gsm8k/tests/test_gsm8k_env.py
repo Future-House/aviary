@@ -196,7 +196,6 @@ async def test_calculator_handles_invalid_syntax() -> None:
         "((2 + 3)",  # Unmatched parentheses
         "2 + 3)",  # Unmatched parentheses
         "",  # Empty expression
-        "2 / 0",  # Division by zero
         "abc",  # Undefined variable
         "2 ^ 3",  # Invalid operator (^ is XOR, not power)
     ]
@@ -212,6 +211,41 @@ async def test_calculator_handles_invalid_syntax() -> None:
             f"Expression {expr} should cause an error"
         )
         assert reward == -1.0
+
+
+@pytest.mark.asyncio
+async def test_calculator_division_by_zero() -> None:
+    """Test that division by zero is handled with a user-friendly error message."""
+    env = CalculatorEnv(
+        problem_id="test",
+        problem="Test problem",
+        answer=42.0,
+        config=CalculatorEnvConfig(tool_failure_reward=-1.0),
+    )
+    obs, tools = await env.reset()
+    calculator_tool = tools[0]
+
+    # Test direct division by zero
+    response, reward, done, trunc = await env.step(
+        ToolRequestMessage(
+            tool_calls=[ToolCall.from_tool(calculator_tool, expr="5 / 0")]
+        )
+    )
+    assert response[0].content is not None, "Division by zero should have content"
+    assert "Division by zero is not allowed" in response[0].content, (
+        "Should show user-friendly division by zero message"
+    )
+    assert reward == -1.0
+
+    # Test complex expression with division by zero
+    response, reward, done, trunc = await env.step(
+        ToolRequestMessage(
+            tool_calls=[ToolCall.from_tool(calculator_tool, expr="(2 + 3) / (1 - 1)")]
+        )
+    )
+    assert response[0].content is not None
+    assert "Division by zero is not allowed" in response[0].content
+    assert reward == -1.0
 
 
 @pytest.mark.asyncio

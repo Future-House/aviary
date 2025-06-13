@@ -59,6 +59,8 @@ class SafeMathEvaluator:
             # Parse the expression into an AST
             node = ast.parse(expr, mode="eval")
             return cls._eval_node(node.body)
+        except ZeroDivisionError as e:
+            raise ValueError("Division by zero is not allowed") from e
         except (ValueError, TypeError, SyntaxError, KeyError) as e:
             raise ValueError(f"Invalid mathematical expression: {e}") from e
 
