@@ -69,7 +69,6 @@ class ToolSelector:
                 "type": "function",
                 "function": {"name": tool_choice.info.name},
             }
-            expected_finish_reason = {"stop"}  # TODO: should this be .add("stop") too?
         elif tool_choice is not None:
             completion_kwargs["tool_choice"] = tool_choice
             if tool_choice == self.TOOL_CHOICE_REQUIRED:
