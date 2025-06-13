@@ -305,6 +305,7 @@ class TestRendering:
             (["hi"], ["hi"]),
             ({"hi": 5}, {"hi": 5}),
             (SomeState(field=5), {"field": 5}),
+            (None, None),
         ],
     )
     def test_serialization(self, state, serialized) -> None:
