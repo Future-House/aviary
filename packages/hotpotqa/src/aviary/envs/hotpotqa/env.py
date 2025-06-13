@@ -258,12 +258,19 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 - list[Tool]: A list of tools (search, lookup, and submit_answer) available for the agent.
 
         Example:
-            >>> env = HotPotQAEnv()
-            >>> initial_obs, tools = env.reset(seed=42, idx=5)
-            >>> print(initial_obs)
-            [Message(content='Question: <question_text>')]
-            >>> print(tools)
-            [<Tool: search>, <Tool: lookup>, <Tool: submit_answer>]
+            >>> env = HotPotQAEnv(
+            ...     question_id=UUID("00000000-5a8d-7341-5542-99441c6b9fe5"),
+            ...     question=(
+            ...         "Musician and satirist Allie Goertz wrote a song about the"
+            ...         ' "The Simpsons" character Milhouse, who Matt Groening named after who?'
+            ...     ),
+            ...     correct_answer="President Richard Nixon",
+            ... )
+            >>> obs, tools = await env.reset()
+            >>> print(obs)
+            [Message(role='user', content='Question: Musician and satirist Allie Goertz wrote a song about the "The Simpsons" character Milhouse, who Matt Groening named after who?')]
+            >>> print([t.info.name for t in tools])
+            ['search', 'lookup', 'submit_answer']
         """
         self.state = self.State()
         return [Message(content=f"Question: {self.question}")], self.tools
@@ -285,14 +292,17 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 - bool: The done status indicating whether the episode is finished.
 
         Example:
-            >>> env = HotPotQAEnv()
+            >>> from aviary.core import ToolCall
+            >>> env = HotPotQAEnv(
+            ...     question_id=UUID("00000000-5a8d-7341-5542-99441c6b9fe5"),
+            ...     question=(
+            ...         "Musician and satirist Allie Goertz wrote a song about the"
+            ...         ' "The Simpsons" character Milhouse, who Matt Groening named after who?'
+            ...     ),
+            ...     correct_answer="President Richard Nixon",
+            ... )
             >>> action = ToolRequestMessage(
-            ...     tool_calls=[
-            ...         ToolCall(
-            ...             function=ToolCallFunction(name="Search"),
-            ...             arguments={"entity": "Python"},
-            ...         )
-            ...     ]
+            ...     tool_calls=[ToolCall.from_name("search", entity="Python")]
             ... )
             >>> obs, done = await env.step(action)
             >>> print(obs, done)
@@ -344,7 +354,14 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 - "answer" (Optional[str]): The answer provided by the agent, if any.
 
         Example:
-            >>> env = HotPotQAEnv()
+            >>> env = HotPotQAEnv(
+            ...     question_id=UUID("00000000-5a8d-7341-5542-99441c6b9fe5"),
+            ...     question=(
+            ...         "Musician and satirist Allie Goertz wrote a song about the"
+            ...         ' "The Simpsons" character Milhouse, who Matt Groening named after who?'
+            ...     ),
+            ...     correct_answer="President Richard Nixon",
+            ... )
             >>> frame = env.export_frame()
             >>> print(frame.info)
             {'steps': 0, 'done': False, 'reward': 0.0, 'answer': None}
@@ -470,7 +487,6 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             'Milhouse is a regular target for school bully Nelson Muntz and his friends Jimbo Jones, Dolph Starbeam and
             Kearney Zzyzwicz.',
             'Milhouse has a crush on Bart's sister, Lisa, a common plot element.']
-
         """
         if not keyword:
             self.state.done = True
