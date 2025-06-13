@@ -8,8 +8,6 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import datasets
-from pydantic import BaseModel, ConfigDict
-
 from aviary.core import (
     Environment,
     Frame,
@@ -20,6 +18,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -58,24 +57,25 @@ class SafeMathEvaluator:
     @classmethod
     def evaluate(cls, expr: str) -> float | int:
         """Safely evaluate a mathematical expression."""
+        expr_strip = expr.strip()
+        # Fast path for int
         try:
-            # Fast path for just a number (most common for simple cases)
-            expr_strip = expr.strip()
-            # Use direct float/int conversion when possible to avoid AST overhead
-            if expr_strip.isdigit():  # Int shortcut
-                return int(expr_strip)
-            if (
-                expr_strip.replace(".", "", 1).isdigit()
-                and expr_strip.count(".") <= cls.MAX_DECIMAL_POINTS
-                and expr_strip.replace(".", "", 1).replace("-", "", 1).isdigit()
-            ):
-                with contextlib.suppress(ValueError):
-                    return float(expr_strip)
+            return int(expr_strip)
+        except ValueError:
+            pass
+        # Fast path for float
+        try:
+            val = float(expr_strip)
+            # Only allow at most MAX_DECIMAL_POINTS (from env) of '.' in the original string
+            if expr_strip.count(".") <= cls.MAX_DECIMAL_POINTS:
+                return val
+        except ValueError:
+            pass
 
-            # Parse the expression into an AST
-            # Move these as local for attribute access speedup (static caches)
-            safe_operators = cls.SAFE_OPERATORS
-            safe_functions = cls.SAFE_FUNCTIONS
+        # Prepare for AST evaluation
+        safe_operators = cls.SAFE_OPERATORS
+        safe_functions = cls.SAFE_FUNCTIONS
+        try:
             node = ast.parse(expr, mode="eval")
             return _fast_eval_node(node.body, safe_operators, safe_functions)
         except ZeroDivisionError as e:
@@ -361,40 +361,37 @@ class GSM8kDataset(TaskDataset):
 def _fast_eval_node(node, safe_operators, safe_functions):
     """Fast recursive AST evaluator using direct closure locals for operator/func tables."""
     # For numeric constants only (Python >= 3.8: ast.Constant), also support ast.Num for <3.8
-    if isinstance(node, ast.Constant):
+    node_type = type(node)
+
+    if node_type is ast.Constant:
         value = node.value
         if isinstance(value, (int, float)):
             return value
         raise ValueError(f"Unsupported constant type: {type(value)}")
-    if isinstance(node, ast.Num):  # type: ignore[deprecated]
+    if node_type is ast.Num:  # type: ignore[deprecated]
         return node.n
-
-    if isinstance(node, ast.BinOp):
-        bin_op_type = type(node.op)
-        if bin_op_type not in safe_operators:
-            raise ValueError(f"Unsupported operation: {bin_op_type}")
+    if node_type is ast.BinOp:
+        op = type(node.op)
+        if op not in safe_operators:
+            raise ValueError(f"Unsupported operation: {op}")
         left = _fast_eval_node(node.left, safe_operators, safe_functions)
         right = _fast_eval_node(node.right, safe_operators, safe_functions)
-        return safe_operators[bin_op_type](left, right)
-
-    if isinstance(node, ast.UnaryOp):
-        unary_op_type = type(node.op)
-        if unary_op_type not in safe_operators:
-            raise ValueError(f"Unsupported unary operation: {unary_op_type}")
+        return safe_operators[op](left, right)
+    if node_type is ast.UnaryOp:
+        op = type(node.op)
+        if op not in safe_operators:
+            raise ValueError(f"Unsupported unary operation: {op}")
         operand = _fast_eval_node(node.operand, safe_operators, safe_functions)
-        return safe_operators[unary_op_type](operand)
-
-    if isinstance(node, ast.Call):
+        return safe_operators[op](operand)
+    if node_type is ast.Call:
         func_node = node.func
         if not isinstance(func_node, ast.Name):
             raise TypeError("Only simple function calls are supported")
         func_name = func_node.id
         if func_name not in safe_functions:
             raise ValueError(f"Unsupported function: {func_name}")
-        # Process arguments as a for-loop for lower memory overhead
-        args = [
-            _fast_eval_node(arg, safe_operators, safe_functions) for arg in node.args
-        ]
-        return safe_functions[func_name](*args)
-
-    raise ValueError(f"Unsupported AST node type: {type(node)}")
+        # Evaluate arguments on the fly (no intermediate list for memory savings)
+        return safe_functions[func_name](
+            *(_fast_eval_node(arg, safe_operators, safe_functions) for arg in node.args)
+        )
+    raise ValueError(f"Unsupported AST node type: {node_type}")
