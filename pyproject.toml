@@ -79,8 +79,7 @@ lfrqa = ["aviary.lfrqa"]
 litqa = ["aviary.litqa"]
 llm = [
     "fhlmi",
-    'litellm; python_version < "3.13"',  # NOTE: paper-qa==5.3 doesn't support 3.13 yet
-    'litellm>=1.49.1; python_version >= "3.13"',  # For removal of imghdr
+    "litellm>=1.72.0",  # Pin for fixed finish_reason when specifying a tool_choice
 ]
 server = [
     "click",
