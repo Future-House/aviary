@@ -283,5 +283,7 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
             self._query.question_id
             == MultipleChoiceQuestion.model_fields["question_id"].default
         ):
-            raise ValueError("No question ID was configured.")
+            raise ValueError(
+                "No question ID was configured, as the default ID remains present."
+            )
         return str(self._query.question_id)

@@ -157,10 +157,12 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
             or self._query.question_id
             == MultipleChoiceQuestion.model_fields["question_id"].default
         ):
-            raise ValueError(
-                "A multiple choice question with a non-default question ID was not"
-                " configured."
+            details = (
+                ", as just a question was configured"
+                if isinstance(self._query, str)
+                else ", as the default ID remains present"
             )
+            raise ValueError(f"No question ID was configured{details}.")
         return str(self._query.question_id)
 
     def __deepcopy__(self, memo) -> Self:
