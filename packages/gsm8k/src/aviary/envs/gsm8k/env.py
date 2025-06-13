@@ -69,10 +69,8 @@ class SafeMathEvaluator:
                 and expr_strip.count(".") < cls.MAX_DECIMAL_POINTS
                 and expr_strip.replace(".", "", 1).replace("-", "", 1).isdigit()
             ):
-                try:
+                with contextlib.suppress(ValueError):
                     return float(expr_strip)
-                except ValueError:
-                    pass
 
             # Parse the expression into an AST
             # Move these as local for attribute access speedup (static caches)
