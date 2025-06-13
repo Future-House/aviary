@@ -1,8 +1,11 @@
+import ast
 import contextlib
 import json
+import operator
+from collections.abc import Callable
 from enum import StrEnum
 from logging import getLogger
-from typing import TYPE_CHECKING, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import datasets
 from pydantic import BaseModel, ConfigDict
@@ -22,6 +25,78 @@ if TYPE_CHECKING:
     import pandas as pd
 
 logger = getLogger(__name__)
+
+
+class SafeMathEvaluator:
+    """Safe mathematical expression evaluator that prevents code injection."""
+
+    # Safe operators
+    SAFE_OPERATORS: ClassVar[dict[type, Callable[..., Any]]] = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.FloorDiv: operator.floordiv,
+        ast.Mod: operator.mod,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,
+        ast.UAdd: operator.pos,
+    }
+
+    # Safe functions
+    SAFE_FUNCTIONS: ClassVar[dict[str, Callable[..., Any]]] = {
+        "abs": abs,
+        "round": round,
+        "min": min,
+        "max": max,
+        "sum": sum,
+    }
+
+    @classmethod
+    def evaluate(cls, expr: str) -> float | int:
+        """Safely evaluate a mathematical expression."""
+        try:
+            # Parse the expression into an AST
+            node = ast.parse(expr, mode="eval")
+            return cls._eval_node(node.body)
+        except (ValueError, TypeError, SyntaxError, KeyError) as e:
+            raise ValueError(f"Invalid mathematical expression: {e}") from e
+
+    @classmethod
+    def _eval_node(cls, node: ast.AST) -> float | int:
+        """Recursively evaluate AST nodes."""
+        if isinstance(node, ast.Constant):
+            # Numbers and constants
+            if isinstance(node.value, (int, float)):
+                return node.value
+            raise ValueError(f"Unsupported constant type: {type(node.value)}")
+
+        if isinstance(node, ast.BinOp):
+            # Binary operations (+, -, *, /, etc.)
+            if type(node.op) not in cls.SAFE_OPERATORS:
+                raise ValueError(f"Unsupported operation: {type(node.op)}")
+            left = cls._eval_node(node.left)
+            right = cls._eval_node(node.right)
+            return cls.SAFE_OPERATORS[type(node.op)](left, right)
+
+        if isinstance(node, ast.UnaryOp):
+            # Unary operations (-, +)
+            if type(node.op) not in cls.SAFE_OPERATORS:
+                raise ValueError(f"Unsupported unary operation: {type(node.op)}")
+            operand = cls._eval_node(node.operand)
+            return cls.SAFE_OPERATORS[type(node.op)](operand)
+
+        if isinstance(node, ast.Call):
+            # Function calls
+            if not isinstance(node.func, ast.Name):
+                raise TypeError("Only simple function calls are supported")
+            func_name = node.func.id
+            if func_name not in cls.SAFE_FUNCTIONS:
+                raise ValueError(f"Unsupported function: {func_name}")
+            args = [cls._eval_node(arg) for arg in node.args]
+            return cls.SAFE_FUNCTIONS[func_name](*args)
+
+        raise ValueError(f"Unsupported AST node type: {type(node)}")
 
 
 class CalculatorEnvConfig(BaseModel):
@@ -165,7 +240,7 @@ class CalculatorEnv(Environment[None]):
         """
         try:
             expr = expr.strip()
-            result = eval(expr)  # noqa: S307  # pylint: disable=eval-used
+            result = SafeMathEvaluator.evaluate(expr)
             with contextlib.suppress(ValueError):  # If possible, downcast float to int
                 if int(result) == result:
                     result = int(result)
