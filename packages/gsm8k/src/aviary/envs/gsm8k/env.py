@@ -5,8 +5,6 @@ from logging import getLogger
 from typing import TYPE_CHECKING, ClassVar, Literal
 
 import datasets
-from pydantic import BaseModel, ConfigDict
-
 from aviary.core import (
     Environment,
     Frame,
@@ -17,6 +15,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -50,12 +49,18 @@ class CalculatorEnv(Environment[None]):
         self.problem_id = problem_id
         self.problem = problem
         self.answer = float(answer)  # If passed in as a 0d tensor  # noqa: FURB123
-
-        self.config = config if config is not None else CalculatorEnvConfig()
+        # Only create a new config if necessary.
+        self.config = config if config is not None else _DEFAULT_CALCULATOR_ENV_CONFIG
 
     @classmethod
     def from_task(cls, task: str) -> "CalculatorEnv":
-        return cls(problem_id=None, problem=task, answer=0.0)
+        # Avoid unnecessary config creation; always use the singleton.
+        return cls(
+            problem_id=None,
+            problem=task,
+            answer=0.0,
+            config=_DEFAULT_CALCULATOR_ENV_CONFIG,
+        )
 
     async def reset(self) -> tuple[Messages, list[Tool]]:
         self.state = None  # this environment is effectively stateless
@@ -265,3 +270,6 @@ class GSM8kDataset(TaskDataset):
 
     def __len__(self) -> int:
         return len(self.src_df)
+
+
+_DEFAULT_CALCULATOR_ENV_CONFIG = CalculatorEnvConfig()
