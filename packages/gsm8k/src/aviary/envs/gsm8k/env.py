@@ -8,6 +8,8 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import datasets
+from pydantic import BaseModel, ConfigDict
+
 from aviary.core import (
     Environment,
     Frame,
@@ -18,7 +20,6 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
-from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -28,6 +29,9 @@ logger = getLogger(__name__)
 
 class SafeMathEvaluator:
     """Safe mathematical expression evaluator that prevents code injection."""
+
+    # Constants for validation
+    MAX_DECIMAL_POINTS = 2
 
     # Safe operators
     SAFE_OPERATORS: ClassVar[dict[type, Callable[..., Any]]] = {
@@ -62,7 +66,7 @@ class SafeMathEvaluator:
                 return int(expr_strip)
             if (
                 expr_strip.replace(".", "", 1).isdigit()
-                and expr_strip.count(".") < 2
+                and expr_strip.count(".") < cls.MAX_DECIMAL_POINTS
                 and expr_strip.replace(".", "", 1).replace("-", "", 1).isdigit()
             ):
                 try:
@@ -364,23 +368,23 @@ def _fast_eval_node(node, safe_operators, safe_functions):
         if isinstance(value, (int, float)):
             return value
         raise ValueError(f"Unsupported constant type: {type(value)}")
-    if isinstance(node, ast.Num):  # type: ignore
+    if isinstance(node, ast.Num):  # type: ignore[deprecated]
         return node.n
 
     if isinstance(node, ast.BinOp):
-        op_t = type(node.op)
-        if op_t not in safe_operators:
-            raise ValueError(f"Unsupported operation: {op_t}")
+        bin_op_type = type(node.op)
+        if bin_op_type not in safe_operators:
+            raise ValueError(f"Unsupported operation: {bin_op_type}")
         left = _fast_eval_node(node.left, safe_operators, safe_functions)
         right = _fast_eval_node(node.right, safe_operators, safe_functions)
-        return safe_operators[op_t](left, right)
+        return safe_operators[bin_op_type](left, right)
 
     if isinstance(node, ast.UnaryOp):
-        op_t = type(node.op)
-        if op_t not in safe_operators:
-            raise ValueError(f"Unsupported unary operation: {op_t}")
+        unary_op_type = type(node.op)
+        if unary_op_type not in safe_operators:
+            raise ValueError(f"Unsupported unary operation: {unary_op_type}")
         operand = _fast_eval_node(node.operand, safe_operators, safe_functions)
-        return safe_operators[op_t](operand)
+        return safe_operators[unary_op_type](operand)
 
     if isinstance(node, ast.Call):
         func_node = node.func
