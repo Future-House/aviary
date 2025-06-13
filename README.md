@@ -23,7 +23,7 @@ Aviary is designed to work in tandem with its sister library LDP (https://github
 
 ## What's New?
 
-- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/docs/agent_tutorial.ipynb) notebook on running an LDP agent in an Aviary environment!
+- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb) notebook on running an LDP agent in an Aviary environment!
 - The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
 
 ## Overview
@@ -64,8 +64,8 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 1. [Building a Custom Environment in Aviary](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb)
 2. [Building a GSM8K Environment in Aviary](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb)
-3. [Creating Language Agents to Interact with Aviary Environments](https://github.com/Future-House/ldp/blob/main/docs/agent_tutorial.ipynb)
-4. [Evaluate a Llama Agent on GSM8K](https://github.com/Future-House/ldp/blob/main/docs/gsm8k_llama_eval.ipynb)
+3. [Creating Language Agents to Interact with Aviary Environments](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb)
+4. [Evaluate a Llama Agent on GSM8K](https://github.com/Future-House/ldp/blob/main/tutorials/evaluating_a_llama_agent.ipynb)
 
 ## Defining a Custom Environment
 
