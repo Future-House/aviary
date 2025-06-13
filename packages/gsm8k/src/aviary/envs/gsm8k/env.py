@@ -31,7 +31,7 @@ class SafeMathEvaluator:
     """Safe mathematical expression evaluator that prevents code injection."""
 
     # Constants for validation
-    MAX_DECIMAL_POINTS = 1
+    MAX_DECIMAL_POINTS = 2
 
     # Safe operators
     SAFE_OPERATORS: ClassVar[dict[type, Callable[..., Any]]] = {
@@ -66,7 +66,7 @@ class SafeMathEvaluator:
                 return int(expr_strip)
             if (
                 expr_strip.replace(".", "", 1).isdigit()
-                and expr_strip.count(".") <= cls.MAX_DECIMAL_POINTS
+                and expr_strip.count(".") < cls.MAX_DECIMAL_POINTS
                 and expr_strip.replace(".", "", 1).replace("-", "", 1).isdigit()
             ):
                 with contextlib.suppress(ValueError):
