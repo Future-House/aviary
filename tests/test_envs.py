@@ -49,6 +49,10 @@ class TestDummyEnv:
                 ],
             )
 
+        assert isinstance(await dummy_env.get_id(), str), (
+            "Expected getting ID to work before reset"
+        )
+
         obs, _ = await dummy_env.reset()
         assert isinstance(obs, list)
         assert len(obs) == 1
@@ -349,7 +353,7 @@ class TestRendering:
             with frame_path.open() as f:
                 rehydrated = json.load(f)
             assert rehydrated["state"]["messages"] == [
-                "Write a 5 word story via print_story"
+                "Write a 5 word story via print_story about applesauce"
             ]
 
 

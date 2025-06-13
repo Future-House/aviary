@@ -20,7 +20,7 @@ def fixture_dummy_env() -> "DummyEnv":
     # > are already imported: aviary
     from aviary.core import DummyEnv
 
-    return DummyEnv()
+    return DummyEnv(task="applesauce")
 
 
 OPENAI_API_KEY_HEADER = "authorization"

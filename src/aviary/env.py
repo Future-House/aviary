@@ -130,6 +130,23 @@ class Environment(ABC, Generic[TEnvState]):
             Two-tuple of initial observations and tools.
         """
 
+    async def get_id(self) -> str:
+        """
+        Get an identifier for this environment.
+
+        The main use case is something like the ID of the task from a dataset.
+        Since datasets may not enforce uniqueness in their IDs, we cannot ensure the IDs
+        returned from this method are unique either.
+
+        The return should not be affected by state, in other words across reset/step,
+        the return value should not change.
+
+        This method is asynchronous to allow for DB transactions.
+        """
+        raise NotImplementedError(
+            f"Getting ID is not yet implemented for environment {type(self).__name__}."
+        )
+
     def filter_invalid_tool_calls(
         self, message: ToolRequestMessage
     ) -> tuple[ToolRequestMessage, ToolRequestMessage]:
@@ -463,6 +480,11 @@ class DummyEnv(Environment[DummyEnvState]):
         self.end_immediately = end_immediately
         self.task = task
         self.concurrent_tool_calls = concurrent_tool_calls
+
+    async def get_id(self) -> str:
+        if self.task is None:
+            raise ValueError("No task (to reuse as an ID) was configured.")
+        return self.task
 
     @classmethod
     def from_task(cls, task: str) -> DummyEnv:

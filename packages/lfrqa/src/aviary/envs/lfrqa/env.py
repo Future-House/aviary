@@ -277,3 +277,13 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
         if evaluation_callback := self._evaluation_callback:
             await evaluation_callback(evaluation)
         return messages, evaluation["reward"], done, truncated
+
+    async def get_id(self) -> str:
+        if (
+            self._query.question_id
+            == MultipleChoiceQuestion.model_fields["question_id"].default
+        ):
+            raise ValueError(
+                "No question ID was configured, as the default ID remains present."
+            )
+        return str(self._query.question_id)

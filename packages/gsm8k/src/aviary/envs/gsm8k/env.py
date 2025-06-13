@@ -116,7 +116,7 @@ class CalculatorEnvConfig(BaseModel):
 class CalculatorEnv(Environment[None]):
     def __init__(
         self,
-        problem_id: str,
+        problem_id: str | None,
         problem: str,
         answer: float,
         config: CalculatorEnvConfig | None = None,
@@ -132,7 +132,7 @@ class CalculatorEnv(Environment[None]):
 
     @classmethod
     def from_task(cls, task: str) -> "CalculatorEnv":
-        return cls(problem_id="task", problem=task, answer=0.0)
+        return cls(problem_id=None, problem=task, answer=0.0)
 
     async def reset(self) -> tuple[Messages, list[Tool]]:
         self.state = None  # this environment is effectively stateless
@@ -202,6 +202,11 @@ class CalculatorEnv(Environment[None]):
             self.config.done_on_failure,
             False,
         )
+
+    async def get_id(self) -> str:
+        if self.problem_id is None:
+            raise ValueError("No problem ID was configured.")
+        return self.problem_id
 
     def submit_answer(self, answer: str) -> tuple[bool, float, Literal[True]]:
         """Submit the proposed answer and check if it is correct. This action is terminal.

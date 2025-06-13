@@ -325,6 +325,11 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         )
         return response_messages, self.state.reward, self.state.done, False
 
+    async def get_id(self) -> str:
+        if self.question_id is None:
+            raise ValueError("No question ID was configured.")
+        return str(self.question_id)
+
     def export_frame(self) -> Frame:
         """Export the current state of the environment as a Frame object.
 
