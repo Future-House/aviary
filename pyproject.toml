@@ -80,6 +80,7 @@ litqa = ["aviary.litqa"]
 llm = [
     "fhlmi",
     "litellm>=1.49.1",  # For removal of imghdr
+    "packaging",
 ]
 server = [
     "click",

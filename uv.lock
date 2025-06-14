@@ -1092,6 +1092,7 @@ dev = [
     { name = "litellm" },
     { name = "mypy" },
     { name = "numpy" },
+    { name = "packaging" },
     { name = "pandas-stubs" },
     { name = "pillow" },
     { name = "pre-commit" },
@@ -1130,6 +1131,7 @@ litqa = [
 llm = [
     { name = "fhlmi" },
     { name = "litellm" },
+    { name = "packaging" },
 ]
 server = [
     { name = "click" },
@@ -1183,6 +1185,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
     { name = "numpy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "numpy", marker = "extra == 'typing'" },
+    { name = "packaging", marker = "extra == 'llm'" },
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pillow", marker = "extra == 'image'" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.4" },
