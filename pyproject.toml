@@ -51,7 +51,7 @@ dev = [
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "jupyter>=1.0.0",  # For running notebooks
-    "litellm>=1.65.5",  # Pin for sending tool schemae title in completions
+    "litellm>=1.65.5,<1.71",  # Lower pin for sending tool schemae title in completions, upper pin for VCR cassette breaks (https://github.com/BerriAI/litellm/issues/11724)
     "mypy>=1.8",  # Pin for mutable-override
     "numpy>=1",  # Pin to keep recent
     "pre-commit>=3.4",  # Pin to keep recent
@@ -79,7 +79,8 @@ lfrqa = ["aviary.lfrqa"]
 litqa = ["aviary.litqa"]
 llm = [
     "fhlmi",
-    "litellm>=1.72.0",  # Pin for fixed finish_reason when specifying a tool_choice
+    "litellm>=1.49.1",  # For removal of imghdr
+    "packaging",
 ]
 server = [
     "click",

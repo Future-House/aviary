@@ -1,19 +1,12 @@
 interactions:
   - request:
       body:
-        '{"contents": [{"role": "user", "parts": [{"text": "Please get a random
-        integer."}]}], "tools": [{"function_declarations": [{"name": "print_story",
-        "description": "Print a story.", "parameters": {"type": "object", "properties":
-        {"story": {"description": "Story to print.", "title": "Story", "type": "string"}},
-        "required": ["story"]}}, {"name": "cast_float", "description": "Cast the input
-        argument x to a float.", "parameters": {"type": "object", "properties": {"x":
-        {"title": "X", "type": "string"}}, "required": ["x"]}}, {"name": "cast_int",
-        "description": "Cast the input argument x to an integer.", "parameters": {"type":
-        "object", "properties": {"x": {"title": "X", "type": "number"}}, "required":
-        ["x"]}}, {"name": "get_random_int", "description": "Get a random integer in
-        1 to 10.", "parameters": {"type": "object", "properties": {}, "required": []}}]}],
-        "toolConfig": {"functionCallingConfig": {"mode": "ANY"}}, "generationConfig":
-        {}}'
+        '{"contents":[{"role":"user","parts":[{"text":"Please get a random integer."}]}],"tools":[{"function_declarations":[{"name":"print_story","description":"Print
+        a story.","parameters":{"type":"object","properties":{"story":{"description":"Story
+        to print.","title":"Story","type":"string"}},"required":["story"]}},{"name":"cast_float","description":"Cast
+        the input argument x to a float.","parameters":{"type":"object","properties":{"x":{"title":"X","type":"string"}},"required":["x"]}},{"name":"cast_int","description":"Cast
+        the input argument x to an integer.","parameters":{"type":"object","properties":{"x":{"title":"X","type":"number"}},"required":["x"]}},{"name":"get_random_int","description":"Get
+        a random integer in 1 to 10.","parameters":{"type":"object","properties":{},"required":[]}}]}],"toolConfig":{"functionCallingConfig":{"mode":"ANY"}},"generationConfig":{}}'
       headers:
         accept:
           - "*/*"
@@ -22,24 +15,25 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "943"
+          - "872"
         content-type:
           - application/json
         host:
           - generativelanguage.googleapis.com
         user-agent:
-          - litellm/1.65.5
+          - litellm/1.70.4
       method: POST
       uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%3CFILTERED%3E
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAC/61Ry26DMBC8+yuQzyEKBBLRa9pbq1YtqipVVbQNhlg1NrJNpQrx711ewaTXckD2
-          zO6Od6YhnkdPIDOegWWG3njviHhe0/87TknLpEVighCsQNu5dvga54wleS1Plit5ACEWzSMvoWSI
-          04LZo0Z9VR45yqyu60AXnVLTLgj3Np8/5m6qlejnlypjgo54OxXQnEtuzs8MjJJd2Uv6+HQRp/Bd
-          3Kui0uqz0/b36yAOk2AbRZswDHdBsmX+Zk8m8V6W1gYK9sAsoJFw2ZjikLKyqfpi8qDq3shdNAg5
-          vi/4eKStsiCWncnqz1Rzi5pcuHE4SeH6ILj96XZM795Sx2Ccv3jU5BFxrLx+4j+JxUstMiYzhPXK
-          tOFDKgUrMSc/WMd+LsCcKWnJL8XCVaeyAgAA
+          H4sIAAAAAAAC/61RXU/CMBR9369Y+swITMbAN4OakIgQXIyJMeTCLqOxa2fbacjCf7f7gg5f3cPS
+          3nPuPb3nFI7rkh3wmMagUZFb991UXLeo/iUmuEauDdCWTDEDqS/c+iuss6Hsc77TVPAZMNZpbnAO
+          KZo6SVBvpNEX6YYamd41D2RSKhWnDmDfLuePSzeRglXzUxEjI0391BLInnKqDmsEJXhJe4mWq7M4
+          ge/kSSSZFNtS2xv1/elwMroZB/7AH4d+OEVvEDqteCVLcgUJLlCDMRLOGxMzJM10JD6Rz0ReGRkO
+          ayHL9w4eNLAWGli3c9z7M1XdG03K7DispMz6wKg+ljtGD2+RZbCZ33lU65FjWXn9xH8SC7paTpNM
+          HdYrSkXrVBJMTU7esB94ewbqUA0kElUmuMJ5XHKW6vEZVvnXYpsn6XS+Ogq+ntz9EOfk/ALwP/QS
+          3QIAAA==
       headers:
         Alt-Svc:
           - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
@@ -48,11 +42,11 @@ interactions:
         Content-Type:
           - application/json; charset=UTF-8
         Date:
-          - Wed, 16 Apr 2025 17:50:49 GMT
+          - Sat, 14 Jun 2025 18:36:43 GMT
         Server:
           - scaffolding on HTTPServer2
         Server-Timing:
-          - gfet4t7; dur=654
+          - gfet4t7; dur=472
         Transfer-Encoding:
           - chunked
         Vary:
