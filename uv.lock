@@ -1178,8 +1178,8 @@ requires-dist = [
     { name = "httpx" },
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.0.0" },
-    { name = "litellm", marker = "extra == 'dev'", specifier = ">=1.65.5" },
-    { name = "litellm", marker = "extra == 'llm'", specifier = ">=1.72.0" },
+    { name = "litellm", marker = "extra == 'dev'", specifier = ">=1.65.5,<1.71" },
+    { name = "litellm", marker = "extra == 'llm'", specifier = ">=1.49.1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
     { name = "numpy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "numpy", marker = "extra == 'typing'" },
@@ -2212,7 +2212,7 @@ wheels = [
 
 [[package]]
 name = "litellm"
-version = "1.72.4"
+version = "1.70.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2227,9 +2227,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "tokenizers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/80/d73c821a2f65ee5b97b41e61d9b18324ebb9d616e1e21844f4253ac38957/litellm-1.72.4.tar.gz", hash = "sha256:8855de30f78bcb1f37af244519b37a37faaaf579401b1414400b5b5e5b616d57", size = 8132997, upload-time = "2025-06-11T05:46:38.041Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/60/d7/d0d76ba896a1e8978550dcc76157d1c50910ba9ade4ef3981a34f01f4fa6/litellm-1.70.4.tar.gz", hash = "sha256:ef6749a091faaaf88313afe4111cdd95736e1e60f21ba894e74f7c5bab2870bd", size = 7813817, upload-time = "2025-05-23T00:05:24.47Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6f/0d/0f86db9724b9bd63d057b912aa6aa532a76e6e707f9bb75abbd3b0a0401a/litellm-1.72.4-py3-none-any.whl", hash = "sha256:f98ca994420ed649c466d423655a6e0f2aeecab4564ed372b3378a949e491dc2", size = 8036589, upload-time = "2025-06-11T05:46:34.727Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/8f/0b26ecb08b8282ae0fdfa2223b5df8263579c9e3c75ca96bb7fb7cbc632c/litellm-1.70.4-py3-none-any.whl", hash = "sha256:4d14d04bf5e2bd49336b4abc59193352c731ff371022e4fcf590208f41f644f7", size = 7903749, upload-time = "2025-05-23T00:05:21.017Z" },
 ]
 
 [[package]]
