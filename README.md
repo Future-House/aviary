@@ -7,30 +7,41 @@
 [![PyPI version](https://badge.fury.io/py/fhaviary.svg)](https://badge.fury.io/py/fhaviary)
 [![tests](https://github.com/Future-House/aviary/actions/workflows/tests.yml/badge.svg)](https://github.com/Future-House/aviary)
 [![CodeFactor](https://www.codefactor.io/repository/github/future-house/aviary/badge/main)](https://www.codefactor.io/repository/github/future-house/aviary/)
-<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
 <p align="left">
   <a href="https://arxiv.org/abs/2212.04450">
-    <img src="docs/assets/aviary_art.png"/>
+    <img src="docs/assets/aviary_art.png" width="500" alt="Crows in a gym" />
   </a>
 </p>
 
-**Aviary** [^1] is a gymnasium for defining custom language agent RL environments. The library features pre-existing environments on math [^2], general knowledge [^3], biological sequences [^4], scientific literature search [^5], and protein stability.
-Aviary is designed to work in tandem with its sister library LDP (https://github.com/Future-House/ldp) which enables the user to define custom language agents as Language Decision Processes. See the following [tutorial](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb) for an example of how to run an LDP language agent on an Aviary environment.
+**Aviary** [^1] is a gymnasium for defining custom language agent RL environments.
+The library features pre-existing environments on
+math [^2], general knowledge [^3], biological sequences [^4], scientific literature search [^5], and protein stability.
+Aviary is designed to work in tandem with its sister library LDP (<https://github.com/Future-House/ldp>)
+which enables the user to define custom language agents as Language Decision Processes.
+See the following [tutorial][2] for an example of how to run an LDP language agent on an Aviary environment.
 
-[Overview](#overview) | [Getting Started](#getting-started) | [Documentation](https://aviary.bio/) | [Paper](https://arxiv.org/abs/2412.21154)
+[2]: https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb
+
+[Overview](#overview)
+| [Getting Started](#getting-started)
+| [Documentation](https://aviary.bio/)
+| [Paper](https://arxiv.org/abs/2412.21154)
 
 ## What's New?
 
-- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb) notebook on running an LDP agent in an Aviary environment!
-- The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)! Further updates forthcoming!
+- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb)
+  notebook on running an LDP agent in an Aviary environment!
+- The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)!
+  Further updates forthcoming!
 
 ## Overview
 
 <p align="left">
   <a href="https://arxiv.org/abs/2212.04450">
-    <img src="docs/assets/Aviary.png"/>
+    <img src="docs/assets/Aviary.png" width="800" alt="Aviary and LDP overview from paper" />
   </a>
 </p>
 
@@ -71,7 +82,7 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The example below walks through defining a custom environment in Aviary.
 We define a simple environment where an agent takes actions to modify a counter.
-The example is also featured in the following [notebook](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb)
+The example is also featured in the following [notebook][1].
 
 ```python
 from collections import namedtuple
@@ -123,8 +134,9 @@ class CounterEnv(Environment[CounterEnvState]):
 
 ## Evaluating an Agent on the Environment
 
-Following the definition of our custom environment, we can now evaluate a language agent
-on the environment using Aviary's sister library LDP (https://github.com/Future-House/ldp).
+Following the definition of our custom environment,
+we can now evaluate a language agent on the environment using
+Aviary's sister library LDP (<https://github.com/Future-House/ldp>).
 
 ```python
 from ldp.agent import Agent
@@ -191,7 +203,8 @@ Communication is achieved through messages.
 The `action_msg` is an instance of `ToolRequestMessage` which comprises one or more calls
 to the `tools` returned by `env.reset` method.
 
-The `obs_msgs` are either general obseravation messages or instances of `ToolResponseMessage` returned from the environment.
+The `obs_msgs` are either general obseravation messages
+or instances of `ToolResponseMessage` returned from the environment.
 while `reward` is a scalar value, and `done` and `truncated`
 are Boolean values.
 
@@ -199,15 +212,18 @@ We explain the message formalism in further detail below.
 
 ### Messages
 
-Communication between the agent and environment is achieved via messages. We follow the [OpenAI](https://platform.openai.com/docs/api-reference/messages/createMessage) standard.
+Communication between the agent and environment is achieved via messages.
+We follow the [OpenAI](https://platform.openai.com/docs/api-reference/messages/createMessage) standard.
 Messages have two attributes:
 
 ```py
 msg = Message(content="Hello, world!", role="assistant")
 ```
 
-The `content` attribute can be a string but can also comprise objects such as [images](https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images).
+The `content` attribute can be a string but can also comprise objects such as [images][3].
 For example, the `create_message` method can be used to create a message with images:
+
+[3]: https://platform.openai.com/docs/guides/vision?lang=node#uploading-base64-encoded-images
 
 ```py
 from PIL import Image
@@ -239,7 +255,8 @@ except for `tool` which has a special meaning in aviary.
 | user      | Environment system prompt or emitted observation | HotPotQA problem to solve, or details of an internal env failure |
 | tool      | Result of a tool run in the environment          | The output of the calculator tool for a GSM8K question           |
 
-The `Message` class is extended in `ToolRequestMessage` and `ToolResponseMessage` to include the relevant tool name and arguments.
+The `Message` class is extended in `ToolRequestMessage` and `ToolResponseMessage`
+to include the relevant tool name and arguments.
 
 ### Subclassing Environments
 
@@ -264,15 +281,16 @@ class ExampleEnv(Environment[ExampleState]):
     state: ExampleState
 ```
 
-We do not have other variables aside from `state` for this environment, although we could also have variables like configuration, a name,
+We do not have other variables aside from `state` for this environment,
+although we could also have variables like configuration, a name,
 tasks, etc. attached to it.
 
 ### Defining Tools
 
 We will define a single tool that prints a story. Tools may optionally take a final argument
 `state` which is the environment state. This argument will not be
-exposed to the agent as a parameter but will be injected by the environment (if part of the function
-signature).
+exposed to the agent as a parameter but will be injected by the environment
+(if part of the function signature).
 
 ```py
 def print_story(story: str, state: ExampleState):
@@ -288,7 +306,8 @@ def print_story(story: str, state: ExampleState):
 ```
 
 The tool is built from the following parts of the function: its
-name, its argument's names, the arguments types, and the docstring. The docstring is parsed to obtain a description of the
+name, its argument's names, the arguments types, and the docstring.
+The docstring is parsed to obtain a description of the
 function and its arguments, so be sure to match the syntax carefully.
 
 Environment episode completion is indicated by setting `state.done = True`.
@@ -391,7 +410,8 @@ pip install fhaviary[server]
 aviary tools [env name]
 ```
 
-This will start a server that allows you to view the tools and call them, viewing the descriptions/types and output that an agent would see when using the tools.
+This will start a server that allows you to view the tools and call them,
+viewing the descriptions/types and output that an agent would see when using the tools.
 
 ### Incumbent Environments
 
@@ -420,7 +440,8 @@ dataset = HotPotQADataset(split="dev")
 ### Functional Environments
 
 An alternative way to create an environment is using the functional interface,
-which uses functions and decorators to define environments. Let's define an environment that requires an agent to write a story
+which uses functions and decorators to define environments.
+Let's define an environment that requires an agent to write a story
 about a particular topic by implementing its `start` function:
 
 ```python
@@ -438,9 +459,12 @@ The `start` decorator begins the definition of an environment.
 
 The function, `my_env`,
 takes an arbitrary input and returns a tuple containing the first observation
-and any information you wish to store about the environment state (used to persist/share information between tools).
+and any information you wish to store about the environment state
+(used to persist/share information between tools).
 
-The state will always have an optional `reward` and a Boolean `done` that indicate if the environment episode is complete. Next we define some tools:
+The state will always have an optional `reward` and a Boolean `done` that indicate
+if the environment episode is complete.
+Next we define some tools:
 
 ```python
 @my_env.tool()
@@ -459,11 +483,18 @@ def print_story(story: str | bytes, state) -> None:
 
 The tools will be converted into objects visible for LLMs using the type hints and the variable descriptions.
 Thus, the type hinting can be valuable for an agent that uses it correctly.
-The docstrings are also passed to the LLM and is the primary means (along with the function name) for communicating the intended tool usage.
+The docstrings are also passed to the LLM and is the primary means
+(along with the function name) for communicating the intended tool usage.
 
-You can access the `state` variable in tools, which will have any fields you passed in the return tuple of `start()`. For example, if you returned `{'foo': 'bar'}`, then you could access `state.foo` in the tools.
+You can access the `state` variable in tools,
+which will have any fields you passed in the return tuple of `start()`.
+For example, if you returned `{'foo': 'bar'}`,
+then you could access `state.foo` in the tools.
 
-You may stop an environment or set a reward via the `state` variable as shown in the second `print_story` tool. If the reward is not set, it is treated as zero. Next we illustrate how to use our environment:
+You may stop an environment or set a reward via the `state` variable
+as shown in the second `print_story` tool.
+If the reward is not set, it is treated as zero.
+Next we illustrate how to use our environment:
 
 ```python
 env = my_env(topic="foo")
@@ -475,11 +506,19 @@ obs, tools = await env.reset()
 If Aviary is useful for your work please consider citing the following paper:
 
 ```bibtex
-@article{narayanan2024aviary,
-  title={Aviary: training language agents on challenging scientific tasks},
-  author={Narayanan, Siddharth and Braza, James D and Griffiths, Ryan-Rhys and Ponnapati, Manu and Bou, Albert and Laurent, Jon and Kabeli, Ori and Wellawatte, Geemi and Cox, Sam and Rodriques, Samuel G and others},
-  journal={arXiv preprint arXiv:2412.21154},
-  year={2024}
+@article{Narayanan_Aviary_training_language_2024,
+  title   = {{Aviary: training language agents on challenging scientific tasks}},
+  author  = {
+    Narayanan, Siddharth and Braza, James D. and Griffiths, Ryan-Rhys and
+    Ponnapati, Manvitha and Bou, Albert and Laurent, Jon and Kabeli, Ori and
+    Wellawatte, Geemi and Cox, Sam and Rodriques, Samuel G. and White, Andrew
+    D.
+  },
+  year    = 2024,
+  month   = dec,
+  journal = {preprint},
+  doi     = {10.48550/arXiv.2412.21154},
+  url     = {https://arxiv.org/abs/2412.21154}
 }
 ```
 

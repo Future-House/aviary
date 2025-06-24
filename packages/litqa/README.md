@@ -3,7 +3,8 @@
 LitQA2 environment implemented with aviary,
 allowing agents to perform question answering on the LitQA dataset.
 
-[LitQA](https://github.com/Future-House/LitQA) (now legacy) is a dataset composed from 50 multiple-choice questions from recent literature.
+[LitQA](https://github.com/Future-House/LitQA) (now legacy)
+is a dataset composed from 50 multiple-choice questions from recent literature.
 It is designed to test the LLM's the ability to retrieve information outside of the pre-training corpus.
 To ensure the questions are not in the pre-training corpus, the questions were collected
 from scientific papers published after September 2021 -- cut-off date of GPT-4's training data.
@@ -64,8 +65,14 @@ async def evaluate(folder_of_litqa_v2_papers: str | os.PathLike) -> None:
 
 ## References
 
-[1] Lála et al. [PaperQA: Retrieval-Augmented Generative Agent for Scientific Research](https://arxiv.org/abs/2312.07559). ArXiv:2312.07559, 2023.
+[1] Lála et al.
+[PaperQA: Retrieval-Augmented Generative Agent for Scientific Research](https://arxiv.org/abs/2312.07559).
+ArXiv:2312.07559, 2023.
 
-[2] Skarlinski et al. [Language agents achieve superhuman synthesis of scientific knowledge](https://arxiv.org/abs/2409.13740). ArXiv:2409.13740, 2024.
+[2] Skarlinski et al.
+[Language agents achieve superhuman synthesis of scientific knowledge](https://arxiv.org/abs/2409.13740).
+ArXiv:2409.13740, 2024.
 
-[3] Laurent et al. [LAB-Bench: Measuring Capabilities of Language Models for Biology Research](https://arxiv.org/abs/2407.10362). ArXiv:2407.10362, 2024.
+[3] Laurent et al.
+[LAB-Bench: Measuring Capabilities of Language Models for Biology Research](https://arxiv.org/abs/2407.10362).
+ArXiv:2407.10362, 2024.
