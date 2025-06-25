@@ -65,6 +65,11 @@ repos:
     hooks:
       - id: nb-clean
         args: [--preserve-cell-outputs, --remove-empty-cells]
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint
+        args: [--config=pyproject.toml, --configPointer=/tool/markdownlint]
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
     rev: 2025.04.07
     hooks:

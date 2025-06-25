@@ -1,6 +1,7 @@
 # aviary.gsm8k
 
-GSM8k environment where agents solve math word problems from the GSM8k dataset using a calculator tool.
+GSM8k environment where agents solve math word problems
+from the GSM8k dataset using a calculator tool.
 
 ## Citation
 
@@ -8,11 +9,14 @@ The citation for GSM8k is given below:
 
 ```bibtex
 @article{gsm8k-paper,
-    title = {Training verifiers to solve math word problems},
-    author = {Cobbe, Karl and Kosaraju, Vineet and Bavarian, Mohammad and Chen, Mark and Jun, Heewoo and Kaiser, Lukasz and
- Plappert, Matthias and Tworek, Jerry and Hilton, Jacob and Nakano, Reiichiro and others},
-    journal = {arXiv preprint arXiv:2110.14168},
-    year = {2021}
+  title   = {Training verifiers to solve math word problems},
+  author  = {
+    Cobbe, Karl and Kosaraju, Vineet and Bavarian, Mohammad and Chen, Mark and
+    Jun, Heewoo and Kaiser, Lukasz and Plappert, Matthias and Tworek, Jerry and
+    Hilton, Jacob and Nakano, Reiichiro and others
+  },
+  year    = 2021,
+  journal = {arXiv preprint arXiv:2110.14168}
 }
 ```
 
