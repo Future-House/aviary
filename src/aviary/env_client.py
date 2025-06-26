@@ -150,7 +150,9 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
         # so provide this classmethod to instantiate the client & get the size.
         client = cls(*args, **kwargs)
         async with client.get_http_client() as http_client:
-            client._len = (await http_client.get("/info")).json()["dataset_size"]
+            response = await http_client.get("/info")
+            response.raise_for_status()
+            client._len = response.json()["dataset_size"]
         return client
 
     def get_new_env_by_idx(self, idx: int) -> TaskEnvironmentClient:
