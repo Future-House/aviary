@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import secrets
 import time
 import traceback
 import uuid
@@ -14,10 +15,13 @@ from aviary.tools import MessagesAdapter, ToolRequestMessage, ToolsAdapter
 
 try:
     import uvicorn
-    from fastapi import FastAPI, HTTPException
+    from fastapi import Depends, FastAPI, HTTPException, Security
+    from fastapi.security import APIKeyHeader
+
+    missing_dependencies = False
 except ImportError:
     # We will raise if a TaskDatasetServer is instantiated but FastAPI/uvicorn are not available
-    uvicorn = FastAPI = HTTPException = None  # type: ignore[misc,assignment]
+    missing_dependencies = True
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +64,9 @@ class TaskDatasetServer(Generic[TEnvironment]):
         dataset: TaskDataset[TEnvironment],
         host: str = BIND_ALL_HOST,
         port: int = DEFAULT_SERVER_PORT,
+        api_key: str | None = None,
     ):
-        if FastAPI is None:
+        if missing_dependencies:
             raise ImportError(
                 "FastAPI and Uvicorn are required to run a TaskDatasetServer. "
                 "Please `pip install fhaviary[server]`."
@@ -70,6 +75,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
         self.dataset = dataset
         self.host = host
         self.port = port
+        self.api_key = api_key
 
         self.app = FastAPI()
 
@@ -101,7 +107,17 @@ class TaskDatasetServer(Generic[TEnvironment]):
             logger.exception(f"Failed to close env {env_id}")
 
     def _setup_routes(self):
-        @self.app.post("/start")
+        api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+        def verify_api_key(api_key: str | None = Security(api_key_header)):
+            if self.api_key and (
+                api_key is None or not secrets.compare_digest(api_key, self.api_key)
+            ):
+                raise HTTPException(
+                    status_code=403, detail="Invalid or missing API key"
+                )
+
+        @self.app.post("/start", dependencies=[Depends(verify_api_key)])
         async def start(req: StartRequest):
             with handle_exc_as_http_exc():
                 if req.task_idx is None:
@@ -116,7 +132,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 self.envs[env_id] = (env, time.time())
                 return {"env_id": env_id}
 
-        @self.app.post("/reset")
+        @self.app.post("/reset", dependencies=[Depends(verify_api_key)])
         async def reset(req: EnvRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
@@ -129,7 +145,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
             )
 
-        @self.app.post("/step")
+        @self.app.post("/step", dependencies=[Depends(verify_api_key)])
         async def step(req: StepRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
@@ -140,7 +156,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
             obs_serialized = MessagesAdapter.dump_python(obs)
             return obs_serialized, *reward_done_trunc
 
-        @self.app.post("/close")
+        @self.app.post("/close", dependencies=[Depends(verify_api_key)])
         async def close(req: EnvRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
@@ -153,7 +169,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
 
             return {"env_id": req.env_id}
 
-        @self.app.post("/close_old_envs")
+        @self.app.post("/close_old_envs", dependencies=[Depends(verify_api_key)])
         async def close_old_envs(req: FlushRequest):
             """Endpoint to close environments that have not been used in a while.
 
@@ -183,7 +199,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 "closed_env_ids": [env_id for env_id in closed if env_id is not None]
             }
 
-        @self.app.get("/info")
+        @self.app.get("/info", dependencies=[Depends(verify_api_key)])
         def info():
             try:
                 dataset_len: int | None = len(self.dataset)
