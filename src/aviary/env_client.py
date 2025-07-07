@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Self, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 import httpx
 from pydantic import BaseModel, Field
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Not sure why, but mypy complains if we use the TEnvState in aviary.env, so redefine here
 TEnvState = TypeVar("TEnvState")
+TClient = TypeVar("TClient", httpx.Client, httpx.AsyncClient)
 
 
 class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
@@ -120,9 +121,6 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
         return {"env_id": state.env_id}
 
 
-UNSET_LEN = object()  # sentinel
-
-
 class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
     def __init__(
         self,
@@ -134,26 +132,22 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
         self.server_url = server_url
         self.request_timeout = request_timeout
         self.api_key = api_key
-        self._len: int | object | None = UNSET_LEN
 
-    def get_http_client(self) -> httpx.AsyncClient:
+        with self._get_http_client(httpx.Client) as http_client:
+            response = http_client.get("/info")
+            response.raise_for_status()
+            self._len = cast(int | None, response.json()["dataset_size"])
+
+    def _get_http_client(
+        self,
+        client_class: type[TClient] = httpx.AsyncClient,  # type: ignore[assignment]
+    ) -> TClient:
         headers = {}
         if self.api_key:
             headers["X-API-Key"] = self.api_key
-        return httpx.AsyncClient(
+        return client_class(
             base_url=self.server_url, timeout=self.request_timeout, headers=headers
         )
-
-    @classmethod
-    async def create(cls, *args, **kwargs) -> Self:
-        # We need to make an async request to the server to get the dataset size,
-        # so provide this classmethod to instantiate the client & get the size.
-        client = cls(*args, **kwargs)
-        async with client.get_http_client() as http_client:
-            response = await http_client.get("/info")
-            response.raise_for_status()
-            client._len = response.json()["dataset_size"]
-        return client
 
     def get_new_env_by_idx(self, idx: int) -> TaskEnvironmentClient:
         return self._make_env_client(idx)
@@ -170,11 +164,7 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
         )
 
     def __len__(self) -> int:
-        if self._len is UNSET_LEN:
-            raise RuntimeError(
-                "Dataset should be created using `TaskDatasetClient.create()`"
-            )
         if self._len is None:
             raise TypeError("Server did not define dataset length.")
 
-        return cast("int", self._len)
+        return self._len
