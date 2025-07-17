@@ -28,7 +28,7 @@ from aviary.core import (
     ToolResponseMessage,
 )
 from aviary.env import ENV_REGISTRY
-from aviary.envs.litqa import (
+from aviary.envs.labbench import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
 )
@@ -191,7 +191,7 @@ def read_litqa_v2_from_hub(
     except ImportError as exc:
         raise ImportError(
             "Reading in LitQA2 requires the 'datasets' extra for 'datasets'. Please:"
-            " `pip install aviary.litqa[datasets]`."
+            " `pip install aviary.labbench[datasets]`."
         ) from exc
 
     train_eval = load_dataset(train_eval_dataset, "LitQA2")["train"].to_pandas()
