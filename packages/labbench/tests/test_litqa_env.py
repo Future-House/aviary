@@ -26,7 +26,7 @@ from aviary.core import (
     ToolCall,
     ToolRequestMessage,
 )
-from aviary.envs.litqa import (
+from aviary.envs.labbench import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
     LitQATaskDataset,
@@ -145,7 +145,7 @@ class StubLitQADataset(LitQATaskDataset):
         return len(self.data)
 
 
-STUB_TASK_DATASET_NAME = "stub-litqa"
+STUB_TASK_DATASET_NAME = "stub-labbench"
 TASK_DATASET_REGISTRY[STUB_TASK_DATASET_NAME] = (
     StubLitQADataset.__module__,
     StubLitQADataset.__name__,
