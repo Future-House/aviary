@@ -14,8 +14,8 @@ resolution-markers = [
 members = [
     "aviary-gsm8k",
     "aviary-hotpotqa",
+    "aviary-labbench",
     "aviary-lfrqa",
-    "aviary-litqa",
     "aviary-notebook",
     "fhaviary",
 ]
@@ -355,28 +355,8 @@ requires-dist = [
 ]
 
 [[package]]
-name = "aviary-lfrqa"
-source = { editable = "packages/lfrqa" }
-dependencies = [
-    { name = "aviary-litqa" },
-    { name = "fhaviary" },
-    { name = "fhlmi" },
-    { name = "paper-qa" },
-    { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aviary-litqa", editable = "packages/litqa" },
-    { name = "fhaviary", editable = "." },
-    { name = "fhlmi" },
-    { name = "paper-qa", specifier = ">=5.14.0" },
-    { name = "pydantic", specifier = "~=2.0" },
-]
-
-[[package]]
-name = "aviary-litqa"
-source = { editable = "packages/litqa" }
+name = "aviary-labbench"
+source = { editable = "packages/labbench" }
 dependencies = [
     { name = "fhaviary" },
     { name = "fhlmi" },
@@ -399,7 +379,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aviary-litqa", extras = ["datasets"], marker = "extra == 'dev'", editable = "packages/litqa" },
+    { name = "aviary-labbench", extras = ["datasets"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "datasets", marker = "extra == 'datasets'", specifier = ">=2.15" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
@@ -412,6 +392,26 @@ requires-dist = [
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 provides-extras = ["datasets", "dev"]
+
+[[package]]
+name = "aviary-lfrqa"
+source = { editable = "packages/lfrqa" }
+dependencies = [
+    { name = "aviary-labbench" },
+    { name = "fhaviary" },
+    { name = "fhlmi" },
+    { name = "paper-qa" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aviary-labbench", editable = "packages/labbench" },
+    { name = "fhaviary", editable = "." },
+    { name = "fhlmi" },
+    { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "pydantic", specifier = "~=2.0" },
+]
 
 [[package]]
 name = "aviary-notebook"
@@ -1048,8 +1048,8 @@ cloud = [
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
+    { name = "aviary-labbench", extra = ["dev"] },
     { name = "aviary-lfrqa" },
-    { name = "aviary-litqa", extra = ["dev"] },
     { name = "aviary-notebook", extra = ["dev"] },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
@@ -1093,11 +1093,11 @@ hotpotqa = [
 image = [
     { name = "pillow" },
 ]
+labbench = [
+    { name = "aviary-labbench" },
+]
 lfrqa = [
     { name = "aviary-lfrqa" },
-]
-litqa = [
-    { name = "aviary-litqa" },
 ]
 llm = [
     { name = "fhlmi" },
@@ -1134,10 +1134,10 @@ requires-dist = [
     { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
+    { name = "aviary-labbench", marker = "extra == 'labbench'", editable = "packages/labbench" },
+    { name = "aviary-labbench", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
-    { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
-    { name = "aviary-litqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/litqa" },
     { name = "aviary-notebook", marker = "extra == 'notebook'", editable = "packages/notebook" },
     { name = "aviary-notebook", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/notebook" },
     { name = "boto3", marker = "extra == 'cloud'" },
@@ -1181,7 +1181,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "lfrqa", "litqa", "llm", "notebook", "server", "typing", "xml"]
+provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "labbench", "lfrqa", "llm", "notebook", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]
