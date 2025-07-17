@@ -113,7 +113,7 @@ class CounterEnv(Environment[CounterEnvState]):
 
     async def step(self, action: ToolRequestMessage):
         """Executes the tool call requested by the agent."""
-        obs = self.exec_tool_calls(action)
+        obs = await self.exec_tool_calls(action)
 
         # The reward is the square of the current count
         reward = int(self.state.count == self.target)
