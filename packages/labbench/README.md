@@ -1,4 +1,4 @@
-# aviary.litqa
+# aviary.labbench
 
 LitQA2 environment implemented with aviary,
 allowing agents to perform question answering on the LitQA dataset.

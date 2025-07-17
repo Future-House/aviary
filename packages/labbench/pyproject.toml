@@ -27,9 +27,9 @@ dependencies = [
     "tenacity",
     "typing-extensions; python_version <= '3.12'",  # For TypeVar default
 ]
-description = "LitQA environment implemented with aviary"
+description = "LAB-Bench environments implemented with aviary"
 dynamic = ["version"]
-name = "aviary.litqa"
+name = "aviary.labbench"
 readme = "README.md"
 requires-python = ">=3.11"
 
@@ -38,7 +38,7 @@ datasets = [
     "datasets>=2.15",  # Lower pin for https://github.com/huggingface/datasets/pull/6404
 ]
 dev = [
-    "aviary.litqa[datasets]",
+    "aviary.labbench[datasets]",
     "paper-qa>=5.29.1",  # Pin for gen_answer's EmptyDocsError, with fix
     "tantivy>=0.25.0; python_version >= '3.14'",  # For Python 3.14 support
 ]
@@ -51,4 +51,4 @@ where = ["src"]
 
 [tool.setuptools_scm]
 root = "../.."
-version_file = "src/aviary/envs/litqa/version.py"
+version_file = "src/aviary/envs/labbench/version.py"
