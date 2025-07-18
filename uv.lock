@@ -296,7 +296,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4" },
-    { name = "datasets" },
+    { name = "datasets", specifier = "<4" },
     { name = "fhaviary", editable = "." },
     { name = "httpx" },
     { name = "pydantic", specifier = "~=2.0" },
