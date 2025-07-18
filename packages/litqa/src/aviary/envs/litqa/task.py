@@ -1,6 +1,5 @@
 import logging
 import re
-import sys
 from abc import ABC
 from collections.abc import Iterable, Mapping, Sequence
 from enum import StrEnum
@@ -24,7 +23,6 @@ from aviary.core import (
     TASK_DATASET_REGISTRY,
     Environment,
     Frame,
-    MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
     TaskDataset,
     ToolResponseMessage,
@@ -40,14 +38,7 @@ if TYPE_CHECKING:
     from ldp.agent import Agent
     from ldp.data_structures import Transition
 
-if sys.version_info >= (3, 13):
-    from typing import TypeVar
-else:
-    from typing_extensions import TypeVar  # For TypeVar.default backport
-
 logger = logging.getLogger(__name__)
-
-TEvaluation = TypeVar("TEvaluation", default=MultipleChoiceEvaluation)
 
 
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
