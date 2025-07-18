@@ -60,6 +60,7 @@ dev = [
     "pylint>=3.3.3",  # Pin for Python>=3.13.1's 'collections.abc' import error
     "pytest-asyncio",
     "pytest-recording",
+    "pytest-rerunfailures",
     "pytest-subtests",
     "pytest-sugar",
     "pytest-timer[colorama]",
