@@ -20,6 +20,7 @@ from aviary.core import (
     MultipleChoiceQuestion,
     ToolRequestMessage,
 )
+from aviary.env import ENV_REGISTRY
 from aviary.envs.litqa import GradablePaperQAEnvironment
 
 logger = logging.getLogger(__name__)
@@ -287,3 +288,6 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
                 "No question ID was configured, as the default ID remains present."
             )
         return str(self._query.question_id)
+
+
+ENV_REGISTRY["lfrqa"] = (LFRQAPairwiseEvalEnv.__module__, LFRQAPairwiseEvalEnv.__name__)

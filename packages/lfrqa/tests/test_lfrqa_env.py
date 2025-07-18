@@ -3,11 +3,16 @@ import pathlib
 import pandas as pd
 import pytest
 
+from aviary.core import Environment
 from aviary.envs.lfrqa.env import LFRQAPairwiseEvalEnv, LFRQAQuestion
 from aviary.envs.lfrqa.task import LFRQATaskDataset
 
 TESTS_DIR = pathlib.Path(__file__).parent
 STUB_DATA_DIR = TESTS_DIR / "stub_data"
+
+
+def test_availability() -> None:
+    assert "lfrqa" in Environment.available()
 
 
 @pytest.mark.asyncio
