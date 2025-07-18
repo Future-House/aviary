@@ -113,7 +113,7 @@ class CounterEnv(Environment[CounterEnvState]):
 
     async def step(self, action: ToolRequestMessage):
         """Executes the tool call requested by the agent."""
-        obs = self.exec_tool_calls(action)
+        obs = await self.exec_tool_calls(action)
 
         # The reward is the square of the current count
         reward = int(self.state.count == self.target)
@@ -417,14 +417,12 @@ viewing the descriptions/types and output that an agent would see when using the
 
 Below we list some pre-existing environments implemented in Aviary:
 
-| Environment       | PyPI                                                                 | Extra                         | README                                                           |     |
-| ----------------- | -------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------- | --- |
-| GSM8k             | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)             | `fhaviary[gsm8k]`             | [`README.md`](packages/gsm8k/README.md#installation)             |     |
-| HotPotQA          | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/)       | `fhaviary[hotpotqa]`          | [`README.md`](packages/hotpotqa/README.md#installation)          |     |
-| LitQA             | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)             | `fhaviary[litqa]`             | [`README.md`](packages/litqa/README.md#installation)             |     |
-| Cloning           | [`aviary.cloning`](https://pypi.org/project/aviary.litqa/)           | `fhaviary[cloning]`           | [`README.md`](packages/cloning/README.md#installation)           |     |
-| Protein Stability | [`aviary.protein_stability`](https://pypi.org/project/aviary.litqa/) | `fhaviary[protein_stability]` | [`README.md`](packages/protein_stability/README.md#installation) |     |
-| LFRQA             | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)             | `fhaviary[lfrqa]`             | [`README.md`](packages/lfrqa/README.md#installation)             |     |
+| Environment | PyPI                                                           | Extra                | README                                                  |
+| ----------- | -------------------------------------------------------------- | -------------------- | ------------------------------------------------------- |
+| GSM8k       | [`aviary.gsm8k`](https://pypi.org/project/aviary.gsm8k/)       | `fhaviary[gsm8k]`    | [`README.md`](packages/gsm8k/README.md#installation)    |
+| HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation) |
+| LitQA       | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)       | `fhaviary[litqa]`    | [`README.md`](packages/litqa/README.md#installation)    |
+| LFRQA       | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)       | `fhaviary[lfrqa]`    | [`README.md`](packages/lfrqa/README.md#installation)    |
 
 ### Task Datasets
 
