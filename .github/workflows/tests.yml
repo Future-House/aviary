@@ -66,6 +66,9 @@ jobs:
         with:
           path: packages/hotpotqa
           upload-name-suffix: -hotpotqa
+      - name: Clean up aviary.hotpotqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+        if: matrix.python-version == '3.11'
+        run: rm -r /tmp/baipp/dist
       - run: uv sync --python-preference=only-managed
       - run: uv run refurb .
       - run: uv run pylint src packages
