@@ -48,12 +48,18 @@ jobs:
         uses: hynek/build-and-inspect-python-package@v2
         with:
           upload-name-suffix: -fhaviary
+      - name: Clean up fhaviary build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+        if: matrix.python-version == '3.11'
+        run: rm -r /tmp/baipp/dist
       - name: Check aviary.gsm8k build
         if: matrix.python-version == '3.11'
         uses: hynek/build-and-inspect-python-package@v2
         with:
           path: packages/gsm8k
           upload-name-suffix: -gsm8k
+      - name: Clean up aviary.gsm8k build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+        if: matrix.python-version == '3.11'
+        run: rm -r /tmp/baipp/dist
       - name: Check aviary.hotpotqa build
         if: matrix.python-version == '3.11'
         uses: hynek/build-and-inspect-python-package@v2
