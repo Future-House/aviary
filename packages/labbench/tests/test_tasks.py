@@ -5,6 +5,7 @@ from typing import ClassVar, cast
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
+import pandas as pd
 import pytest
 from ldp.agent import SimpleAgent
 from ldp.alg.callbacks import Callback, MeanMetricsCallback, StoreTrajectoriesCallback
@@ -26,21 +27,18 @@ from aviary.core import (
 )
 from aviary.envs.labbench import (
     DEFAULT_REWARD_MAPPING,
-    GradablePaperQAEnvironment,
-    ImageQADatasets,
     LABBenchDatasets,
-    PaperQATaskDataset,
     TextQATaskDataset,
     TextQATaskSplit,
 )
 
 
-class StubPaperQADataset(PaperQATaskDataset):
+class StubPaperQADataset(TextQATaskDataset):
     """Made up dataset of questions answerable from this repo's stub_data."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.data: list[tuple[str, str | list[str], str, str, str]] = [
+        raw_data = [
             (
                 "Politician",
                 ["Technologist", "Plumber"],
@@ -66,15 +64,27 @@ class StubPaperQADataset(PaperQATaskDataset):
                 "flag_day.html",
             ),
         ]
-
-    def get_new_env_by_idx(self, idx: int) -> GradablePaperQAEnvironment:
-        return self._make_gradable_environment(
-            ideal_answer=self.data[idx][0],
-            distractors=self.data[idx][1],
-            question_id=UUID(self.data[idx][2]),
-            question=self.data[idx][3],
-            sources=self.data[idx][4],
+        self.data = pd.DataFrame(
+            raw_data, columns=["ideal", "distractors", "id", "question", "source"]
         )
+
+    def _make_query(self, idx: int) -> MultipleChoiceQuestion:
+        distractors = self.data.iloc[idx].distractors
+        return MultipleChoiceQuestion(
+            question_id=UUID(self.data.iloc[idx].id),
+            question=self.data.iloc[idx].question,
+            options=(
+                distractors
+                if isinstance(distractors, list)
+                else MultipleChoiceQuestion.split_options(distractors)
+            ),
+            ideal_answer=self.data.iloc[idx].ideal,
+            prompt_without_id=True,
+            **(self._question_kwargs or {}),
+        )
+
+    def _make_sources(self, idx: int) -> str | list[str] | None:
+        return self.data.iloc[idx].source
 
     def __len__(self) -> int:
         return len(self.data)
@@ -434,7 +444,7 @@ class TestImageQATaskDataset:
     @pytest.mark.asyncio
     async def test_figqa(self, imageqa_settings: Settings) -> None:
         task_dataset = TaskDataset.from_name(
-            ImageQADatasets.FIG_QA.value.lower(),
+            LABBenchDatasets.FIG_QA.value.lower(),
             settings=imageqa_settings,
             read_data_kwargs={"seed": 42},
         )
@@ -471,8 +481,8 @@ class TestImageQATaskDataset:
     @pytest.mark.asyncio
     async def test_tableqa(self, imageqa_settings: Settings) -> None:
         task_dataset = TaskDataset.from_name(
-            ImageQADatasets.TABLE_QA.value.lower(),
-            dataset=ImageQADatasets.TABLE_QA,
+            LABBenchDatasets.TABLE_QA.value.lower(),
+            dataset=LABBenchDatasets.TABLE_QA,
             settings=imageqa_settings,
             read_data_kwargs={"seed": 42},
         )

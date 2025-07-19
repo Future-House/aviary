@@ -322,6 +322,7 @@ datasets = [
 ]
 dev = [
     { name = "datasets" },
+    { name = "pandas" },
     { name = "pillow" },
 ]
 typing = [
@@ -335,6 +336,7 @@ requires-dist = [
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
+    { name = "pandas", marker = "extra == 'dev'" },
     { name = "paper-qa", git = "https://github.com/Future-House/paper-qa.git?rev=multimodal-beginnings" },
     { name = "pillow", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
@@ -354,14 +356,25 @@ dependencies = [
     { name = "pydantic" },
 ]
 
+[package.optional-dependencies]
+csv = [
+    { name = "pandas" },
+]
+dev = [
+    { name = "pandas" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "aviary-labbench", editable = "packages/labbench" },
+    { name = "aviary-lfrqa", extras = ["csv"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
+    { name = "pandas", marker = "extra == 'csv'" },
     { name = "paper-qa", specifier = ">=5.14.0" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
+provides-extras = ["csv", "dev"]
 
 [[package]]
 name = "babel"
@@ -1089,7 +1102,7 @@ dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
     { name = "aviary-labbench", extra = ["dev"] },
-    { name = "aviary-lfrqa" },
+    { name = "aviary-lfrqa", extra = ["dev"] },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
     { name = "cloudpickle" },
@@ -1176,8 +1189,8 @@ requires-dist = [
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
     { name = "aviary-labbench", marker = "extra == 'labbench'", editable = "packages/labbench" },
     { name = "aviary-labbench", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/labbench" },
-    { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
+    { name = "aviary-lfrqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },

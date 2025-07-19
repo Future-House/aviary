@@ -174,38 +174,60 @@ class LABBenchDatasets(StrEnum):
     LIT_QA2 = "LitQA2"
     TABLE_QA = "TableQA"
 
+    @property
+    def images_column(self) -> str:
+        if self == LABBenchDatasets.FIG_QA:
+            return "figure"
+        if self == LABBenchDatasets.TABLE_QA:
+            return "tables"
+        raise ValueError(f"Dataset {self.value!r} does not have an images column.")
 
-def get_data(
-    dataset: "LABBenchDatasets | ImageQADatasets",
-    split: "str | TextQATaskSplit" = "train",
-    **kwargs,
-) -> "pd.DataFrame":
-    split = TextQATaskSplit(split)
-    if split == TextQATaskSplit.TRAIN:
-        hf_path: str = DEFAULT_LABBENCH_HF_HUB_NAME
-    elif isinstance(dataset, LABBenchDatasets) and dataset == LABBenchDatasets.LIT_QA2:
-        hf_path = DEFAULT_AVIARY_PAPER_HF_HUB_NAME
-    else:
-        raise ValueError(f"Dataset {dataset.value!r} does not have a 'test' split.")
-    return read_ds_from_hub(
-        dataset.value, hf_path=hf_path, hf_split=split.value, **kwargs
-    )
+    @property
+    def paths_column(self) -> str:
+        if self == LABBenchDatasets.FIG_QA:
+            return "figure-path"
+        if self == LABBenchDatasets.TABLE_QA:
+            return "table-path"
+        raise ValueError(f"Dataset {self.value!r} does not have a paths column.")
 
+    def get_data(
+        self, split: "str | TextQATaskSplit" = "train", **kwargs
+    ) -> "pd.DataFrame":
+        split = TextQATaskSplit(split)
+        if split == TextQATaskSplit.TRAIN:
+            hf_path: str = DEFAULT_LABBENCH_HF_HUB_NAME
+        elif self == LABBenchDatasets.LIT_QA2:
+            hf_path = DEFAULT_AVIARY_PAPER_HF_HUB_NAME
+        else:
+            raise ValueError(f"Dataset {self.value!r} does not have a 'test' split.")
+        return read_ds_from_hub(
+            self.value, hf_path=hf_path, hf_split=split.value, **kwargs
+        )
 
-def get_sources(
-    dataset: "LABBenchDatasets | ImageQADatasets", row: "pd.Series"
-) -> list[str]:
-    if dataset == LABBenchDatasets.LIT_QA2:
-        return list(row.sources)
-    if dataset in {
-        LABBenchDatasets.FIG_QA,
-        LABBenchDatasets.TABLE_QA,
-        ImageQADatasets.FIG_QA,
-        ImageQADatasets.TABLE_QA,
-    }:
-        return [row.source]
-    # mypy==1.16.0 seemingly doesn't recognize this as unreachable
-    assert_never(dataset)  # type: ignore[arg-type]
+    def get_sources(self, row: "pd.Series") -> list[str]:
+        if self == LABBenchDatasets.LIT_QA2:
+            raw_sources = row.sources
+        # Ignore PLR1714 because `mypy==0.16.0` can't understand
+        # `assert_never` with set.__contains__
+        elif self == LABBenchDatasets.FIG_QA or self == LABBenchDatasets.TABLE_QA:  # noqa: PLR1714
+            raw_sources = [row.source]
+        else:
+            assert_never(self)
+        sources: list[str] = []
+        for s in raw_sources:
+            try:
+                (doi,) = (
+                    s.split(substr, maxsplit=1)[1]
+                    # HTTP due to https://github.com/Future-House/LAB-Bench/issues/11
+                    for substr in {*DocDetails.DOI_URL_FORMATS, "http://doi.org/"}
+                    if substr in s
+                )
+            except ValueError as exc:
+                raise NotImplementedError(
+                    f"Didn't handle DOI extraction from source {s!r}."
+                ) from exc
+            sources.append(doi)
+        return sources
 
 
 def read_ds_from_hub(
@@ -281,35 +303,6 @@ class PaperQATaskDataset(TaskDataset[TGradableEnv], ComputeTrajectoryMetricsMixi
         self._eval_model = eval_model
         self._env_kwargs = env_kwargs
 
-    def _make_gradable_environment(
-        self,
-        ideal_answer: str,
-        distractors: str | list[str],
-        question_id: str | UUID,
-        question: str,
-        sources: str | list[str] | None = None,
-    ) -> GradablePaperQAEnvironment:
-        mc_question = MultipleChoiceQuestion(
-            question_id=question_id,
-            question=question,
-            options=(
-                distractors
-                if isinstance(distractors, list)
-                else MultipleChoiceQuestion.split_options(distractors)
-            ),
-            ideal_answer=ideal_answer,
-            prompt_without_id=True,
-            **(self._question_kwargs or {}),
-        )
-        return GradablePaperQAEnvironment(
-            query=mc_question,
-            settings=self._settings,
-            docs=self._base_docs.model_copy(),
-            sources=sources,
-            rewards=self._rewards,
-            **self._env_kwargs,
-        )
-
     def compute_trajectory_metrics(
         self, trajectories: "Sequence[Trajectory]"
     ) -> dict[str, list[float]]:
@@ -378,7 +371,7 @@ class TextQATaskSplit(StrEnum):
         assert_never(self)  # type: ignore[arg-type]
 
 
-class TextQATaskDataset(PaperQATaskDataset):
+class TextQATaskDataset(PaperQATaskDataset[TGradableEnv]):
     """LAB-Bench datasets that are compatible with text-based QA."""
 
     def __init__(
@@ -391,29 +384,34 @@ class TextQATaskDataset(PaperQATaskDataset):
     ):
         super().__init__(*args, **kwargs)
         self._dataset = LABBenchDatasets(dataset)
-        self.data = get_data(self._dataset, split, **(read_data_kwargs or {}))
+        self.data = self._dataset.get_data(split, **(read_data_kwargs or {}))
 
-    def get_new_env_by_idx(self, idx: int) -> GradablePaperQAEnvironment:
-        sources = []
-        for s in get_sources(self._dataset, row=self.data.iloc[idx]):
-            try:
-                (doi,) = (
-                    s.split(substr, maxsplit=1)[1]
-                    # HTTP due to https://github.com/Future-House/LAB-Bench/issues/11
-                    for substr in {*DocDetails.DOI_URL_FORMATS, "http://doi.org/"}
-                    if substr in s
-                )
-            except ValueError as exc:
-                raise NotImplementedError(
-                    f"Didn't handle DOI extraction from source {s!r}."
-                ) from exc
-            sources.append(doi)
-        return self._make_gradable_environment(
-            ideal_answer=self.data.iloc[idx].ideal,
-            distractors=self.data.iloc[idx].distractors,
+    def _make_query(self, idx: int) -> MultipleChoiceQuestion:
+        distractors = self.data.iloc[idx].distractors
+        return MultipleChoiceQuestion(
             question_id=UUID(self.data.iloc[idx].id),
             question=self.data.iloc[idx].question,
-            sources=sources,
+            options=(
+                distractors
+                if isinstance(distractors, list)
+                else MultipleChoiceQuestion.split_options(distractors)
+            ),
+            ideal_answer=self.data.iloc[idx].ideal,
+            prompt_without_id=True,
+            **(self._question_kwargs or {}),
+        )
+
+    def _make_sources(self, idx: int) -> str | list[str] | None:
+        return self._dataset.get_sources(self.data.iloc[idx])
+
+    def get_new_env_by_idx(self, idx: int) -> GradablePaperQAEnvironment:  # type: ignore[override]
+        return GradablePaperQAEnvironment(
+            query=self._make_query(idx),
+            settings=self._settings,
+            docs=self._base_docs.model_copy(),
+            sources=self._make_sources(idx),
+            rewards=self._rewards,
+            **self._env_kwargs,
         )
 
     def __len__(self) -> int:
@@ -427,57 +425,20 @@ for dataset_name in ("figqa-text", "litqa2", "tableqa-text"):
     )
 
 
-@unique
-class ImageQADatasets(StrEnum):
-    """LAB-Bench datasets that are compatible with singular image-based QA."""
-
-    FIG_QA = "FigQA"
-    TABLE_QA = "TableQA"
-
-    @property
-    def images_column(self) -> str:
-        if self == ImageQADatasets.FIG_QA:
-            return "figure"
-        if self == ImageQADatasets.TABLE_QA:
-            return "tables"
-        assert_never(self)
-
-    @property
-    def paths_column(self) -> str:
-        if self == ImageQADatasets.FIG_QA:
-            return "figure-path"
-        if self == ImageQADatasets.TABLE_QA:
-            return "table-path"
-        assert_never(self)
-
-
-class ImageQATaskDataset(PaperQATaskDataset[ImageQAEnvironment]):
+class ImageQATaskDataset(TextQATaskDataset[ImageQAEnvironment]):
     def __init__(
-        self,
-        *args,
-        dataset: ImageQADatasets = ImageQADatasets.FIG_QA,
-        read_data_kwargs: Mapping[str, Any] | None = None,
-        **kwargs,
+        self, *args, dataset: str | LABBenchDatasets = LABBenchDatasets.FIG_QA, **kwargs
     ):
-        super().__init__(*args, **kwargs)
-        self._dataset = ImageQADatasets(dataset)
-        self.data = get_data(self._dataset, **(read_data_kwargs or {}))
+        super().__init__(*args, dataset=dataset, **kwargs)
 
     def get_new_env_by_idx(self, idx: int) -> ImageQAEnvironment:
         images = self.data.iloc[idx][self._dataset.images_column]
         image_paths = self.data.iloc[idx][self._dataset.paths_column]
         return ImageQAEnvironment(
-            query=MultipleChoiceQuestion(
-                question_id=UUID(self.data.iloc[idx].id),
-                question=self.data.iloc[idx].question,
-                ideal_answer=self.data.iloc[idx].ideal,
-                options=self.data.iloc[idx].distractors,
-                prompt_without_id=True,
-                **(self._question_kwargs or {}),
-            ),
+            query=self._make_query(idx),
             settings=self._settings,
             docs=self._base_docs.model_copy(),
-            sources=self.data.iloc[idx]["source"],
+            sources=self._dataset.get_sources(self.data.iloc[idx]),
             rewards=self._rewards,
             images=(
                 images["bytes"]
@@ -489,9 +450,6 @@ class ImageQATaskDataset(PaperQATaskDataset[ImageQAEnvironment]):
             ),
             **self._env_kwargs,
         )
-
-    def __len__(self) -> int:
-        return len(self.data)
 
 
 for dataset_name in ("figqa", "tableqa"):

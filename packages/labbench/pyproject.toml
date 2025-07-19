@@ -34,7 +34,7 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 datasets = ["datasets"]
-dev = ["aviary.labbench[datasets,typing]"]
+dev = ["aviary.labbench[datasets,typing]", "pandas"]
 typing = ["pillow"]
 
 [tool.ruff]

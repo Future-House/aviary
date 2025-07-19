@@ -7,7 +7,6 @@ from .env import (
 from .task import (
     DEFAULT_AVIARY_PAPER_HF_HUB_NAME,
     DEFAULT_LABBENCH_HF_HUB_NAME,
-    ImageQADatasets,
     ImageQATaskDataset,
     LABBenchDatasets,
     PaperQATaskDataset,
@@ -21,7 +20,6 @@ __all__ = [
     "DEFAULT_LABBENCH_HF_HUB_NAME",
     "DEFAULT_REWARD_MAPPING",
     "GradablePaperQAEnvironment",
-    "ImageQADatasets",
     "ImageQAEnvironment",
     "ImageQATaskDataset",
     "LABBenchDatasets",
