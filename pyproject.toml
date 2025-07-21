@@ -3,13 +3,7 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools>=64", "setuptools_scm>=8"]
 
 [dependency-groups]
-codeflash = [
-    "codeflash>=0.8",  # Pin for --verify-setup checking formatter-cmds
-    "fhaviary[dev]",
-]
-dev = [
-    "fhaviary[dev]",
-]
+dev = ["fhaviary[dev]"]
 
 [project]
 authors = [
@@ -108,14 +102,6 @@ repository = "https://github.com/Future-House/aviary"
 
 [tool.black]
 preview = true
-
-[tool.codeflash]
-disable-imports-sorting = true
-disable-telemetry = true
-formatter-cmds = ["uv tool run ruff check --exit-zero --fix $file", "uv tool run ruff format $file"]
-module-root = "src/aviary"
-test-framework = "pytest"
-tests-root = "tests"
 
 [tool.codespell]
 check-filenames = true
