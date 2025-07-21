@@ -14,8 +14,8 @@ resolution-markers = [
 members = [
     "aviary-gsm8k",
     "aviary-hotpotqa",
+    "aviary-labbench",
     "aviary-lfrqa",
-    "aviary-litqa",
     "fhaviary",
 ]
 
@@ -304,28 +304,8 @@ requires-dist = [
 ]
 
 [[package]]
-name = "aviary-lfrqa"
-source = { editable = "packages/lfrqa" }
-dependencies = [
-    { name = "aviary-litqa" },
-    { name = "fhaviary" },
-    { name = "fhlmi" },
-    { name = "paper-qa" },
-    { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aviary-litqa", editable = "packages/litqa" },
-    { name = "fhaviary", editable = "." },
-    { name = "fhlmi" },
-    { name = "paper-qa", specifier = ">=5.14.0" },
-    { name = "pydantic", specifier = "~=2.0" },
-]
-
-[[package]]
-name = "aviary-litqa"
-source = { editable = "packages/litqa" }
+name = "aviary-labbench"
+source = { editable = "packages/labbench" }
 dependencies = [
     { name = "fhaviary" },
     { name = "fhlmi" },
@@ -340,19 +320,61 @@ dependencies = [
 datasets = [
     { name = "datasets" },
 ]
+dev = [
+    { name = "datasets" },
+    { name = "pandas" },
+    { name = "pillow" },
+]
+typing = [
+    { name = "pillow" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "aviary-labbench", extras = ["datasets", "typing"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "datasets", marker = "extra == 'datasets'" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
-    { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "pandas", marker = "extra == 'dev'" },
+    { name = "paper-qa", git = "https://github.com/Future-House/paper-qa.git?rev=multimodal-beginnings" },
+    { name = "pillow", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-provides-extras = ["datasets"]
+provides-extras = ["datasets", "dev", "typing"]
+
+[[package]]
+name = "aviary-lfrqa"
+source = { editable = "packages/lfrqa" }
+dependencies = [
+    { name = "aviary-labbench" },
+    { name = "fhaviary" },
+    { name = "fhlmi" },
+    { name = "paper-qa" },
+    { name = "pydantic" },
+]
+
+[package.optional-dependencies]
+csv = [
+    { name = "pandas" },
+]
+dev = [
+    { name = "pandas" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aviary-labbench", editable = "packages/labbench" },
+    { name = "aviary-lfrqa", extras = ["csv"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "fhaviary", editable = "." },
+    { name = "fhlmi" },
+    { name = "pandas", marker = "extra == 'csv'" },
+    { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "pydantic", specifier = "~=2.0" },
+]
+provides-extras = ["csv", "dev"]
 
 [[package]]
 name = "babel"
@@ -1079,8 +1101,8 @@ cloud = [
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
-    { name = "aviary-lfrqa" },
-    { name = "aviary-litqa" },
+    { name = "aviary-labbench", extra = ["dev"] },
+    { name = "aviary-lfrqa", extra = ["dev"] },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
     { name = "cloudpickle" },
@@ -1123,11 +1145,11 @@ hotpotqa = [
 image = [
     { name = "pillow" },
 ]
+labbench = [
+    { name = "aviary-labbench" },
+]
 lfrqa = [
     { name = "aviary-lfrqa" },
-]
-litqa = [
-    { name = "aviary-litqa" },
 ]
 llm = [
     { name = "fhlmi" },
@@ -1165,10 +1187,10 @@ requires-dist = [
     { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
-    { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "aviary-labbench", marker = "extra == 'labbench'", editable = "packages/labbench" },
+    { name = "aviary-labbench", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
-    { name = "aviary-litqa", marker = "extra == 'dev'", editable = "packages/litqa" },
-    { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
+    { name = "aviary-lfrqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
@@ -1209,7 +1231,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "lfrqa", "litqa", "llm", "server", "typing", "xml"]
+provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "labbench", "lfrqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 codeflash = [
@@ -2875,8 +2897,8 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.21.0"
-source = { registry = "https://pypi.org/simple" }
+version = "5.25.1.dev13+gfdc0b4e"
+source = { git = "https://github.com/Future-House/paper-qa.git?rev=multimodal-beginnings#fdc0b4e9c142a51a3bf0fa65946d1d565483bf60" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -2894,10 +2916,6 @@ dependencies = [
     { name = "tantivy" },
     { name = "tenacity" },
     { name = "tiktoken" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/b0/de/6c87e676c9404099321b50ef122daace6601b8eeb80c480543b442ee77d1/paper_qa-5.21.0.tar.gz", hash = "sha256:cffb06e5d8d41947be89dd55a64dd1959df4af51b8b60cf97630d77e289600d5", size = 3691866, upload-time = "2025-05-28T03:57:20.047Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/a8/bd62fa106832637632fe68d0575a848a4f6e6e68a2d358999cfd2f3b95fd/paper_qa-5.21.0-py3-none-any.whl", hash = "sha256:39603630a9d632e0139ae9a4fbca8845962beb45464e95c92cbeb0977267135a", size = 530698, upload-time = "2025-05-28T03:57:18.2Z" },
 ]
 
 [[package]]
