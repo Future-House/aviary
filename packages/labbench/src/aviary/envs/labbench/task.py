@@ -1,8 +1,9 @@
 import logging
 import re
+import sys
 from abc import ABC
 from collections.abc import Iterable, Mapping, Sequence
-from enum import StrEnum
+from enum import StrEnum, unique
 from typing import TYPE_CHECKING, Any, assert_never, cast
 from uuid import UUID
 
@@ -15,12 +16,7 @@ from aviary.core import (
     TaskDataset,
     ToolResponseMessage,
 )
-from aviary.env import ENV_REGISTRY
-from ldp.alg import (
-    Callback,
-    ComputeTrajectoryMetricsMixin,
-    bulk_evaluate_consensus,
-)
+from ldp.alg import Callback, ComputeTrajectoryMetricsMixin, bulk_evaluate_consensus
 from ldp.data_structures import Trajectory
 from lmi import LLMModel
 from paperqa.agents.tools import Complete, EnvironmentState
@@ -31,6 +27,7 @@ from paperqa.types import DocDetails, PQASession
 from aviary.envs.labbench import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
+    ImageQAEnvironment,
 )
 
 if TYPE_CHECKING:
@@ -38,18 +35,22 @@ if TYPE_CHECKING:
     from ldp.agent import Agent
     from ldp.data_structures import Transition
 
+if sys.version_info >= (3, 13):
+    from typing import TypeVar
+else:
+    from typing_extensions import TypeVar  # For TypeVar.default backport
+
 logger = logging.getLogger(__name__)
 
+TGradableEnv = TypeVar(
+    "TGradableEnv",
+    default=GradablePaperQAEnvironment,
+    bound=GradablePaperQAEnvironment[Any],
+)
 
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
 DEFAULT_AVIARY_PAPER_HF_HUB_NAME = "futurehouse/aviary-paper-data"
-
-ENV_NAME = "paperqa-local"
-ENV_REGISTRY[ENV_NAME] = (
-    GradablePaperQAEnvironment.__module__,
-    GradablePaperQAEnvironment.__name__,
-)
 
 
 async def evaluate_consensus_sampling(
@@ -164,23 +165,87 @@ class StoreForConsensusSamplingCallback(Callback):
         )
 
 
-def read_litqa_v2_from_hub(
-    train_eval_dataset: str = DEFAULT_LABBENCH_HF_HUB_NAME,
-    test_dataset: str = DEFAULT_AVIARY_PAPER_HF_HUB_NAME,
+@unique
+class LABBenchDatasets(StrEnum):
+    """LAB-Bench datasets supported by this package."""
+
+    # NOTE: keys' underscore before QA is supposed to make for easier reading
+    FIG_QA = "FigQA"
+    LIT_QA2 = "LitQA2"
+    TABLE_QA = "TableQA"
+
+    @property
+    def images_column(self) -> str:
+        if self == LABBenchDatasets.FIG_QA:
+            return "figure"
+        if self == LABBenchDatasets.TABLE_QA:
+            return "tables"
+        raise ValueError(f"Dataset {self.value!r} does not have an images column.")
+
+    @property
+    def paths_column(self) -> str:
+        if self == LABBenchDatasets.FIG_QA:
+            return "figure-path"
+        if self == LABBenchDatasets.TABLE_QA:
+            return "table-path"
+        raise ValueError(f"Dataset {self.value!r} does not have a paths column.")
+
+    def get_data(
+        self, split: "str | TextQATaskSplit" = "train", **kwargs
+    ) -> "pd.DataFrame":
+        split = TextQATaskSplit(split)
+        if split == TextQATaskSplit.TRAIN:
+            hf_path: str = DEFAULT_LABBENCH_HF_HUB_NAME
+        elif self == LABBenchDatasets.LIT_QA2:
+            hf_path = DEFAULT_AVIARY_PAPER_HF_HUB_NAME
+        else:
+            raise ValueError(f"Dataset {self.value!r} does not have a 'test' split.")
+        return read_ds_from_hub(
+            self.value, hf_path=hf_path, hf_split=split.value, **kwargs
+        )
+
+    def get_sources(self, row: "pd.Series") -> list[str]:
+        if self == LABBenchDatasets.LIT_QA2:
+            raw_sources = row.sources
+        # Ignore PLR1714 because `mypy==0.16.0` can't understand
+        # `assert_never` with set.__contains__
+        elif self == LABBenchDatasets.FIG_QA or self == LABBenchDatasets.TABLE_QA:  # noqa: PLR1714
+            raw_sources = [row.source]
+        else:
+            assert_never(self)
+        sources: list[str] = []
+        for s in raw_sources:
+            try:
+                (doi,) = (
+                    s.split(substr, maxsplit=1)[1]
+                    # HTTP due to https://github.com/Future-House/LAB-Bench/issues/11
+                    for substr in {*DocDetails.DOI_URL_FORMATS, "http://doi.org/"}
+                    if substr in s
+                )
+            except ValueError as exc:
+                raise NotImplementedError(
+                    f"Didn't handle DOI extraction from source {s!r}."
+                ) from exc
+            sources.append(doi)
+        return sources
+
+
+def read_ds_from_hub(
+    hf_name: str | LABBenchDatasets,
+    hf_path: str,
+    hf_split: str,
     randomize: bool = True,
     seed: int | None = None,
-    train_eval_split: float = 0.8,
-) -> "tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]":
+) -> "pd.DataFrame":
     """
-    Read LitQA v2 JSONL into train, eval, and test DataFrames.
+    Read in a train or test DataFrame.
 
     Args:
-        train_eval_dataset: Hugging Face Hub dataset's name corresponding with train
-            and eval splits.
-        test_dataset: Hugging Face Hub dataset's name corresponding with a test split.
+        hf_name: Hugging Face Hub dataset's name, e.g. "LitQA2" for LitQA v2.
+        hf_path: Hugging Face Hub dataset's path.
+        hf_split: Hugging Face Hub dataset's split, e.g. "train" or "test".
         randomize: Opt-out flag to shuffle the dataset after loading in by question.
         seed: Random seed to use for the shuffling.
-        train_eval_split: Train/eval split fraction, default is 80% train 20% eval.
 
     Raises:
         DatasetNotFoundError: If any of the datasets are not found, or the
@@ -190,32 +255,28 @@ def read_litqa_v2_from_hub(
         from datasets import load_dataset
     except ImportError as exc:
         raise ImportError(
-            "Reading in LitQA2 requires the 'datasets' extra for 'datasets'. Please:"
-            " `pip install aviary.labbench[datasets]`."
+            "Reading in Hugging Face datasets requires the 'datasets' extra for"
+            " 'datasets'. Please: `pip install aviary.labbench[datasets]`."
         ) from exc
 
-    train_eval = load_dataset(train_eval_dataset, "LitQA2")["train"].to_pandas()
-    test = load_dataset(test_dataset, "LitQA2")["test"].to_pandas()
+    if isinstance(hf_name, LABBenchDatasets):
+        hf_name = hf_name.value
+    ds = load_dataset(hf_path, hf_name, split=hf_split).to_pandas()
     # Convert to list so it's not unexpectedly a numpy array
-    train_eval["distractors"] = train_eval["distractors"].apply(list)
-    test["distractors"] = test["distractors"].apply(list)
+    ds["distractors"] = ds["distractors"].apply(list)
     # Let downstream usage in the TaskDataset's environment factories check for the
     # presence of other DataFrame columns
     if randomize:
-        train_eval = train_eval.sample(frac=1, random_state=seed)
-        test = test.sample(frac=1, random_state=seed)
-    num_train = int(len(train_eval) * train_eval_split)
-    return train_eval[:num_train], train_eval[num_train:], test
+        ds = ds.sample(frac=1, random_state=seed)
+    return ds
 
 
-class LitQATaskDataset(
-    TaskDataset[GradablePaperQAEnvironment], ComputeTrajectoryMetricsMixin, ABC
-):
+class PaperQATaskDataset(TaskDataset[TGradableEnv], ComputeTrajectoryMetricsMixin, ABC):
     """
-    Abstract base class for a task dataset of LitQA v1 or v2 questions.
+    Abstract base class for a task dataset of gradable questions for PaperQA.
 
-    This is an ABC because it's non-specific to a LitQA version.
-    Examples include LitQA v1, v2, or a test stub version of LitQA.
+    This is an ABC because it's non-specific to a given task.
+    Examples include LitQA v1, v2, FigQA, TableQA, or a test stub version of LitQA.
     """
 
     def __init__(
@@ -241,36 +302,6 @@ class LitQATaskDataset(
         self._question_kwargs = question_kwargs
         self._eval_model = eval_model
         self._env_kwargs = env_kwargs
-
-    def _make_gradable_environment(
-        self,
-        ideal_answer: str,
-        distractors: str | list[str],
-        question_id: UUID,
-        question: str,
-        sources: str | list[str] | None = None,
-    ) -> GradablePaperQAEnvironment:
-        mc_question = MultipleChoiceQuestion(
-            question_id=question_id,
-            question=question,
-            options=(
-                distractors
-                if isinstance(distractors, list)
-                else MultipleChoiceQuestion.split_options(distractors)
-            ),
-            ideal_answer=ideal_answer,
-            prompt_without_id=True,
-            **(self._question_kwargs or {}),
-        )
-        return GradablePaperQAEnvironment(
-            query=mc_question,
-            settings=self._settings,
-            docs=self._base_docs.model_copy(),
-            sources=sources,
-            rewards=self._rewards,
-            session_id=question_id,  # Expedite manual inspection
-            **self._env_kwargs,
-        )
 
     def compute_trajectory_metrics(
         self, trajectories: "Sequence[Trajectory]"
@@ -326,72 +357,115 @@ class LitQATaskDataset(
         }
 
 
-class LitQAv2TaskSplit(StrEnum):
+@unique
+class TextQATaskSplit(StrEnum):
     TRAIN = "train"
-    EVAL = "eval"
     TEST = "test"
 
     def get_index(self) -> int:
-        """
-        Get the index of the train (0), eval (1), or test (2) split.
-
-        NOTE: the value matches the index in read_litqa_v2_from_hub's returned splits.
-        """
+        """Get the index of the train (0) or test (1) split."""
         if self == self.TRAIN:
             return 0
-        if self == self.EVAL:
-            return 1
         if self == self.TEST:
-            return 2
+            return 1
         assert_never(self)
 
 
-class LitQAv2TaskDataset(LitQATaskDataset):
-    """Task dataset of LitQA v2 questions."""
+class TextQATaskDataset(PaperQATaskDataset[TGradableEnv]):
+    """Dataset for LAB-Bench datasets compatible with text-based QA."""
 
     def __init__(
         self,
         *args,
-        train_eval_dataset: str = DEFAULT_LABBENCH_HF_HUB_NAME,
-        test_dataset: str = DEFAULT_AVIARY_PAPER_HF_HUB_NAME,
+        dataset: str | LABBenchDatasets = LABBenchDatasets.LIT_QA2,
         read_data_kwargs: Mapping[str, Any] | None = None,
-        split: str | LitQAv2TaskSplit = LitQAv2TaskSplit.EVAL,
+        split: str | TextQATaskSplit = TextQATaskSplit.TRAIN,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        split_dfs = read_litqa_v2_from_hub(
-            train_eval_dataset, test_dataset, **(read_data_kwargs or {})
-        )
-        self.data = split_dfs[LitQAv2TaskSplit(split).get_index()]
+        self._dataset = LABBenchDatasets(dataset)
+        self.data = self._dataset.get_data(split, **(read_data_kwargs or {}))
 
-    def get_new_env_by_idx(self, idx: int) -> GradablePaperQAEnvironment:
-        sources = []
-        for s in self.data.iloc[idx].sources:
-            try:
-                (doi,) = (
-                    s.split(substr, maxsplit=1)[1]
-                    for substr in DocDetails.DOI_URL_FORMATS
-                    if substr in s
-                )
-            except ValueError as exc:
-                raise NotImplementedError(
-                    f"Didn't handle DOI extraction from source {s!r}."
-                ) from exc
-            sources.append(doi)
-        return self._make_gradable_environment(
-            ideal_answer=self.data.iloc[idx].ideal,
-            distractors=self.data.iloc[idx].distractors,
+    def _make_query(self, idx: int) -> MultipleChoiceQuestion:
+        distractors = self.data.iloc[idx].distractors
+        return MultipleChoiceQuestion(
             question_id=UUID(self.data.iloc[idx].id),
             question=self.data.iloc[idx].question,
-            sources=sources,
+            options=(
+                distractors
+                if isinstance(distractors, list)
+                else MultipleChoiceQuestion.split_options(distractors)
+            ),
+            ideal_answer=self.data.iloc[idx].ideal,
+            prompt_without_id=True,
+            **(self._question_kwargs or {}),
+        )
+
+    def _make_sources(self, idx: int) -> str | list[str] | None:
+        return self._dataset.get_sources(self.data.iloc[idx])
+
+    def get_new_env_by_idx(self, idx: int) -> GradablePaperQAEnvironment:  # type: ignore[override]
+        mcq = self._make_query(idx)
+        return GradablePaperQAEnvironment(
+            query=mcq,
+            settings=self._settings,
+            docs=self._base_docs.model_copy(),
+            sources=self._make_sources(idx),
+            rewards=self._rewards,
+            session_id=cast(UUID, mcq.question_id),  # Expedite manual inspection
+            **self._env_kwargs,
         )
 
     def __len__(self) -> int:
         return len(self.data)
 
 
-TASK_DATASET_NAME = "litqa-v2"
-TASK_DATASET_REGISTRY[TASK_DATASET_NAME] = (
-    LitQAv2TaskDataset.__module__,
-    LitQAv2TaskDataset.__name__,
-)
+for dataset_name in ("figqa-text", "litqa2", "tableqa-text"):
+    TASK_DATASET_REGISTRY[dataset_name] = (
+        TextQATaskDataset.__module__,
+        TextQATaskDataset.__name__,
+    )
+
+
+class ImageQATaskDataset(TextQATaskDataset[ImageQAEnvironment]):
+    """Dataset for LAB-Bench datasets compatible with image-based QA."""
+
+    def __init__(
+        self,
+        settings: Settings | dict | None = None,
+        dataset: str | LABBenchDatasets = LABBenchDatasets.FIG_QA,
+        autogenerate_settings: bool = True,
+        **kwargs,
+    ):
+        if autogenerate_settings and settings is None:
+            settings = ImageQAEnvironment.make_base_settings()
+        super().__init__(settings=settings, dataset=dataset, **kwargs)
+
+    def get_new_env_by_idx(self, idx: int) -> ImageQAEnvironment:
+        mcq = self._make_query(idx)
+        images = self.data.iloc[idx][self._dataset.images_column]
+        image_paths = self.data.iloc[idx][self._dataset.paths_column]
+        return ImageQAEnvironment(
+            query=mcq,
+            settings=self._settings,
+            docs=self._base_docs.model_copy(),
+            sources=self._dataset.get_sources(self.data.iloc[idx]),
+            rewards=self._rewards,
+            session_id=cast(UUID, mcq.question_id),  # Expedite manual inspection
+            images=(
+                images["bytes"]
+                if isinstance(images, dict)
+                else [image["bytes"] for image in images]
+            ),
+            image_paths=(
+                image_paths if isinstance(image_paths, str) else list(image_paths)
+            ),
+            **self._env_kwargs,
+        )
+
+
+for dataset_name in ("figqa", "tableqa"):
+    TASK_DATASET_REGISTRY[dataset_name] = (
+        ImageQATaskDataset.__module__,
+        ImageQATaskDataset.__name__,
+    )

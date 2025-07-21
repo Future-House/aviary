@@ -31,6 +31,10 @@ name = "aviary.lfrqa"
 readme = "README.md"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+csv = ["pandas"]
+dev = ["aviary.lfrqa[csv]"]
+
 [tool.ruff]
 extend = "../../pyproject.toml"
 
