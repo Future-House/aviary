@@ -302,7 +302,7 @@ dependencies = [
     { name = "fhaviary" },
     { name = "fhlmi" },
     { name = "ldp" },
-    { name = "paper-qa" },
+    { name = "paper-qa", extra = ["pymupdf"] },
     { name = "pydantic" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
@@ -312,19 +312,30 @@ dependencies = [
 datasets = [
     { name = "datasets" },
 ]
+dev = [
+    { name = "datasets" },
+    { name = "pandas" },
+    { name = "pillow" },
+]
+typing = [
+    { name = "pillow" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "aviary-labbench", extras = ["datasets", "typing"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "datasets", marker = "extra == 'datasets'" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
-    { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "pandas", marker = "extra == 'dev'" },
+    { name = "paper-qa", extras = ["pymupdf"], git = "https://github.com/Future-House/paper-qa.git?rev=multimodal-2" },
+    { name = "pillow", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-provides-extras = ["datasets"]
+provides-extras = ["datasets", "dev", "typing"]
 
 [[package]]
 name = "aviary-lfrqa"
@@ -337,14 +348,25 @@ dependencies = [
     { name = "pydantic" },
 ]
 
+[package.optional-dependencies]
+csv = [
+    { name = "pandas" },
+]
+dev = [
+    { name = "pandas" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "aviary-labbench", editable = "packages/labbench" },
+    { name = "aviary-lfrqa", extras = ["csv"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
+    { name = "pandas", marker = "extra == 'csv'" },
     { name = "paper-qa", specifier = ">=5.14.0" },
     { name = "pydantic", specifier = "~=2.0" },
 ]
+provides-extras = ["csv", "dev"]
 
 [[package]]
 name = "babel"
@@ -907,8 +929,8 @@ cloud = [
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
-    { name = "aviary-labbench" },
-    { name = "aviary-lfrqa" },
+    { name = "aviary-labbench", extra = ["dev"] },
+    { name = "aviary-lfrqa", extra = ["dev"] },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
     { name = "cloudpickle" },
@@ -989,10 +1011,10 @@ requires-dist = [
     { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
-    { name = "aviary-labbench", marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "aviary-labbench", marker = "extra == 'labbench'", editable = "packages/labbench" },
-    { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "aviary-labbench", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
+    { name = "aviary-lfrqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
@@ -1033,7 +1055,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "lfrqa", "labbench", "llm", "server", "typing", "xml"]
+provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "labbench", "lfrqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]
@@ -2477,8 +2499,8 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.25.0"
-source = { registry = "https://pypi.org/simple" }
+version = "5.27.1.dev13+g642b76f"
+source = { git = "https://github.com/Future-House/paper-qa.git?rev=multimodal-2#642b76f0f6658a2120ddfb90dea5dc9d9c10287c" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -2487,19 +2509,38 @@ dependencies = [
     { name = "html2text" },
     { name = "httpx" },
     { name = "numpy" },
+    { name = "paper-qa-pypdf" },
     { name = "pybtex" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "pymupdf" },
     { name = "rich" },
     { name = "setuptools" },
     { name = "tantivy" },
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/da/4e571a9b3e8369b5def95835e1dfb3e3223635ae7a19dfa86f2c95c3b184/paper_qa-5.25.0.tar.gz", hash = "sha256:4f14080ab58128ca9a6116d23e3d9c9dc79e2d4310af77a9c757e60d0b113cb7", size = 4305265, upload-time = "2025-07-18T18:30:35.653Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/69/4b246f8ab0e3cdc66cd474c8127bcb111213f929e343d06f9723e35a0f25/paper_qa-5.25.0-py3-none-any.whl", hash = "sha256:f7ded3c3a0224460cee14aa2348bd0a16f453417450fee2da9a4324cabb4a911", size = 535850, upload-time = "2025-07-18T18:30:33.705Z" },
+
+[package.optional-dependencies]
+pymupdf = [
+    { name = "paper-qa-pymupdf" },
+]
+
+[[package]]
+name = "paper-qa-pymupdf"
+version = "5.27.1.dev13+g642b76f"
+source = { git = "https://github.com/Future-House/paper-qa.git?subdirectory=packages%2Fpaper-qa-pymupdf&rev=multimodal-2#642b76f0f6658a2120ddfb90dea5dc9d9c10287c" }
+dependencies = [
+    { name = "paper-qa" },
+    { name = "pymupdf" },
+]
+
+[[package]]
+name = "paper-qa-pypdf"
+version = "5.27.1.dev13+g642b76f"
+source = { git = "https://github.com/Future-House/paper-qa.git?subdirectory=packages%2Fpaper-qa-pypdf&rev=multimodal-2#642b76f0f6658a2120ddfb90dea5dc9d9c10287c" }
+dependencies = [
+    { name = "paper-qa" },
+    { name = "pypdf" },
 ]
 
 [[package]]
@@ -3015,6 +3056,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/bb/22/f1129e69d94ffff626bdb5c835506b3a5b4f3d070f17ea295e12c2c6f60f/pyparsing-3.2.3.tar.gz", hash = "sha256:b9c13f1ab8b3b542f72e28f634bad4de758ab3ce4546e4301970ad6fa77c38be", size = 1088608, upload-time = "2025-03-25T05:01:28.114Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/05/e7/df2285f3d08fee213f2d041540fa4fc9ca6c2d44cf36d3a035bf2a8d2bcc/pyparsing-3.2.3-py3-none-any.whl", hash = "sha256:a749938e02d6fd0b59b356ca504a24982314bb090c383e3cf201c95ef7e2bfcf", size = 111120, upload-time = "2025-03-25T05:01:24.908Z" },
+]
+
+[[package]]
+name = "pypdf"
+version = "5.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/89/3a/584b97a228950ed85aec97c811c68473d9b8d149e6a8c155668287cf1a28/pypdf-5.9.0.tar.gz", hash = "sha256:30f67a614d558e495e1fbb157ba58c1de91ffc1718f5e0dfeb82a029233890a1", size = 5035118, upload-time = "2025-07-27T14:04:52.364Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/48/d9/6cff57c80a6963e7dd183bf09e9f21604a77716644b1e580e97b259f7612/pypdf-5.9.0-py3-none-any.whl", hash = "sha256:be10a4c54202f46d9daceaa8788be07aa8cd5ea8c25c529c50dd509206382c35", size = 313193, upload-time = "2025-07-27T14:04:50.53Z" },
 ]
 
 [[package]]

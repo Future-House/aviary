@@ -21,7 +21,7 @@ dependencies = [
     "fhaviary>=0.14",  # For MultipleChoiceQuestion
     "fhlmi",
     "ldp>=0.25.2",  # Pin for lmi migration
-    "paper-qa>=5.14.0",  # Pin for lmi migration
+    "paper-qa[pymupdf] @ git+https://github.com/Future-House/paper-qa.git@multimodal-2",  # Pin for multimodal
     "pydantic~=2.0",
     "tenacity",
     "typing-extensions; python_version <= '3.12'",  # For TypeVar default
@@ -34,6 +34,8 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 datasets = ["datasets"]
+dev = ["aviary.labbench[datasets,typing]", "pandas"]
+typing = ["pillow"]
 
 [tool.ruff]
 extend = "../../pyproject.toml"
