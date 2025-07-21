@@ -1,8 +1,10 @@
 import logging
 import sys
-from collections.abc import Awaitable, Callable, Mapping
+import tempfile
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from copy import deepcopy
-from typing import Any, Generic, Self, cast
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Generic, Self, cast
 from uuid import UUID
 
 from aviary.core import (
@@ -11,12 +13,16 @@ from aviary.core import (
     MultipleChoiceQuestion,
     ToolRequestMessage,
 )
+from aviary.env import ENV_REGISTRY
 from ldp.utils import discounted_returns
 from lmi import EmbeddingModel, LiteLLMModel
 from paperqa.agents.env import POPULATE_FROM_SETTINGS, PaperQAEnvironment
 from paperqa.agents.search import SearchIndex, maybe_get_manifest
 from paperqa.docs import Docs
-from paperqa.settings import Settings
+from paperqa.settings import AnswerSettings, ParsingSettings, Settings
+
+if TYPE_CHECKING:
+    from PIL.Image import Image
 
 if sys.version_info >= (3, 13):
     from typing import TypeVar
@@ -191,3 +197,72 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
         # tool functions within the tools
         copy_self.tools = copy_self.make_tools()
         return copy_self
+
+
+ENV_REGISTRY["paperqa-local"] = (
+    GradablePaperQAEnvironment.__module__,
+    GradablePaperQAEnvironment.__name__,
+)
+
+
+class ImageQAEnvironment(GradablePaperQAEnvironment):
+    """Image question-answer environment useful for LAB-Bench's FigQA and TableQA."""
+
+    @classmethod
+    def make_base_settings(cls, **kwargs) -> Settings:
+        """Make a settings object that takes into account image-based QA restrictions."""
+        return Settings(
+            # PaperQA doesn't support image embeddings yet, so disable embedding
+            # Disable doc details since we just have images here (not a PDF with metadata)
+            parsing=ParsingSettings(defer_embedding=True, use_doc_details=False),
+            answer=AnswerSettings(evidence_retrieval=False),
+            **kwargs,
+        )
+
+    def __init__(
+        self,
+        *args,
+        images: "bytes | Image | Sequence[bytes | Image]",
+        image_paths: str | Sequence[str],
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        if not isinstance(self._query, MultipleChoiceQuestion):
+            raise TypeError(
+                f"{type(self).__name__} requires a {MultipleChoiceQuestion.__name__}"
+                f" as the query, not {type(self._query)}."
+            )
+        # FigQA has 1 image with paths, TableQA has 1+ images with paths
+        if not isinstance(image_paths, str):  # Assume TableQA
+            self._images_with_names: "list[tuple[bytes | Image, str]]" = [  # noqa: UP037
+                (image, Path(image_path).name)
+                for image, image_path in zip(
+                    cast("Sequence[bytes | Image]", images), image_paths, strict=True
+                )
+            ]
+        else:  # Assume FigQA
+            self._images_with_names = [
+                (cast("bytes | Image", images), Path(image_paths).name)
+            ]
+
+    async def _reset_docs(self) -> None:
+        """Hook to reset the docs when creating the initial state."""
+        self._docs.clear_docs()
+
+        # Now add the image(s) to the docs
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for image, image_name in self._images_with_names:
+                tmp_image_path = Path(tmpdir) / image_name
+                if isinstance(image, bytes):
+                    tmp_image_path.write_bytes(image)
+                else:
+                    image.save(tmp_image_path)
+                await self._docs.aadd(
+                    tmp_image_path,
+                    citation=(
+                        f"Row ID {self._query.question_id} filename {tmp_image_path.name}"
+                        if isinstance(self._query, MultipleChoiceQuestion)
+                        else f"Filename {tmp_image_path.name}"
+                    ),
+                    settings=self._settings,
+                )

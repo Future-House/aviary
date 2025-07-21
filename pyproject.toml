@@ -43,7 +43,7 @@ dev = [
     "aviary.gsm8k[typing]",
     "aviary.hotpotqa",
     "aviary.labbench[dev]",
-    "aviary.lfrqa",
+    "aviary.lfrqa[dev]",
     "aviary.notebook[dev]",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
@@ -110,7 +110,7 @@ preview = true
 [tool.codespell]
 check-filenames = true
 check-hidden = true
-ignore-words-list = "astroid,ser"
+ignore-words-list = "aadd,astroid,ser"
 
 [tool.mypy]
 # Type-checks the interior of functions without type annotations.
