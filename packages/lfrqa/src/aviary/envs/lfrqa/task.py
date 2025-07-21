@@ -1,46 +1,53 @@
-from collections.abc import Awaitable, Callable
+import os
+from typing import TYPE_CHECKING
 
-from aviary.core import TASK_DATASET_REGISTRY, TaskDataset
-from lmi import CommonLLMNames, LLMModel
-from paperqa import Docs, Settings
+from aviary.core import TASK_DATASET_REGISTRY
+from aviary.envs.labbench import PaperQATaskDataset
 
 from .env import LFRQAPairwiseEvalEnv, LFRQAQuestion
 
+if TYPE_CHECKING:
+    import pandas as pd
 
-class LFRQATaskDataset(TaskDataset[LFRQAPairwiseEvalEnv]):
+
+def read_csv(path: str | os.PathLike) -> "pd.DataFrame":
+    try:
+        import pandas as pd
+    except ImportError as exc:
+        raise ImportError(
+            "Reading in a CSV requires the 'csv' extra for 'pandas'. Please:"
+            " `pip install aviary.lfrqa[csv]`."
+        ) from exc
+    return pd.read_csv(path)
+
+
+class LFRQATaskDataset(PaperQATaskDataset[LFRQAPairwiseEvalEnv]):
     """Task dataset for custom evaluation of non-multiple choice questions."""
 
-    def __init__(
-        self,
-        data: list[LFRQAQuestion],
-        settings: Settings | dict | None = None,
-        base_docs: Docs | dict | None = None,
-        pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
-        evaluation_callback: Callable[[dict], Awaitable] | None = None,
-    ):
-        self.data = data
-        self.pairwise_eval_llm = pairwise_eval_llm
+    def __init__(self, data: str | os.PathLike | list[LFRQAQuestion], **kwargs):
+        super().__init__(**kwargs)
+        self.data: "list[LFRQAQuestion] | pd.DataFrame" = (  # noqa: UP037
+            data if isinstance(data, list) else read_csv(data)
+        )
 
-        if settings is None:
-            settings = Settings()
-        if isinstance(settings, dict):
-            settings = Settings(**settings)
-        self._settings = settings
-        if base_docs is None:
-            base_docs = Docs()
-        if isinstance(base_docs, dict):
-            base_docs = Docs(**base_docs)
-        self._base_docs = base_docs
-        self._evaluation_callback = evaluation_callback
+    def _make_query(self, idx: int) -> LFRQAQuestion:
+        if isinstance(self.data, list):
+            return self.data[idx]
+        return LFRQAQuestion(  # type: ignore[call-arg]
+            qid=self.data.iloc[idx].qid,
+            question=self.data.iloc[idx].question,
+            answer=self.data.iloc[idx].answer,
+            gold_doc_ids=self.data.iloc[idx].gold_doc_ids,
+            **(self._question_kwargs or {}),
+        )
 
     def get_new_env_by_idx(self, idx: int) -> LFRQAPairwiseEvalEnv:
         """Create a new environment instance for the given index."""
         return LFRQAPairwiseEvalEnv(
-            query=self.data[idx],
-            pairwise_eval_llm=self.pairwise_eval_llm,
+            query=self._make_query(idx),
             settings=self._settings,
             docs=self._base_docs.model_copy(),
-            evaluation_callback=self._evaluation_callback,
+            **self._env_kwargs,
         )
 
     def __len__(self) -> int:
