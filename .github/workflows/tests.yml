@@ -44,14 +44,16 @@ jobs:
           enable-cache: true
       - run: uv python pin ${{ matrix.python-version }}
       - name: Check fhaviary build
+        id: build-fhaviary
         if: matrix.python-version == '3.11'
         uses: hynek/build-and-inspect-python-package@v2
         with:
           upload-name-suffix: -fhaviary
       - name: Clean up fhaviary build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         if: matrix.python-version == '3.11'
-        run: rm -r /tmp/baipp/dist
+        run: rm -r ${{ steps.build-fhaviary.outputs.dist }}
       - name: Check aviary.gsm8k build
+        id: build-gsm8k
         if: matrix.python-version == '3.11'
         uses: hynek/build-and-inspect-python-package@v2
         with:
@@ -59,8 +61,9 @@ jobs:
           upload-name-suffix: -gsm8k
       - name: Clean up aviary.gsm8k build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         if: matrix.python-version == '3.11'
-        run: rm -r /tmp/baipp/dist
+        run: rm -r ${{ steps.build-gsm8k.outputs.dist }}
       - name: Check aviary.hotpotqa build
+        id: build-hotpotqa
         if: matrix.python-version == '3.11'
         uses: hynek/build-and-inspect-python-package@v2
         with:
@@ -68,7 +71,27 @@ jobs:
           upload-name-suffix: -hotpotqa
       - name: Clean up aviary.hotpotqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         if: matrix.python-version == '3.11'
-        run: rm -r /tmp/baipp/dist
+        run: rm -r ${{ steps.build-hotpotqa.outputs.dist }}
+      - name: Check aviary.litqa build
+        id: build-litqa
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/litqa
+          upload-name-suffix: -litqa
+      - name: Clean up aviary.litqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+        if: matrix.python-version == '3.11'
+        run: rm -r ${{ steps.build-litqa.outputs.dist }}
+      - name: Check aviary.lfrqa build
+        id: build-lfrqa
+        if: matrix.python-version == '3.11'
+        uses: hynek/build-and-inspect-python-package@v2
+        with:
+          path: packages/lfrqa
+          upload-name-suffix: -lfrqa
+      - name: Clean up aviary.lfrqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+        if: matrix.python-version == '3.11'
+        run: rm -r ${{ steps.build-lfrqa.outputs.dist }}
       - run: uv sync --python-preference=only-managed
       - run: uv run refurb .
       - run: uv run pylint src packages
