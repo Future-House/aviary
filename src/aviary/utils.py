@@ -133,7 +133,7 @@ async def run_prompt(
     except TypeError:
         raise ImportError(
             "Answer evaluation requires the 'llm' extra for 'litellm'. Please:"
-            " `pip install aviary[llm]`."
+            " `pip install fhaviary[llm]`."
         ) from None
     return response.choices[0].message.content or ""
 
