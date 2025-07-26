@@ -9,8 +9,7 @@ from typing import ClassVar
 
 import litellm
 import pytest
-import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel
 from pytest_subtests import SubTests
 
@@ -49,6 +48,10 @@ class TestDummyEnv:
                     ToolCall.from_name("print_story", story="Once upon a time done")
                 ],
             )
+
+        assert isinstance(await dummy_env.get_id(), str), (
+            "Expected getting ID to work before reset"
+        )
 
         obs, _ = await dummy_env.reset()
         assert isinstance(obs, list)
@@ -306,6 +309,7 @@ class TestRendering:
             (["hi"], ["hi"]),
             ({"hi": 5}, {"hi": 5}),
             (SomeState(field=5), {"field": 5}),
+            (None, None),
         ],
     )
     def test_serialization(self, state, serialized) -> None:
@@ -349,7 +353,7 @@ class TestRendering:
             with frame_path.open() as f:
                 rehydrated = json.load(f)
             assert rehydrated["state"]["messages"] == [
-                "Write a 5 word story via print_story"
+                "Write a 5 word story via print_story about applesauce"
             ]
 
 
@@ -456,6 +460,29 @@ class TestParallelism:
         assert isinstance(failure_tool_response, ToolResponseMessage)
         assert env.RIGHT_HAND_BROKEN_MESSAGE in failure_tool_response.content
 
+        # 3. Let's check how the string formatting works for ExceptionGroup
+        async def dance(style: str) -> None:  # noqa: ARG001
+            """Dance in a given style."""
+
+            async def inner1() -> None:  # noqa: RUF029
+                """Inner function that raises an Exception."""
+                raise RuntimeError("BOOM, blew out an ACL.")
+
+            async with asyncio.TaskGroup() as tg:  # Leads to ExceptionGroup
+                _ = tg.create_task(inner1())
+
+        dance_tool = Tool.from_function(dance, allow_empty_param_descriptions=True)
+        env.tools.append(dance_tool)
+        (tool_response_msg,) = await env.exec_tool_calls(
+            ToolRequestMessage(
+                tool_calls=[ToolCall.from_tool(dance_tool, style="salsa")]
+            ),
+            handle_tool_exc=True,
+        )
+        assert "BOOM" in tool_response_msg.content, (
+            "Expected sub-exceptions to be displayed"
+        )
+
     @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
@@ -525,27 +552,17 @@ class TestParallelism:
         assert any(not t.info.get_properties() for t in tools), (
             "Test requires empty properties"
         )
-        # Google gemini/gemini-1.5-flash fails to support empty dict properties
-        # SEE: https://github.com/BerriAI/litellm/issues/7634
-        with pytest.raises(litellm.BadRequestError, match="INVALID_ARGUMENT"):
-            await selector(messages=obs, tools=tools)
-
-        # Show we can manually work around this bug by nullifying parameters
-        for t in tools:
-            if not t.info.get_properties():
-                t.info.parameters = None
-        # Voila, Google gemini/gemini-1.5-flash can be an agent
         tool_request_message = await selector(messages=obs, tools=tools)
         assert [tc.function for tc in tool_request_message.tool_calls] == [
             expected_tool_call_fn
         ]
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest.fixture
 def server_async_client() -> AsyncClient:
     dataset = TaskDataset.from_name("dummy")
     server = TaskDatasetServer[DummyEnv](dataset)
-    return AsyncClient(app=server.app, base_url="http://test")
+    return AsyncClient(transport=ASGITransport(app=server.app), base_url="http://test")
 
 
 class TestTaskDatasetServer:

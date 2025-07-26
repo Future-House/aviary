@@ -8,6 +8,7 @@ from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
 from pydantic_core import core_schema as cs
@@ -132,7 +133,7 @@ async def run_prompt(
     except TypeError:
         raise ImportError(
             "Answer evaluation requires the 'llm' extra for 'litellm'. Please:"
-            " `pip install aviary[llm]`."
+            " `pip install fhaviary[llm]`."
         ) from None
     return response.choices[0].message.content or ""
 
@@ -154,7 +155,7 @@ async def eval_answer(
             raise ValueError("Question must be provided for LLM evaluation mode.")
         default_config = eval_mode.get_default_config()
         config = llm_eval_config or default_config
-        prompt = cast(str, config.get("prompt", default_config["prompt"])).format(
+        prompt = cast("str", config.get("prompt", default_config["prompt"])).format(
             question=question,
             correct_answer=correct,
             proposed_answer=proposed,
@@ -219,7 +220,9 @@ class RandomAnnotation:
     def __get_pydantic_core_schema__(
         cls, source: type[random.Random], handler: GetCoreSchemaHandler
     ) -> cs.CoreSchema:
-        def val_func(state: list) -> random.Random:
+        def val_func(
+            state: Any,  # Any enables Pydantic validations can fail over on errors
+        ) -> random.Random:
             random_inst = source()
             # `Random.setstate()` raises `ValueError`s if the state is invalid,
             # so no need to handle validation on our own. But we do need to
@@ -230,8 +233,8 @@ class RandomAnnotation:
 
         plain_val_schema = cs.no_info_plain_validator_function(val_func)
         plain_val_schema_json = plain_val_schema.copy() | {
-            "serialization": (
-                cs.plain_serializer_function_ser_schema(lambda inst: inst.getstate())
+            "serialization": cs.plain_serializer_function_ser_schema(
+                lambda inst: inst.getstate()
             )
         }
         return cs.json_or_python_schema(
@@ -285,10 +288,17 @@ class MultipleChoiceQuestion(BaseModel):
         description="Question to answer (without multiple choice options)."
     )
 
-    question_id: str = Field(
+    question_id: str | UUID = Field(
         default="Q", description="Question identifier used in the prompt."
     )
 
+    prompt_without_id: bool = Field(
+        default=False,
+        description=(
+            "Opt-in flag to exclude question_id from the question_prompt,"
+            " if worried about the model memorizing question IDs."
+        ),
+    )
     prompt_without_options: bool = Field(
         default=False,
         description=(
@@ -370,17 +380,21 @@ class MultipleChoiceQuestion(BaseModel):
 
     @property
     def question_prompt(self) -> str:
+        template_vars = {
+            "question": self.question,
+            "question_id": (
+                type(self).model_fields["question_id"].default
+                if self.prompt_without_id
+                else self.question_id
+            ),
+        }
         if self.prompt_without_options:
-            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(
-                question=self.question,
-                question_id=self.question_id,
-            )
+            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(**template_vars)
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
-            question=self.question,
-            question_id=self.question_id,
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
             ]),
+            **template_vars,
         )
 
     @staticmethod
@@ -405,9 +419,10 @@ class MultipleChoiceQuestion(BaseModel):
         extracted_answer = await extract_answer(
             proposed_answer=proposed_answer, options=self.options
         )
-        return MultipleChoiceEvaluation.from_answer(
-            extracted_answer, self
-        ), extracted_answer
+        return (
+            MultipleChoiceEvaluation.from_answer(extracted_answer, self),
+            extracted_answer,
+        )
 
 
 class MultipleChoiceEvaluation(StrEnum):
@@ -428,7 +443,7 @@ class MultipleChoiceEvaluation(StrEnum):
         Returns:
             Two-tuple of accuracy = (num correct) / (num questions) and
                 precision = (num correct) / ((num questions) - (num unsure)).
-        """
+        """  # noqa: DOC502
         evaluations = [e if isinstance(e, cls) else cls(e) for e in evaluations]
         num_correct = sum(e == cls.CORRECT for e in evaluations)
         accuracy = num_correct / len(evaluations)
@@ -455,3 +470,13 @@ class MultipleChoiceEvaluation(StrEnum):
         if question.unsure_answer and extracted_answer == question.unsure_answer:
             return MultipleChoiceEvaluation.UNSURE
         return MultipleChoiceEvaluation.INCORRECT
+
+
+def format_exc(exc: BaseException) -> str:
+    """Format an exception to be friendly for concise and human-readable logs."""
+    if isinstance(exc, ExceptionGroup):  # Expand sub-exceptions
+        return (
+            f"{exc}, where sub-exceptions are:"
+            f" {', '.join(repr(e) for e in exc.exceptions)}"
+        )
+    return repr(exc)

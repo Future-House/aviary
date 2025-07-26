@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 # Jitter in case we have lots of requests at once, to space them out slightly
-@retry(stop=stop_after_attempt(2), wait=wait_exponential_jitter(initial=1, max=4))
+@retry(stop=stop_after_attempt(2), wait=wait_exponential_jitter(max=4))
 async def fetch_with_retry(
     client: httpx.AsyncClient, url: str, **kwargs
 ) -> httpx.Response:
@@ -77,8 +77,10 @@ class HotPotQAEnvState(BaseModel):
     )
     last_action_is_lookup: bool = Field(
         default=False,
-        description="Whether the last action was a lookup action."
-        "Default is False, as after reset the agent has not yet taken any action.",
+        description=(
+            "Whether the last action was a lookup action."
+            "Default is False, as after reset the agent has not yet taken any action."
+        ),
     )
     last_lookup: str | None = Field(
         default=None, description="The last lookup keyword."
@@ -256,12 +258,19 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 - list[Tool]: A list of tools (search, lookup, and submit_answer) available for the agent.
 
         Example:
-            >>> env = HotPotQAEnv()
-            >>> initial_obs, tools = env.reset(seed=42, idx=5)
-            >>> print(initial_obs)
-            [Message(content='Question: <question_text>')]
-            >>> print(tools)
-            [<Tool: search>, <Tool: lookup>, <Tool: submit_answer>]
+            >>> env = HotPotQAEnv(
+            ...     question_id=UUID("00000000-5a8d-7341-5542-99441c6b9fe5"),
+            ...     question=(
+            ...         "Musician and satirist Allie Goertz wrote a song about the"
+            ...         ' "The Simpsons" character Milhouse, who Matt Groening named after who?'
+            ...     ),
+            ...     correct_answer="President Richard Nixon",
+            ... )
+            >>> obs, tools = await env.reset()
+            >>> print(obs)
+            [Message(role='user', content='Question: Musician and satirist Allie Goertz wrote a song about the "The Simpsons" character Milhouse, who Matt Groening named after who?')]
+            >>> print([t.info.name for t in tools])
+            ['search', 'lookup', 'submit_answer']
         """
         self.state = self.State()
         return [Message(content=f"Question: {self.question}")], self.tools
@@ -283,14 +292,17 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 - bool: The done status indicating whether the episode is finished.
 
         Example:
-            >>> env = HotPotQAEnv()
+            >>> from aviary.core import ToolCall
+            >>> env = HotPotQAEnv(
+            ...     question_id=UUID("00000000-5a8d-7341-5542-99441c6b9fe5"),
+            ...     question=(
+            ...         "Musician and satirist Allie Goertz wrote a song about the"
+            ...         ' "The Simpsons" character Milhouse, who Matt Groening named after who?'
+            ...     ),
+            ...     correct_answer="President Richard Nixon",
+            ... )
             >>> action = ToolRequestMessage(
-            ...     tool_calls=[
-            ...         ToolCall(
-            ...             function=ToolCallFunction(name="Search"),
-            ...             arguments={"entity": "Python"},
-            ...         )
-            ...     ]
+            ...     tool_calls=[ToolCall.from_name("search", entity="Python")]
             ... )
             >>> obs, done = await env.step(action)
             >>> print(obs, done)
@@ -315,13 +327,18 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         # We accumulate reward across all tool calls in a step
         self.state.reward = 0.0
         response_messages = cast(
-            Messages,
+            "Messages",
             # Non-concurrent since things like search -> lookup need to be run in order.
             # NOTE: Handling tool exceptions here keeps the trajectory going, but I don't
             # think the returned message is useful to the agent/learning. Disabling for now.
             await self.exec_tool_calls(action, concurrency=False),
         )
         return response_messages, self.state.reward, self.state.done, False
+
+    async def get_id(self) -> str:
+        if self.question_id is None:
+            raise ValueError("No question ID was configured.")
+        return str(self.question_id)
 
     def export_frame(self) -> Frame:
         """Export the current state of the environment as a Frame object.
@@ -342,13 +359,22 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 - "answer" (Optional[str]): The answer provided by the agent, if any.
 
         Example:
-            >>> env = HotPotQAEnv()
+            >>> env = HotPotQAEnv(
+            ...     question_id=UUID("00000000-5a8d-7341-5542-99441c6b9fe5"),
+            ...     question=(
+            ...         "Musician and satirist Allie Goertz wrote a song about the"
+            ...         ' "The Simpsons" character Milhouse, who Matt Groening named after who?'
+            ...     ),
+            ...     correct_answer="President Richard Nixon",
+            ... )
             >>> frame = env.export_frame()
             >>> print(frame.info)
             {'steps': 0, 'done': False, 'reward': 0.0, 'answer': None}
         """
         return Frame(
             info={
+                "question_id": self.question_id,
+                "question": self.question,
                 "steps": self.state.steps,
                 "done": self.state.done,
                 "reward": self.state.reward,
@@ -414,7 +440,10 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         if result_divs:  # mismatch
             result_titles = [clean_str(div.get_text().strip()) for div in result_divs]
             self.state.page = None
-            return f"Search for {entity!r} returned no results. Similar: {result_titles[:5]}."
+            return (
+                f"Search for {entity!r} returned no results. Similar:"
+                f" {result_titles[:5]}."
+            )
 
         page = [p.get_text().strip() for p in soup.find_all("p") + soup.find_all("ul")]
         if any("may refer to:" in p for p in page):  # Recurse
@@ -463,7 +492,6 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             'Milhouse is a regular target for school bully Nelson Muntz and his friends Jimbo Jones, Dolph Starbeam and
             Kearney Zzyzwicz.',
             'Milhouse has a crush on Bart's sister, Lisa, a common plot element.']
-
         """
         if not keyword:
             self.state.done = True

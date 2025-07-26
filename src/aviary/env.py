@@ -29,7 +29,7 @@ from aviary.tools import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
-from aviary.utils import is_coroutine_callable
+from aviary.utils import format_exc, is_coroutine_callable
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class Frame(BaseModel):
     )
 
     @staticmethod
-    def _custom_serializer(value: Serializable, handler, info):  # noqa: ARG004
+    def _custom_serializer(value: Serializable | None, handler, info):  # noqa: ARG004
         if isinstance(value, BaseModel):
             return value.model_dump()
         return handler(value)
@@ -79,7 +79,9 @@ class Frame(BaseModel):
 
     @field_validator("state", "info")
     @classmethod
-    def make_deepcopy(cls, v: Serializable, info: ValidationInfo) -> Serializable:
+    def make_deepcopy(
+        cls, v: Serializable | None, info: ValidationInfo
+    ) -> Serializable | None:
         if info.data["deepcopy"]:
             return deepcopy(v)
         return v
@@ -128,6 +130,23 @@ class Environment(ABC, Generic[TEnvState]):
             Two-tuple of initial observations and tools.
         """
 
+    async def get_id(self) -> str:
+        """
+        Get an identifier for this environment.
+
+        The main use case is something like the ID of the task from a dataset.
+        Since datasets may not enforce uniqueness in their IDs, we cannot ensure the IDs
+        returned from this method are unique either.
+
+        The return should not be affected by state, in other words across reset/step,
+        the return value should not change.
+
+        This method is asynchronous to allow for DB transactions.
+        """
+        raise NotImplementedError(
+            f"Getting ID is not yet implemented for environment {type(self).__name__}."
+        )
+
     def filter_invalid_tool_calls(
         self, message: ToolRequestMessage
     ) -> tuple[ToolRequestMessage, ToolRequestMessage]:
@@ -150,7 +169,7 @@ class Environment(ABC, Generic[TEnvState]):
             else:
                 invalid.append(tool_call)
         return cast(
-            tuple[ToolRequestMessage, ToolRequestMessage],
+            "tuple[ToolRequestMessage, ToolRequestMessage]",
             tuple(
                 ToolRequestMessage(
                     role=message.role,
@@ -236,8 +255,8 @@ class Environment(ABC, Generic[TEnvState]):
                 if not handle_tool_exc:
                     raise
                 logger_msg = (
-                    f"Encountered exception during tool call for tool {tool.info.name}:"
-                    f" {exc!r}"
+                    f"Encountered exception during tool call"
+                    f" for tool {tool.info.name}: {format_exc(exc)}"
                 )
                 # logger.exception is just too verbose and clogs up console logging. This is a
                 # more human-friendly version: log a readable error message and emit the exception
@@ -247,7 +266,9 @@ class Environment(ABC, Generic[TEnvState]):
                 tool_exc = exc
             if tool_exc:
                 # No need to mention tool.info.name here, since it'll get wrapped in a ToolResponseMessage
-                s_content = f"Encountered exception during tool call: {tool_exc}"
+                s_content = (
+                    f"Encountered exception during tool call: {format_exc(tool_exc)}"
+                )
             elif isinstance(content, str):
                 s_content = content
             elif isinstance(content, BaseModel):
@@ -459,6 +480,11 @@ class DummyEnv(Environment[DummyEnvState]):
         self.end_immediately = end_immediately
         self.task = task
         self.concurrent_tool_calls = concurrent_tool_calls
+
+    async def get_id(self) -> str:
+        if self.task is None:
+            raise ValueError("No task (to reuse as an ID) was configured.")
+        return self.task
 
     @classmethod
     def from_task(cls, task: str) -> DummyEnv:

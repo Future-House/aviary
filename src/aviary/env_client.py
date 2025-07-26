@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Self, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 import httpx
 from pydantic import BaseModel, Field
@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Not sure why, but mypy complains if we use the TEnvState in aviary.env, so redefine here
 TEnvState = TypeVar("TEnvState")
+TClient = TypeVar("TClient", httpx.Client, httpx.AsyncClient)
 
 
 class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
@@ -23,20 +24,25 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         request_params: httpx._types.QueryParamTypes | None = None,
         request_headers: httpx._types.HeaderTypes | None = None,
         request_timeout: float | None = None,
+        api_key: str | None = None,
     ):
         self._reset_request_url = reset_endpoint_url
         self._step_request_url = step_endpoint_url
         self._request_params = request_params
         self._request_headers = request_headers
         self._request_timeout = request_timeout
+        self._api_key = api_key
 
     async def _post(self, url: str, json: dict[str, Any]) -> httpx.Response:
         async with httpx.AsyncClient() as client:
+            headers = httpx.Headers(self._request_headers)
+            if self._api_key:
+                headers["X-API-Key"] = self._api_key
             response = await client.post(
                 url,
                 json=json,
                 params=self._request_params,
-                headers=self._request_headers,
+                headers=headers,
                 timeout=self._request_timeout,
             )
             response.raise_for_status()
@@ -115,31 +121,33 @@ class TaskEnvironmentClient(EnvironmentClient[TaskEnvClientState]):
         return {"env_id": state.env_id}
 
 
-UNSET_LEN = object()  # sentinel
-
-
 class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
     def __init__(
         self,
         server_url: str,
         # Note that None means no timeout, which is not a good default
         request_timeout: float | None = 300.0,
+        api_key: str | None = None,
     ):
         self.server_url = server_url
         self.request_timeout = request_timeout
-        self._len: int | object | None = UNSET_LEN
+        self.api_key = api_key
 
-    def get_http_client(self) -> httpx.AsyncClient:
-        return httpx.AsyncClient(base_url=self.server_url, timeout=self.request_timeout)
+        with self._get_http_client(httpx.Client) as http_client:
+            response = http_client.get("/info")
+            response.raise_for_status()
+            self._len = cast(int | None, response.json()["dataset_size"])
 
-    @classmethod
-    async def create(cls, *args, **kwargs) -> Self:
-        # We need to make an async request to the server to get the dataset size,
-        # so provide this classmethod to instantiate the client & get the size.
-        client = cls(*args, **kwargs)
-        async with client.get_http_client() as http_client:
-            client._len = (await http_client.get("/info")).json()["dataset_size"]
-        return client
+    def _get_http_client(
+        self,
+        client_class: type[TClient] = httpx.AsyncClient,  # type: ignore[assignment]
+    ) -> TClient:
+        headers = {}
+        if self.api_key:
+            headers["X-API-Key"] = self.api_key
+        return client_class(
+            base_url=self.server_url, timeout=self.request_timeout, headers=headers
+        )
 
     def get_new_env_by_idx(self, idx: int) -> TaskEnvironmentClient:
         return self._make_env_client(idx)
@@ -149,15 +157,14 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
 
     def _make_env_client(self, idx: int | None) -> TaskEnvironmentClient:
         return TaskEnvironmentClient(
-            idx=idx, base_url=self.server_url, request_timeout=self.request_timeout
+            idx=idx,
+            base_url=self.server_url,
+            request_timeout=self.request_timeout,
+            api_key=self.api_key,
         )
 
     def __len__(self) -> int:
-        if self._len is UNSET_LEN:
-            raise RuntimeError(
-                "Dataset should be created using `TaskDatasetClient.create()`"
-            )
         if self._len is None:
             raise TypeError("Server did not define dataset length.")
 
-        return cast(int, self._len)
+        return self._len

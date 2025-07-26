@@ -1,3 +1,4 @@
+import contextlib
 from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, cast
@@ -38,16 +39,26 @@ class ToolSelector:
                 LiteLLM's Router.acompletion function for centralized rate limiting.
             accum_messages: Whether the selector should accumulate messages in a ledger.
         """
+        self._add_stop_reason_on_tool_choice_of_tool = True
         if acompletion is None:
             try:
                 from litellm import acompletion
+                from litellm._version import version as litellm_version  # noqa: PLC2701
+                from packaging import version
             except ImportError as e:
                 raise ImportError(
-                    f"{type(self).__name__} requires the 'llm' extra for 'litellm'."
-                    " Please: `pip install aviary[llm]`."
+                    f"{type(self).__name__} requires the 'llm' extra for"
+                    " 'litellm' and 'packaging'. Please: `pip install aviary[llm]`."
                 ) from e
+            with contextlib.suppress(version.InvalidVersion):
+                # litellm>=1.72.0 fixed the `finish_reason` being "stop"
+                # (instead of "tool_calls") when specifying a `tool_choice` as a `Tool`
+                self._add_stop_reason_on_tool_choice_of_tool = version.parse(
+                    litellm_version
+                ) < version.parse("1.72.0")
+
         self._model_name = model_name
-        self._bound_acompletion = partial(cast(Callable, acompletion), model_name)
+        self._bound_acompletion = partial(cast("Callable", acompletion), model_name)
         self._ledger = ToolSelectorLedger() if accum_messages else None
 
     # SEE: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tool_choice
@@ -69,7 +80,8 @@ class ToolSelector:
                 "type": "function",
                 "function": {"name": tool_choice.info.name},
             }
-            expected_finish_reason = {"stop"}  # TODO: should this be .add("stop") too?
+            if self._add_stop_reason_on_tool_choice_of_tool:
+                expected_finish_reason.add("stop")
         elif tool_choice is not None:
             completion_kwargs["tool_choice"] = tool_choice
             if tool_choice == self.TOOL_CHOICE_REQUIRED:

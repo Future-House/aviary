@@ -37,6 +37,7 @@ from aviary.tools import (
     wraps_doc_only,
 )
 from aviary.utils import (
+    DEFAULT_EVAL_MODEL_NAME,
     EvalAnswerMode,
     MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
@@ -48,6 +49,7 @@ from aviary.utils import (
 )
 
 __all__ = [
+    "DEFAULT_EVAL_MODEL_NAME",
     "INVALID_TOOL_NAME",
     "TASK_DATASET_REGISTRY",
     "DummyEnv",

@@ -19,13 +19,13 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.1
+    rev: v0.11.4
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.4.2
+    rev: v3.5.3
     hooks:
       - id: prettier
   - repo: https://github.com/Yelp/detect-secrets
@@ -36,18 +36,18 @@ repos:
         args:
           - --word-list=.secrets.allowlist
           - --exclude-files=.secrets.baseline$
-        exclude: tests/cassettes
+        exclude: tests/cassettes|litqa/tests/stub_data
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
     hooks:
       - id: check-mailmap
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         additional_dependencies: [".[toml]"]
         exclude_types: [jupyter]
-        exclude: '.*\.b64$'
+        exclude: '.*\.b64$|litqa/tests/stub_data'
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.2
     hooks:
@@ -65,12 +65,17 @@ repos:
     hooks:
       - id: nb-clean
         args: [--preserve-cell-outputs, --remove-empty-cells]
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.45.0
+    hooks:
+      - id: markdownlint
+        args: [--config=pyproject.toml, --configPointer=/tool/markdownlint]
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.01.10
+    rev: 2025.04.07
     hooks:
       - id: validate-pyproject
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.5.31
+    rev: 0.6.13
     hooks:
       - id: uv-lock
   - repo: local # Use local to ensure we don't pull aviary from PyPI

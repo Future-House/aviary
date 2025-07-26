@@ -7,16 +7,19 @@ authors = [
     {email = "hello@futurehouse.org", name = "FutureHouse technical staff"},
 ]
 classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "beautifulsoup4",
-    "datasets",
+    "datasets<4",  # Downpin for https://huggingface.co/datasets/hotpotqa/hotpot_qa/discussions/8
     "fhaviary",
     "httpx",
     "pydantic~=2.0",

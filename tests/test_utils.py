@@ -36,7 +36,8 @@ from tests.conftest import VCR_DEFAULT_MATCH_ON
         pytest.param(
             "Based on all factors considered, the most compelling answer is Gerald, C",
             "C",
-            "Which of the following is most likely true:\n\nA) Piggie, B) Pigeon, C) Gerald\n",
+            "Which of the following is most likely true:\n\nA) Piggie, B) Pigeon, C)"
+            " Gerald\n",
             "llm",
             True,
             id="llm basic",
@@ -59,12 +60,13 @@ async def test_eval_answer(
         pytest.param("F", ["B", "C"], None, id="not in options"),
         pytest.param("A or B", ["A", "B", "C"], None, id="gave-two"),
         pytest.param(
-            "Based on the context given, Serif et al. (2026) claim that "
-            "the overwhelming cause of regime collapse arises from economic factors. "
-            "Yet, most other scholars (Gerald and Robinson for example) believe the collapse "
-            "was due to social unrest because of the prolonged epidemic of 2025. I tend to agree "
-            "with the majority - although I can see both sides. Thus my response "
-            "is that the social unrest was the significant factor in the collapse of the regime.",
+            "Based on the context given, Serif et al. (2026) claim that the"
+            " overwhelming cause of regime collapse arises from economic factors. Yet,"
+            " most other scholars (Gerald and Robinson for example) believe the"
+            " collapse was due to social unrest because of the prolonged epidemic of"
+            " 2025. I tend to agree with the majority - although I can see both sides."
+            " Thus my response is that the social unrest was the significant factor in"
+            " the collapse of the regime.",
             ["Economic factors", "Social unrest", "Political corruption"],
             "Social unrest",
             id="complex",
@@ -122,7 +124,11 @@ def test_shuffle(
 
 def test_random_annotation() -> None:
     class SomeModel(BaseModel):
-        rng: Annotated[random.Random, RandomAnnotation()]
+        # Include str so we can test failing over for non-Random values
+        rng: Annotated[random.Random, RandomAnnotation()] | str
+
+    model = SomeModel(rng="SEED_SENTINEL")
+    assert model.rng == "SEED_SENTINEL"
 
     model = SomeModel(rng=random.Random(5))
     assert isinstance(model.rng, random.Random)
@@ -148,6 +154,7 @@ def test_random_annotation() -> None:
             # Sample original model once so RNG aligns for both deserialized
             # models in the `for` loop
             sampled_original = model.rng.sample(list(range(10)), k=6)
+        assert isinstance(deserialized_model.rng, random.Random)
         sampled_deserialized = deserialized_model.rng.sample(list(range(10)), k=6)
         assert sampled_original == sampled_deserialized, (
             "Deserialization seeding failed"
