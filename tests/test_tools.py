@@ -109,7 +109,7 @@ def example_fxn(x: int, y: str, z: float) -> None:
 
 
 def state_out_of_order(state: dict, x: int = 0) -> None:
-    r"""A test function.
+    """A test function.
 
     There may be non-summary content.
 
