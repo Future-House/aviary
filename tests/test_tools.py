@@ -125,6 +125,19 @@ def example_fxn(x: int, y: str, z: float) -> None:
     assert isinstance(z, float)
 
 
+def state_out_of_order(state: dict, x: int = 0) -> None:
+    """A test function.
+
+    There may be non-summary content.
+
+    Args:
+        state: this should not be present
+        x: x
+    """
+    assert isinstance(state, dict)
+    assert isinstance(x, int)
+
+
 class TestTool:
     @pytest.mark.parametrize(
         ("fn", "kwargs", "expected"),
@@ -335,6 +348,32 @@ class TestTool:
                     },
                 },
                 id="with-args-and-returns",
+            ),
+            pytest.param(
+                state_out_of_order,
+                {},
+                {
+                    "type": "function",
+                    "info": {
+                        "name": "state_out_of_order",
+                        "description": (
+                            "A test function.\n\nThere may be non-summary content."
+                        ),
+                        "parameters": {
+                            "properties": {
+                                "x": {
+                                    "default": 0,
+                                    "description": "x",
+                                    "title": "X",
+                                    "type": "integer",
+                                },
+                            },
+                            "required": [],
+                            "type": "object",
+                        },
+                    },
+                },
+                id="with-state-out-of-order",
             ),
             pytest.param(
                 example_fxn,
