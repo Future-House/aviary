@@ -124,14 +124,15 @@ class Message(BaseModel):
         text: str | None = None,
         images: list[np.ndarray | str] | str | np.ndarray | None = None,
     ) -> Self:
-        """Create a message with optional text and images.
+        """Create a message with optional multimodal (just images so far) support.
 
         Args:
-            role: The role of the message.
-            text: The text of the message.
-            images: The images to include in the message. This can be a single image or
-                a list of images. Images can be a numpy array or a base64 encoded image
-                string (str).
+            role: Role of the message.
+            text: Optional text of the message.
+            images: Optional image(s) to include in the message,
+                making the message a multimodal message.
+                This can be a standalone single image or multiple images in a list.
+                Images can be a numpy array or a base64-encoded image string.
 
         Returns:
             The created message.
@@ -147,7 +148,7 @@ class Message(BaseModel):
                     "image_url": {
                         "url": (
                             validate_base64_image(image)
-                            # If image is a string, assume it's already a base64 encoded image
+                            # If image is a string, assume it's already a base64-encoded image
                             if isinstance(image, str)
                             else encode_image_to_base64(image)
                         )
