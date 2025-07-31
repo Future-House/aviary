@@ -21,7 +21,7 @@ from aviary.core import (
     ToolRequestMessage,
 )
 from aviary.env import ENV_REGISTRY
-from aviary.envs.litqa import GradablePaperQAEnvironment
+from aviary.envs.labbench import GradablePaperQAEnvironment
 
 logger = logging.getLogger(__name__)
 
