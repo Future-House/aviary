@@ -33,7 +33,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
-datasets = ["datasets"]
+datasets = [
+    "datasets>=2.15",  # Lower pin for https://github.com/huggingface/datasets/pull/6404
+]
 
 [tool.ruff]
 extend = "../../pyproject.toml"

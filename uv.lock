@@ -266,7 +266,7 @@ typing = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datasets" },
+    { name = "datasets", specifier = ">=2.15" },
     { name = "fhaviary", editable = "." },
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
@@ -288,7 +288,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4" },
-    { name = "datasets", specifier = "<4" },
+    { name = "datasets", specifier = ">=2.15,<4" },
     { name = "fhaviary", editable = "." },
     { name = "httpx" },
     { name = "pydantic", specifier = "~=2.0" },
@@ -335,7 +335,7 @@ datasets = [
 
 [package.metadata]
 requires-dist = [
-    { name = "datasets", marker = "extra == 'datasets'" },
+    { name = "datasets", marker = "extra == 'datasets'", specifier = ">=2.15" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
