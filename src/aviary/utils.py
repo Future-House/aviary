@@ -189,7 +189,9 @@ async def eval_answer(
 
 
 async def extract_answer(
-    proposed_answer: str, options: Sequence[str], llm_eval_config: dict | None = None
+    proposed_answer: str,
+    options: Sequence[str],
+    llm_eval_config: dict[str, Any] | None = None,
 ) -> str | None:
     """Extract the answer matching a proposal from a list of options using an LLM."""
     for option in options:
@@ -414,10 +416,12 @@ class MultipleChoiceQuestion(BaseModel):
         return split_options
 
     async def grade(
-        self, proposed_answer: str
+        self, proposed_answer: str, llm_eval_config: dict[str, Any] | None = None
     ) -> "tuple[MultipleChoiceEvaluation, str | None]":
         extracted_answer = await extract_answer(
-            proposed_answer=proposed_answer, options=self.options
+            proposed_answer=proposed_answer,
+            options=self.options,
+            llm_eval_config=llm_eval_config,
         )
         return (
             MultipleChoiceEvaluation.from_answer(extracted_answer, self),

@@ -179,12 +179,17 @@ class LFRQAQuestion(MultipleChoiceQuestion):
         match = re.search(r"<rating>(\d+)</rating>", text)
         return int(match.group(1)) if match else 0
 
-    async def grade(  # type: ignore[override]
+    async def grade(  # type: ignore[override]  # pylint: disable=arguments-renamed
         self,
         proposed_answer: str,
         paper_search_ids: list[int],
+        llm_eval_config: dict[str, Any] | None = None,
         pairwise_eval_llm: LLMModel | str = CommonLLMNames.GPT_4O.value,
     ) -> dict[str, Any]:
+        if llm_eval_config is not None:
+            raise NotImplementedError(
+                "Didn't yet handle pulling LLM name from llm_eval_config."
+            )
         pqa_answer = strip_citations(proposed_answer)
         pqa_answer_index = 1 if random.random() < 0.5 else 2  # noqa: PLR2004
         data = {
