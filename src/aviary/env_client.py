@@ -63,7 +63,8 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     ) -> tuple[list[Message], float, bool, bool]:
         response = await self._post(
             self._step_request_url,
-            json=self._make_post_json(self.state) | {"action": action.model_dump()},
+            json=self._make_post_json(self.state)
+            | {"action": action.model_dump(mode="json")},
         )
         messages, reward, done, truncated = response.json()
         return MessagesAdapter.validate_python(messages), reward, done, truncated
