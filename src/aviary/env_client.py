@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from typing import Any, Generic, TypeVar, cast
 
 import httpx
@@ -33,7 +34,7 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         self._request_timeout = request_timeout
         self._api_key = api_key
 
-    async def _post(self, url: str, json: dict[str, Any]) -> httpx.Response:
+    async def _post(self, url: str, json: Mapping[str, Any]) -> httpx.Response:
         async with httpx.AsyncClient() as client:
             headers = httpx.Headers(self._request_headers)
             if self._api_key:
@@ -63,7 +64,8 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     ) -> tuple[list[Message], float, bool, bool]:
         response = await self._post(
             self._step_request_url,
-            json=self._make_post_json(self.state) | {"action": action.model_dump()},
+            json=self._make_post_json(self.state)
+            | {"action": action.model_dump(mode="json")},
         )
         messages, reward, done, truncated = response.json()
         return MessagesAdapter.validate_python(messages), reward, done, truncated
