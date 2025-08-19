@@ -222,6 +222,7 @@ disable = [
     "broad-exception-raised",  # Rely on ruff TRY002 for this
     "cyclic-import",  # Let Python blow up
     "dangerous-default-value",  # Rely on ruff W0102 for this
+    "duplicate-code",  # Too aggressive
     "empty-docstring",  # Let pep257 take care of docstrings
     "expression-not-assigned",  # Rely on mypy func-returns-value for this
     "fixme",  # codetags are useful
