@@ -274,9 +274,8 @@ _CAPITAL_A_INDEX = ord("A")
 class MultipleChoiceQuestion(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    OPEN_ANSWER_PROMPT_TEMPLATE: ClassVar[str] = "{question_id}: {question}"
     MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
-        OPEN_ANSWER_PROMPT_TEMPLATE,
+        "{question_id}: {question}",
         "Options:\n{options}",
     ))
     DEFAULT_UNSURE_OPTION: ClassVar[str] = (
@@ -390,8 +389,6 @@ class MultipleChoiceQuestion(BaseModel):
                 else self.question_id
             ),
         }
-        if self.prompt_without_options:
-            return self.OPEN_ANSWER_PROMPT_TEMPLATE.format(**template_vars)
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
