@@ -300,6 +300,13 @@ class MultipleChoiceQuestion(BaseModel):
             " if worried about the model memorizing question IDs."
         ),
     )
+    prompt_without_options: bool = Field(
+        default=False,
+        description=(
+            "Opt-in flag to exclude options from the question_prompt, effectively"
+            " making the prompt be open answer."
+        ),
+    )
     options: Sequence[str] = Field(description="All multiple choice options.")
     ideal_answer: str = Field(
         description=(
