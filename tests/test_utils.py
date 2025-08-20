@@ -346,7 +346,7 @@ class TestLitQAEvaluation:
             "Different seeding strategies should lead to different prompts"
         )
 
-    async def test_no_options(self) -> None:
+    def test_no_options(self) -> None:
         question, ideal, _ = self.MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS
         mcq = MultipleChoiceQuestion(
             question=question,
