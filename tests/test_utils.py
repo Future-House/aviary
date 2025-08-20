@@ -168,11 +168,17 @@ class TestLitQAEvaluation:
         question: str,
         ideal_answer: str,
         distractors: Iterable[str],
+        has_no_options: bool = False,
     ) -> None:
         question_prompt = mc_question.question_prompt
         assert question_prompt.count(question) == 1
-        for substr in ("Insufficient information", ideal_answer, *distractors):
-            assert question_prompt.count(substr) == 1
+        for substr in (
+            "Options",
+            "Insufficient information",
+            ideal_answer,
+            *distractors,
+        ):
+            assert question_prompt.count(substr) == (1 if not has_no_options else 0)
 
     # Use for general purpose testing
     ZIP_CODE_QUESTION_IDEAL_DISTRACTORS = (
@@ -339,6 +345,29 @@ class TestLitQAEvaluation:
         assert mc_question_2a != mc_question_1a, (
             "Different seeding strategies should lead to different prompts"
         )
+
+    @pytest.mark.asyncio
+    async def test_no_options(self) -> None:
+        question, ideal, _ = self.MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS
+        mcq = MultipleChoiceQuestion(
+            question=question,
+            ideal_answer=ideal,
+            shuffle_seed=0,
+            prompt_without_options=True,
+            options=[],
+        )
+        self._assert_prompt_is_valid(mcq, question, ideal, [], has_no_options=True)
+
+        mcq_copy = MultipleChoiceQuestion(**mcq.model_dump())
+        self._assert_prompt_is_valid(mcq_copy, question, ideal, [], has_no_options=True)
+        assert mcq == mcq_copy, (
+            "Serialization then deserialization should lead to same prompts"
+        )
+
+        with pytest.raises(
+            RuntimeError, match="Cannot grade a question with no options"
+        ):
+            await mcq.grade("The answer is 42")
 
     @pytest.mark.parametrize(
         (
