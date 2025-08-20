@@ -274,8 +274,9 @@ _CAPITAL_A_INDEX = ord("A")
 class MultipleChoiceQuestion(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "{question_id}: {question}"
     MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
-        "{question_id}: {question}",
+        QUESTION_PROMPT_TEMPLATE,
         "Options:\n{options}",
     ))
     DEFAULT_UNSURE_OPTION: ClassVar[str] = (
@@ -389,6 +390,8 @@ class MultipleChoiceQuestion(BaseModel):
                 else self.question_id
             ),
         }
+        if self.prompt_without_options:
+            return self.QUESTION_PROMPT_TEMPLATE.format(**template_vars)
         return self.MC_QUESTION_PROMPT_TEMPLATE.format(
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
@@ -415,6 +418,9 @@ class MultipleChoiceQuestion(BaseModel):
     async def grade(
         self, proposed_answer: str, llm_eval_config: dict[str, Any] | None = None
     ) -> "tuple[MultipleChoiceEvaluation, str | None]":
+        if not self.options:
+            raise RuntimeError("Cannot grade a question with no options.")
+
         extracted_answer = await extract_answer(
             proposed_answer=proposed_answer,
             options=self.options,
