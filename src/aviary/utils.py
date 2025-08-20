@@ -418,9 +418,6 @@ class MultipleChoiceQuestion(BaseModel):
     async def grade(
         self, proposed_answer: str, llm_eval_config: dict[str, Any] | None = None
     ) -> "tuple[MultipleChoiceEvaluation, str | None]":
-        if not self.options:
-            raise RuntimeError("Cannot grade a question with no options.")
-
         extracted_answer = await extract_answer(
             proposed_answer=proposed_answer,
             options=self.options,

@@ -346,7 +346,6 @@ class TestLitQAEvaluation:
             "Different seeding strategies should lead to different prompts"
         )
 
-    @pytest.mark.asyncio
     async def test_no_options(self) -> None:
         question, ideal, _ = self.MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS
         mcq = MultipleChoiceQuestion(
@@ -363,11 +362,6 @@ class TestLitQAEvaluation:
         assert mcq == mcq_copy, (
             "Serialization then deserialization should lead to same prompts"
         )
-
-        with pytest.raises(
-            RuntimeError, match="Cannot grade a question with no options"
-        ):
-            await mcq.grade("The answer is 42")
 
     @pytest.mark.parametrize(
         (
