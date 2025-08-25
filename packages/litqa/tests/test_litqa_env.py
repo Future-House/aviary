@@ -3,7 +3,7 @@ import time
 from collections.abc import Iterable
 from copy import deepcopy
 from typing import ClassVar, cast
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -14,7 +14,7 @@ from paperqa import Docs, Settings
 from paperqa.agents import get_directory_index
 from paperqa.agents.env import PaperQAEnvironment
 from paperqa.agents.tools import Complete, GatherEvidence, GenerateAnswer
-from paperqa.types import PQASession
+from paperqa.types import Doc, PQASession
 from pytest_subtests import SubTests
 
 from aviary.core import (
@@ -441,6 +441,9 @@ class TestGradablePaperQAEnvironment:
     ) -> None:
         unsure_answer = "Based on the sources provided, it appears no one has done x."
 
+        async def custom_aget_evidence(*_, **kwargs) -> PQASession:  # noqa: RUF029
+            return kwargs["query"]
+
         async def emulate_answered_but_unsure(  # noqa: RUF029
             *_, query: PQASession, **__
         ) -> PQASession:
@@ -453,8 +456,19 @@ class TestGradablePaperQAEnvironment:
         answer_action = ToolRequestMessage(
             tool_calls=[ToolCall.from_name("gen_answer")]
         )
-        with patch.object(
-            type(stub_gradable_env.state.docs), "aquery", emulate_answered_but_unsure
+
+        with (
+            patch.object(
+                stub_gradable_env.state.docs,
+                "docs",
+                {"stub_key": MagicMock(spec_set=Doc)},
+            ),
+            patch.multiple(
+                type(stub_gradable_env.state.docs),
+                clear_docs=MagicMock(),
+                aget_evidence=custom_aget_evidence,
+                aquery=emulate_answered_but_unsure,
+            ),
         ):
             answer_obs, _, done, truncated = await stub_gradable_env.step(answer_action)
         assert len(answer_obs) == 1
