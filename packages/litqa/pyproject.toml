@@ -36,6 +36,10 @@ requires-python = ">=3.11"
 datasets = [
     "datasets>=2.15",  # Lower pin for https://github.com/huggingface/datasets/pull/6404
 ]
+dev = [
+    "aviary.litqa[datasets]",
+    "paper-qa>=5.29.0",  # Pin for gen_answer's EmptyDocsError
+]
 
 [tool.ruff]
 extend = "../../pyproject.toml"

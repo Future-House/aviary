@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14' and platform_python_implementation == 'PyPy'",
@@ -365,19 +365,25 @@ dependencies = [
 datasets = [
     { name = "datasets" },
 ]
+dev = [
+    { name = "datasets" },
+    { name = "paper-qa" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "aviary-litqa", extras = ["datasets"], marker = "extra == 'dev'", editable = "packages/litqa" },
     { name = "datasets", marker = "extra == 'datasets'", specifier = ">=2.15" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
     { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "paper-qa", marker = "extra == 'dev'", specifier = ">=5.29.0" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-provides-extras = ["datasets"]
+provides-extras = ["datasets", "dev"]
 
 [[package]]
 name = "babel"
@@ -851,7 +857,7 @@ dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
     { name = "aviary-lfrqa" },
-    { name = "aviary-litqa" },
+    { name = "aviary-litqa", extra = ["dev"] },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
     { name = "cloudpickle" },
@@ -934,8 +940,8 @@ requires-dist = [
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
     { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
-    { name = "aviary-litqa", marker = "extra == 'dev'", editable = "packages/litqa" },
     { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
+    { name = "aviary-litqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/litqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
