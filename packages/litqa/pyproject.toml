@@ -38,7 +38,7 @@ datasets = [
 ]
 dev = [
     "aviary.litqa[datasets]",
-    "paper-qa>=5.29.0",  # Pin for gen_answer's EmptyDocsError
+    "paper-qa>=5.29.1",  # Pin for gen_answer's EmptyDocsError, with fix
 ]
 
 [tool.ruff]

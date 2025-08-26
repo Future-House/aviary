@@ -378,7 +378,7 @@ requires-dist = [
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
     { name = "paper-qa", specifier = ">=5.14.0" },
-    { name = "paper-qa", marker = "extra == 'dev'", specifier = ">=5.29.0" },
+    { name = "paper-qa", marker = "extra == 'dev'", specifier = ">=5.29.1" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
@@ -2293,7 +2293,7 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.29.0"
+version = "5.29.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2313,9 +2313,9 @@ dependencies = [
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e1/b9/758f8dd0f10b2afd4ce4381415c69d3943f48b2554328e03f100818cb969/paper_qa-5.29.0.tar.gz", hash = "sha256:f466588baca224f84447df36818749b88845f148be763ccf0ebec9aa90aae2a5", size = 4378219, upload-time = "2025-08-25T23:06:00.458Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/6a/be74dd213749007fdc2ce1df27b37db7eeb6fad9f1e234adb3d6c4c84f87/paper_qa-5.29.1.tar.gz", hash = "sha256:c7c6b5403867d3c8b147d25053d4083cc9979152476fd8a535b7a3257e7b68fa", size = 4378256, upload-time = "2025-08-26T21:41:41.136Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/68/388e21322eacb580f09bcc51f5204d278f64092709d219f0ed6203d3f125/paper_qa-5.29.0-py3-none-any.whl", hash = "sha256:af70e8f05790c5ee1b4e14825ce18af86f2180ce9454c672a514c5b67af633ea", size = 520171, upload-time = "2025-08-25T23:05:56.32Z" },
+    { url = "https://files.pythonhosted.org/packages/85/0f/91f37ee9aff695ad2e1c478d5d1c19ccfd5703b359a984ab11141a77ac88/paper_qa-5.29.1-py3-none-any.whl", hash = "sha256:bdd5ff496e8cfdf661f749e71b2491a112cbe8ac7f707670c7e396ee69b9c003", size = 520237, upload-time = "2025-08-26T21:41:37.193Z" },
 ]
 
 [[package]]
