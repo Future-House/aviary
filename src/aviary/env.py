@@ -5,11 +5,12 @@ import importlib
 import inspect
 import json
 import logging
+import os
 import random
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator
 from copy import deepcopy
-from typing import Annotated, Generic, Self, TypeAlias, TypeVar, cast
+from typing import Annotated, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
 
 from pydantic import (
     BaseModel,
@@ -181,6 +182,10 @@ class Environment(ABC, Generic[TEnvState]):
             ),
         )
 
+    TOOL_CALL_EXC_LOG_TB_NONDEBUG: ClassVar[bool] = os.environ.get(
+        "AVIARY_TOOL_CALL_EXC_LOG_TB_NONDEBUG", "false"
+    ).lower() in {"1", "true", "yes", "on"}
+
     async def exec_tool_calls(
         self,
         message: ToolRequestMessage,
@@ -258,11 +263,14 @@ class Environment(ABC, Generic[TEnvState]):
                     f"Encountered exception during tool call"
                     f" for tool {tool.info.name}: {format_exc(exc)}"
                 )
-                # logger.exception is just too verbose and clogs up console logging. This is a
-                # more human-friendly version: log a readable error message and emit the exception
-                # at DEBUG level.
-                logger.error(logger_msg)  # noqa: TRY400
-                logger.debug(str(exc), exc_info=True)
+                if self.TOOL_CALL_EXC_LOG_TB_NONDEBUG:
+                    logger.exception(logger_msg)
+                else:
+                    # logger.exception is just too verbose and clogs up console logging.
+                    # This is a more human-friendly version:
+                    # log a readable error message and emit the exception at DEBUG level.
+                    logger.error(logger_msg)  # noqa: TRY400
+                    logger.debug(str(exc), exc_info=True)
                 tool_exc = exc
             if tool_exc:
                 # No need to mention tool.info.name here, since it'll get wrapped in a ToolResponseMessage
