@@ -14,8 +14,8 @@ resolution-markers = [
 members = [
     "aviary-gsm8k",
     "aviary-hotpotqa",
+    "aviary-labbench",
     "aviary-lfrqa",
-    "aviary-litqa",
     "fhaviary",
 ]
 
@@ -329,33 +329,13 @@ requires-dist = [
 ]
 
 [[package]]
-name = "aviary-lfrqa"
-source = { editable = "packages/lfrqa" }
-dependencies = [
-    { name = "aviary-litqa" },
-    { name = "fhaviary" },
-    { name = "fhlmi" },
-    { name = "paper-qa" },
-    { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aviary-litqa", editable = "packages/litqa" },
-    { name = "fhaviary", editable = "." },
-    { name = "fhlmi" },
-    { name = "paper-qa", specifier = ">=5.14.0" },
-    { name = "pydantic", specifier = "~=2.0" },
-]
-
-[[package]]
-name = "aviary-litqa"
-source = { editable = "packages/litqa" }
+name = "aviary-labbench"
+source = { editable = "packages/labbench" }
 dependencies = [
     { name = "fhaviary" },
     { name = "fhlmi" },
     { name = "ldp" },
-    { name = "paper-qa" },
+    { name = "paper-qa", extra = ["pymupdf"] },
     { name = "pydantic" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
@@ -367,23 +347,61 @@ datasets = [
 ]
 dev = [
     { name = "datasets" },
+    { name = "pandas" },
     { name = "paper-qa" },
+    { name = "pillow" },
+]
+typing = [
+    { name = "pillow" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "aviary-litqa", extras = ["datasets"], marker = "extra == 'dev'", editable = "packages/litqa" },
+    { name = "aviary-labbench", extras = ["datasets", "typing"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "datasets", marker = "extra == 'datasets'", specifier = ">=2.15" },
     { name = "fhaviary", editable = "." },
     { name = "fhlmi" },
     { name = "ldp", specifier = ">=0.25.2" },
-    { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "pandas", marker = "extra == 'dev'" },
     { name = "paper-qa", marker = "extra == 'dev'", specifier = ">=5.29.1" },
+    { name = "paper-qa", extras = ["pymupdf"], git = "https://github.com/Future-House/paper-qa.git" },
+    { name = "pillow", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-provides-extras = ["datasets", "dev"]
+provides-extras = ["datasets", "dev", "typing"]
+
+[[package]]
+name = "aviary-lfrqa"
+source = { editable = "packages/lfrqa" }
+dependencies = [
+    { name = "aviary-labbench" },
+    { name = "fhaviary" },
+    { name = "fhlmi" },
+    { name = "paper-qa" },
+    { name = "pydantic" },
+]
+
+[package.optional-dependencies]
+csv = [
+    { name = "pandas" },
+]
+dev = [
+    { name = "pandas" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aviary-labbench", editable = "packages/labbench" },
+    { name = "aviary-lfrqa", extras = ["csv"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "fhaviary", editable = "." },
+    { name = "fhlmi" },
+    { name = "pandas", marker = "extra == 'csv'" },
+    { name = "paper-qa", specifier = ">=5.14.0" },
+    { name = "pydantic", specifier = "~=2.0" },
+]
+provides-extras = ["csv", "dev"]
 
 [[package]]
 name = "babel"
@@ -856,8 +874,8 @@ cloud = [
 dev = [
     { name = "aviary-gsm8k", extra = ["typing"] },
     { name = "aviary-hotpotqa" },
-    { name = "aviary-lfrqa" },
-    { name = "aviary-litqa", extra = ["dev"] },
+    { name = "aviary-labbench", extra = ["dev"] },
+    { name = "aviary-lfrqa", extra = ["dev"] },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
     { name = "cloudpickle" },
@@ -900,11 +918,11 @@ hotpotqa = [
 image = [
     { name = "pillow" },
 ]
+labbench = [
+    { name = "aviary-labbench" },
+]
 lfrqa = [
     { name = "aviary-lfrqa" },
-]
-litqa = [
-    { name = "aviary-litqa" },
 ]
 llm = [
     { name = "fhlmi" },
@@ -938,10 +956,10 @@ requires-dist = [
     { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
-    { name = "aviary-lfrqa", marker = "extra == 'dev'", editable = "packages/lfrqa" },
+    { name = "aviary-labbench", marker = "extra == 'labbench'", editable = "packages/labbench" },
+    { name = "aviary-labbench", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
-    { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
-    { name = "aviary-litqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/litqa" },
+    { name = "aviary-lfrqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/lfrqa" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
@@ -982,7 +1000,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "lfrqa", "litqa", "llm", "server", "typing", "xml"]
+provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "labbench", "lfrqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]
@@ -2293,8 +2311,8 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.29.1"
-source = { registry = "https://pypi.org/simple" }
+version = "5.29.2.dev5+g27c88de4c"
+source = { git = "https://github.com/Future-House/paper-qa.git#27c88de4c75b1db70bd66b0b5d2539714d7d2167" }
 dependencies = [
     { name = "aiohttp" },
     { name = "anyio" },
@@ -2313,22 +2331,28 @@ dependencies = [
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a6/6a/be74dd213749007fdc2ce1df27b37db7eeb6fad9f1e234adb3d6c4c84f87/paper_qa-5.29.1.tar.gz", hash = "sha256:c7c6b5403867d3c8b147d25053d4083cc9979152476fd8a535b7a3257e7b68fa", size = 4378256, upload-time = "2025-08-26T21:41:41.136Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/0f/91f37ee9aff695ad2e1c478d5d1c19ccfd5703b359a984ab11141a77ac88/paper_qa-5.29.1-py3-none-any.whl", hash = "sha256:bdd5ff496e8cfdf661f749e71b2491a112cbe8ac7f707670c7e396ee69b9c003", size = 520237, upload-time = "2025-08-26T21:41:37.193Z" },
+
+[package.optional-dependencies]
+pymupdf = [
+    { name = "paper-qa-pymupdf" },
+]
+
+[[package]]
+name = "paper-qa-pymupdf"
+version = "5.29.2.dev5+g27c88de4c"
+source = { git = "https://github.com/Future-House/paper-qa.git?subdirectory=packages%2Fpaper-qa-pymupdf#27c88de4c75b1db70bd66b0b5d2539714d7d2167" }
+dependencies = [
+    { name = "paper-qa" },
+    { name = "pymupdf" },
 ]
 
 [[package]]
 name = "paper-qa-pypdf"
-version = "5.29.0"
-source = { registry = "https://pypi.org/simple" }
+version = "5.29.2.dev5+g27c88de4c"
+source = { git = "https://github.com/Future-House/paper-qa.git?subdirectory=packages%2Fpaper-qa-pypdf#27c88de4c75b1db70bd66b0b5d2539714d7d2167" }
 dependencies = [
     { name = "paper-qa" },
     { name = "pypdf" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/a5/35ae6c026130e36303b579b23806e2a40cc4b3d6a30f79a376048a714c17/paper_qa_pypdf-5.29.0.tar.gz", hash = "sha256:e89a652f50c6cb9d29ff2c0f7f9751c6f3329d97831835452952321fed11a1f2", size = 8475, upload-time = "2025-08-25T23:06:02.573Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/b2/1ef3430b8c0aa1ee5e24da931545fe56fa326fb2745ac58c9d45c29a5dc4/paper_qa_pypdf-5.29.0-py3-none-any.whl", hash = "sha256:192e055c560c7f099e5bd51c99a9e15f06b9086de8fff13e74d4c8bcaeace835", size = 11294, upload-time = "2025-08-25T23:05:59.099Z" },
 ]
 
 [[package]]
@@ -2820,6 +2844,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/dd/37/c384631908029676d8e7213dd956bb686af303a80db7afbc9be36bc49495/pympler-1.1.tar.gz", hash = "sha256:1eaa867cb8992c218430f1708fdaccda53df064144d1c5656b1e6f1ee6000424", size = 179954, upload-time = "2024-06-28T19:56:06.563Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/4f/a6a2e2b202d7fd97eadfe90979845b8706676b41cbd3b42ba75adf329d1f/Pympler-1.1-py3-none-any.whl", hash = "sha256:5b223d6027d0619584116a0cbc28e8d2e378f7a79c1e5e024f9ff3b673c58506", size = 165766, upload-time = "2024-06-28T19:56:05.087Z" },
+]
+
+[[package]]
+name = "pymupdf"
+version = "1.26.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/90/35/031556dfc0d332d8e9ed9b61ca105138606d3f8971b9eb02e20118629334/pymupdf-1.26.4.tar.gz", hash = "sha256:be13a066d42bfaed343a488168656637c4d9843ddc63b768dc827c9dfc6b9989", size = 83077563, upload-time = "2025-08-25T14:20:29.499Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/ae/3be722886cc7be2093585cd94f466db1199133ab005645a7a567b249560f/pymupdf-1.26.4-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:cb95562a0a63ce906fd788bdad5239063b63068cf4a991684f43acb09052cb99", size = 23061974, upload-time = "2025-08-25T14:16:58.811Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/b0/9a451d837e1fe18ecdbfbc34a6499f153c8a008763229cc634725383a93f/pymupdf-1.26.4-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:67e9e6b45832c33726651c2a031e9a20108fd9e759140b9e843f934de813a7ff", size = 22410112, upload-time = "2025-08-25T14:17:24.511Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/13/0916e8e02cb5453161fb9d9167c747d0a20d58633e30728645374153f815/pymupdf-1.26.4-cp39-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:2604f687dd02b6a1b98c81bd8becfc0024899a2d2085adfe3f9e91607721fd22", size = 23454948, upload-time = "2025-08-25T21:20:07.71Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/c6/d3cfafc75d383603884edeabe4821a549345df954a88d79e6764e2c87601/pymupdf-1.26.4-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:973a6dda61ebd34040e4df3753bf004b669017663fbbfdaa294d44eceba98de0", size = 24060686, upload-time = "2025-08-25T14:17:56.536Z" },
+    { url = "https://files.pythonhosted.org/packages/72/08/035e9d22c801e801bba50c6745bc90ba8696a042fe2c68793e28bf0c3b07/pymupdf-1.26.4-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:299a49797df5b558e695647fa791329ba3911cbbb31ed65f24a6266c118ef1a7", size = 24265046, upload-time = "2025-08-25T14:18:21.238Z" },
+    { url = "https://files.pythonhosted.org/packages/28/8c/c201e4846ec0fb6ae5d52aa3a5d66f9355f0c69fb94230265714df0de65e/pymupdf-1.26.4-cp39-abi3-win32.whl", hash = "sha256:51b38379aad8c71bd7a8dd24d93fbe7580c2a5d9d7e1f9cd29ebbba315aa1bd1", size = 17127332, upload-time = "2025-08-25T14:18:39.132Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/c4/87d27b108c2f6d773aa5183c5ae367b2a99296ea4bc16eb79f453c679e30/pymupdf-1.26.4-cp39-abi3-win_amd64.whl", hash = "sha256:0b6345a93a9afd28de2567e433055e873205c52e6b920b129ca50e836a3aeec6", size = 18743491, upload-time = "2025-08-25T14:19:01.104Z" },
 ]
 
 [[package]]
