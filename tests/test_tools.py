@@ -10,6 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typeguard import suppress_type_checks
 
 from aviary.core import (
@@ -136,6 +137,20 @@ def state_out_of_order(state: dict, x: int = 0) -> None:
     """
     assert isinstance(state, dict)
     assert isinstance(x, int)
+
+
+@retry(retry=retry_if_exception_type(ValueError), stop=stop_after_attempt(3))
+def add_with_tenacity_retries(a: int, b: int | None = 0) -> int:
+    """Add two numbers.
+
+    Args:
+        a: first number
+        b: second number
+    """
+    if b is None:
+        # Intentionally don't use ValueError since we don't want to trigger retries
+        raise TypeError("Please pass b as a number.")
+    return a + b
 
 
 class TestTool:
@@ -409,6 +424,37 @@ class TestTool:
                     },
                 },
                 id="with-linefeed",
+            ),
+            pytest.param(
+                # NOTE: tenacity uses `functools.wraps`: https://github.com/jd/tenacity/blob/9.1.2/tenacity/__init__.py#L330-L333
+                # Also, we commonly use `tenacity.retry`, so it's useful to check this too
+                add_with_tenacity_retries,
+                {},
+                {
+                    "type": "function",
+                    "info": {
+                        "name": "add_with_tenacity_retries",
+                        "description": "Add two numbers.",
+                        "parameters": {
+                            "properties": {
+                                "a": {
+                                    "description": "first number",
+                                    "title": "A",
+                                    "type": "integer",
+                                },
+                                "b": {
+                                    "description": "second number",
+                                    "title": "B",
+                                    "default": 0,
+                                    "anyOf": [{"type": "integer"}, {"type": "null"}],
+                                },
+                            },
+                            "required": ["a"],
+                            "type": "object",
+                        },
+                    },
+                },
+                id="functools-wraps-decoration",
             ),
         ],
     )
