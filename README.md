@@ -58,7 +58,7 @@ pip install fhaviary
 To install aviary together with the incumbent environments:
 
 ```bash
-pip install 'fhaviary[gsm8k,hotpotqa,litqa,lfrqa]'
+pip install 'fhaviary[gsm8k,hotpotqa,litqa,lfrqa,notebook]'
 ```
 
 To run the tutorial notebooks:
@@ -423,6 +423,7 @@ Below we list some pre-existing environments implemented in Aviary:
 | HotPotQA    | [`aviary.hotpotqa`](https://pypi.org/project/aviary.hotpotqa/) | `fhaviary[hotpotqa]` | [`README.md`](packages/hotpotqa/README.md#installation) |
 | LitQA       | [`aviary.litqa`](https://pypi.org/project/aviary.litqa/)       | `fhaviary[litqa]`    | [`README.md`](packages/litqa/README.md#installation)    |
 | LFRQA       | [`aviary.lfrqa`](https://pypi.org/project/aviary.lfrqa/)       | `fhaviary[lfrqa]`    | [`README.md`](packages/lfrqa/README.md#installation)    |
+| Notebook    | N/A                                                            | `fhaviary[notebook]` | [`README.md`](packages/notebook/README.md#installation) |
 
 ### Task Datasets
 
