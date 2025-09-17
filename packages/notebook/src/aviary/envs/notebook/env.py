@@ -6,13 +6,10 @@ import os
 import shutil
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, ClassVar, Generic, Self, TypeVar, cast
+from typing import Any, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
 
 import aiodocker
-import aviary_internal.envs.notebook.config as cfg
 import nbformat
-from aviary_internal.envs.notebook import utils
-from aviary_internal.utils import DataRepo
 from jupyter_client.manager import AsyncKernelManager
 from nbformat import NotebookNode
 from numpy.typing import NDArray
@@ -20,6 +17,9 @@ from pydantic import BaseModel, Field, PrivateAttr, model_validator
 
 from aviary.core import Environment, Messages, Tool, ToolRequestMessage
 from aviary.message import EnvStateMessage
+
+from . import config as cfg
+from . import utils
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class NBEnvironmentState(BaseModel):
             await self._kernel_manager.shutdown_kernel()
 
 
-TListDir = dict[str, list[str] | "TListDir"]  # noqa: TC010
+TListDir: TypeAlias = dict[str, "list[str] | TListDir"]
 
 TNBEnvState = TypeVar(
     "TNBEnvState", bound=NBEnvironmentState, default=NBEnvironmentState
@@ -128,7 +128,6 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
         nb_path: str | os.PathLike | None = None,
         use_tmp_work_dir: bool = True,
         language: utils.NBLanguage = utils.NBLanguage.PYTHON,
-        allow_download_from_gcs: bool = False,
         run_notebook_on_edit: bool = False,
         cell_execution_timeout: int = 600,
         use_docker: bool = cfg.USE_DOCKER,
@@ -143,9 +142,6 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
             use_tmp_work_dir: If True (default), the contents of `work_dir` will be copied to a
                 temporary work directory.
             language: The programming language of the notebook. Defaults to Python.
-            allow_download_from_gcs: If True, the environment will expose a tool to download
-                directories from the aviary-storage GCS bucket. Should only be enabled if the
-                task requires data on GCS. Disabled by default.
             run_notebook_on_edit: If True (default), the whole notebook will be rerun
                 after each edit. If False, only the cell that was edited will be rerun.
             cell_execution_timeout: The timeout for each cell execution.
@@ -156,7 +152,6 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
 
         self.use_tmp_work_dir = use_tmp_work_dir
         self.language = language
-        self.allow_download_from_gcs = allow_download_from_gcs
         self.use_docker = use_docker
         # If using docker, we must always run the full notebook
         self.run_notebook_on_edit = run_notebook_on_edit or use_docker
@@ -178,8 +173,6 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
             Tool.from_function(self.edit_cell),
             Tool.from_function(self.list_workdir),
         ]
-        if self.allow_download_from_gcs:
-            self.tools.append(Tool.from_function(self.download_from_bucket))
 
         init_obs = cast(Messages, [self.get_env_state_msg()])
 
@@ -202,32 +195,6 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
         return obs, reward, self.state.done, False
 
     # TOOLS
-
-    def download_from_bucket(self, bucket_path: str, path_in_workspace: str) -> str:
-        """Download a directory from the source bucket to the workspace.
-
-        Args:
-            bucket_path: Path to the directory in the bucket.
-            path_in_workspace: Relative path to save the directory in the workspace.
-        """
-        workspace_path = Path(path_in_workspace)
-        if workspace_path.parts[:2] == ("/", "workspace"):
-            # Make relative if needed
-            workspace_path = workspace_path.relative_to("/workspace")
-        target_path = self.state.work_dir / workspace_path
-
-        # Now execute the download
-        data_repo = DataRepo(
-            name=bucket_path,
-            local_path=str(target_path),
-        )
-        data_repo.pull()
-
-        contents = self._list_dir(target_path)
-        if not contents:
-            return f"Attempted to download {bucket_path} to {workspace_path}, but found no contents."
-
-        return f"Downloaded {bucket_path} to {workspace_path}:\n{json.dumps(contents, indent=2)}"
 
     async def edit_cell(self, contents: str, idx: int | None = None) -> str:
         """Edit the notebook by modifying a specific code cell.

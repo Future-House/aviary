@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14' and platform_python_implementation == 'PyPy'",
@@ -16,7 +16,20 @@ members = [
     "aviary-hotpotqa",
     "aviary-lfrqa",
     "aviary-litqa",
+    "aviary-notebook",
     "fhaviary",
+]
+
+[[package]]
+name = "aiodocker"
+version = "0.24.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f2/d7/30104dfac550ae6570d4dce24c2cbf2ddefd4937c9e861641314abfd8abb/aiodocker-0.24.0.tar.gz", hash = "sha256:661a6f9a479951f11f793031dcd5d55337e232c4ceaee69d51ceb885e5f16fac", size = 135482, upload-time = "2024-11-21T02:23:59.642Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/5b/2bb8b632041e314a0a917ade80382ca6a8f331f12c7eb409e59cd0485cc9/aiodocker-0.24.0-py3-none-any.whl", hash = "sha256:2199b7b01f8ce68f9cabab7910ecb26192f6f3494163f1ccffe527b4c3875689", size = 34849, upload-time = "2024-11-21T02:23:58.053Z" },
 ]
 
 [[package]]
@@ -384,6 +397,34 @@ requires-dist = [
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 provides-extras = ["datasets", "dev"]
+
+[[package]]
+name = "aviary-notebook"
+source = { editable = "packages/notebook" }
+dependencies = [
+    { name = "aiodocker" },
+    { name = "aiofiles" },
+    { name = "fhaviary" },
+    { name = "ipykernel" },
+    { name = "jupyter-client" },
+    { name = "litellm" },
+    { name = "nbformat" },
+    { name = "pillow" },
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiodocker" },
+    { name = "aiofiles" },
+    { name = "fhaviary", editable = "." },
+    { name = "ipykernel" },
+    { name = "jupyter-client" },
+    { name = "litellm" },
+    { name = "nbformat" },
+    { name = "pillow" },
+    { name = "pydantic", specifier = "~=2.0" },
+]
 
 [[package]]
 name = "babel"
@@ -858,6 +899,7 @@ dev = [
     { name = "aviary-hotpotqa" },
     { name = "aviary-lfrqa" },
     { name = "aviary-litqa", extra = ["dev"] },
+    { name = "aviary-notebook" },
     { name = "boto3-stubs", extra = ["s3"] },
     { name = "click" },
     { name = "cloudpickle" },
@@ -912,6 +954,9 @@ llm = [
     { name = "litellm" },
     { name = "packaging" },
 ]
+notebook = [
+    { name = "aviary-notebook" },
+]
 server = [
     { name = "click" },
     { name = "cloudpickle" },
@@ -943,6 +988,8 @@ requires-dist = [
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
     { name = "aviary-litqa", marker = "extra == 'litqa'", editable = "packages/litqa" },
     { name = "aviary-litqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/litqa" },
+    { name = "aviary-notebook", marker = "extra == 'dev'", editable = "packages/notebook" },
+    { name = "aviary-notebook", marker = "extra == 'notebook'", editable = "packages/notebook" },
     { name = "boto3", marker = "extra == 'cloud'" },
     { name = "boto3-stubs", extras = ["s3"], marker = "extra == 'typing'" },
     { name = "click", marker = "extra == 'server'" },
@@ -984,7 +1031,7 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
-provides-extras = ["cloud", "dev", "gsm8k", "hotpotqa", "image", "lfrqa", "litqa", "llm", "server", "typing", "xml"]
+provides-extras = ["cloud", "dev", "notebook", "gsm8k", "hotpotqa", "image", "lfrqa", "litqa", "llm", "server", "typing", "xml"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]

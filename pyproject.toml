@@ -42,6 +42,7 @@ dev = [
     "aviary.hotpotqa",
     "aviary.lfrqa",
     "aviary.litqa[dev]",
+    "aviary.notebook",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "jupyter>=1.0.0",  # For running notebooks
@@ -78,6 +79,7 @@ llm = [
     "litellm>=1.49.1",  # For removal of imghdr
     "packaging",
 ]
+notebook = ["aviary.notebook"]
 server = [
     "click",
     "cloudpickle",
@@ -153,7 +155,7 @@ explicit_package_bases = true
 # Useful if you'd like to keep stubs in your repo, along with the config file.
 # Multiple paths are always separated with a : or , regardless of the platform.
 # User home directory and environment variables will be expanded.
-mypy_path = "$MYPY_CONFIG_FILE_DIR/src,$MYPY_CONFIG_FILE_DIR/packages/gsm8k/src,$MYPY_CONFIG_FILE_DIR/packages/hotpotqa/src,$MYPY_CONFIG_FILE_DIR/packages/lfrqa/src,$MYPY_CONFIG_FILE_DIR/packages/litqa/src"
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src,$MYPY_CONFIG_FILE_DIR/packages/gsm8k/src,$MYPY_CONFIG_FILE_DIR/packages/hotpotqa/src,$MYPY_CONFIG_FILE_DIR/packages/lfrqa/src,$MYPY_CONFIG_FILE_DIR/packages/litqa/src,$MYPY_CONFIG_FILE_DIR/packages/notebook/src"
 # Specifies the OS platform for the target program, for example darwin or win32
 # (meaning OS X or Windows, respectively). The default is the current platform
 # as revealed by Python’s sys.platform variable.
@@ -300,7 +302,7 @@ filterwarnings = [
 # files or test ids are given in the command line when executing pytest from the rootdir
 # directory. File system paths may use shell-style wildcards, including the recursive **
 # pattern.
-testpaths = ["packages/gsm8k/tests", "packages/hotpotqa/tests", "packages/lfrqa/tests", "packages/litqa/tests", "src", "tests"]
+testpaths = ["packages/gsm8k/tests", "packages/hotpotqa/tests", "packages/lfrqa/tests", "packages/litqa/tests", "packages/notebook/tests", "src", "tests"]
 
 [tool.refurb]
 enable_all = true
@@ -619,6 +621,7 @@ trailing_comma_inline_array = true
 "aviary.hotpotqa" = {workspace = true}
 "aviary.lfrqa" = {workspace = true}
 "aviary.litqa" = {workspace = true}
+"aviary.notebook" = {workspace = true}
 fhaviary = {workspace = true}
 
 [tool.uv.workspace]
