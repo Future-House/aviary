@@ -22,7 +22,7 @@ from aviary.message import EnvStateMessage
 from . import config as cfg
 from . import utils
 
-if sys.version_info >= (3, 12):
+if sys.version_info >= (3, 13):
     from typing import TypeVar
 else:
     from typing_extensions import TypeVar
