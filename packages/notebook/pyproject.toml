@@ -20,12 +20,12 @@ classifiers = [
 dependencies = [
     "Pillow",
     "aiodocker",
-    "aiofiles",
     "fhaviary",
     "ipykernel",
     "jupyter-client",
     "litellm",
     "nbformat",
+    "numpy",
     "pydantic~=2.0",
 ]
 description = "Jupyter notebook environment implemented with aviary"
