@@ -1,0 +1,118 @@
+interactions:
+  - request:
+      body:
+        '{"messages":[{"content":"You are evaluating answers for a test which has
+        fixed options. Repeat back which option the proposed answer matches. GIVE ONLY
+        THE VERBATIM TEXT OF A FIXED OPTION. If the proposed answer is empty, invalid,
+        or ambiguous, return an empty string.\n\nOptions:\n-8\nInsufficient information
+        to answer this question\ncheesecake\n94106\n94107\n\nProposed answer: the answer
+        is 94106 or 94107","role":"user"}],"model":"gpt-4o-mini","temperature":0}'
+      headers:
+        accept:
+          - application/json
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        content-length:
+          - "465"
+        content-type:
+          - application/json
+        host:
+          - api.openai.com
+        user-agent:
+          - AsyncOpenAI/Python 1.101.0
+        x-stainless-arch:
+          - arm64
+        x-stainless-async:
+          - async:asyncio
+        x-stainless-lang:
+          - python
+        x-stainless-os:
+          - MacOS
+        x-stainless-package-version:
+          - 1.101.0
+        x-stainless-raw-response:
+          - "true"
+        x-stainless-read-timeout:
+          - "600.0"
+        x-stainless-retry-count:
+          - "0"
+        x-stainless-runtime:
+          - CPython
+        x-stainless-runtime-version:
+          - 3.12.8
+      method: POST
+      uri: https://api.openai.com/v1/chat/completions
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAAwAAAP//jFLBbtswDL37KwSe48HJ6rTOcTts1wK9bENhKBJta5VFQaKLbUX+fZCc
+          Jm6bAr3owMf3+B7Fp0IIMBp2AtQgWY3ell+/Pf746f9t95vhu/rSNLfU3Emu5d5I+wCrxKD9b1T8
+          zPqkaPQW2ZCbYRVQMibV9XV9s66r+vM6AyNptInWey6vqByNM+Wm2lyV1XW5vjmyBzIKI+zEr0II
+          IZ7ym3w6jX9gJ6rVc2XEGGWPsDs1CQGBbKqAjNFElo5hdQYVOUaXrS/LAbspymTNTdYuAOkcsUzR
+          sqH7I3I4WbDU+0D7+IoKnXEmDm1AGcmlcZHJQ0YPhRD3Oer0wj34QKPnlukB87imnuXgvOAzeNwC
+          MLG0FzgvxFqNLI2Ni02BkmpA/UYwhZ60oQVQLCK/9XJJe45tXP8R+TOgFHpG3fqA2qiLebN4ur73
+          2k4rzoYhYng0Cls2GNI3aOzkZOebgPg3Mo5tZ1yPwQczH0bn23pbyW6Ldd1AcSj+AwAA//8DAP95
+          ivMmAwAA
+      headers:
+        CF-RAY:
+          - 980c44946cfb1698-SJC
+        Connection:
+          - keep-alive
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json
+        Date:
+          - Wed, 17 Sep 2025 23:08:51 GMT
+        Server:
+          - cloudflare
+        Set-Cookie:
+          - __cf_bm=2XqAXk_hRtNnr.Bzzqa3XRlES5muAm9Au.429rit1CY-1758150531-1.0.1.1-qguggd7sPjIt0flW.EHORctH1Xf6h8GLv7zg8VnlTKM.p_U1iA5XEWRhIjzjWVUItCYmtqpARFzc8VA.IEv31vI7YL_D4uZZz3ROFr0FB5c;
+            path=/; expires=Wed, 17-Sep-25 23:38:51 GMT; domain=.api.openai.com; HttpOnly;
+            Secure; SameSite=None
+          - _cfuvid=ppOu.cm2wIVVm4uh3LuINETCDT1v3eyJfHAErxJCqxE-1758150531578-0.0.1.1-604800000;
+            path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubDomains; preload
+        Transfer-Encoding:
+          - chunked
+        X-Content-Type-Options:
+          - nosniff
+        access-control-expose-headers:
+          - X-Request-ID
+        alt-svc:
+          - h3=":443"; ma=86400
+        cf-cache-status:
+          - DYNAMIC
+        openai-organization:
+          - future-house-xr4tdh
+        openai-processing-ms:
+          - "244"
+        openai-project:
+          - proj_RpeV6PrPclPHBb5GlExPXSBj
+        openai-version:
+          - "2020-10-01"
+        x-envoy-upstream-service-time:
+          - "256"
+        x-openai-proxy-wasm:
+          - v0.1
+        x-ratelimit-limit-requests:
+          - "30000"
+        x-ratelimit-limit-tokens:
+          - "150000000"
+        x-ratelimit-remaining-requests:
+          - "29999"
+        x-ratelimit-remaining-tokens:
+          - "149999905"
+        x-ratelimit-reset-requests:
+          - 2ms
+        x-ratelimit-reset-tokens:
+          - 0s
+        x-request-id:
+          - req_0304da481a3a4b3ab86c142ce2bb1f1f
+      status:
+        code: 200
+        message: OK
+version: 1
