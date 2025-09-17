@@ -42,7 +42,7 @@ dev = [
     "aviary.hotpotqa",
     "aviary.lfrqa",
     "aviary.litqa[dev]",
-    "aviary.notebook",
+    "aviary.notebook[dev]",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "jupyter>=1.0.0",  # For running notebooks

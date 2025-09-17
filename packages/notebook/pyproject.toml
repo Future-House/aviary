@@ -34,6 +34,11 @@ name = "aviary.notebook"
 readme = "README.md"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+dev = [
+    "matplotlib",  # Needed to run tests with plots
+]
+
 [tool.ruff]
 extend = "../../pyproject.toml"
 
