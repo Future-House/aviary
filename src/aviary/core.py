@@ -17,6 +17,7 @@ from aviary.env_client import (
 )
 from aviary.functional import DynamicState, fenv
 from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
+from aviary.questions import MultipleChoiceEvaluation, MultipleChoiceQuestion
 from aviary.render import Renderer
 from aviary.tools import (
     INVALID_TOOL_NAME,
@@ -39,8 +40,6 @@ from aviary.tools import (
 from aviary.utils import (
     DEFAULT_EVAL_MODEL_NAME,
     EvalAnswerMode,
-    MultipleChoiceEvaluation,
-    MultipleChoiceQuestion,
     encode_image_to_base64,
     eval_answer,
     extract_answer,
