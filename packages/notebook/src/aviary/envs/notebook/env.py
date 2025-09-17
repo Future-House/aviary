@@ -4,9 +4,10 @@ import json
 import logging
 import os
 import shutil
+import sys
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
+from typing import Any, ClassVar, Generic, Self, TypeAlias, cast
 
 import aiodocker
 import nbformat
@@ -20,6 +21,11 @@ from aviary.message import EnvStateMessage
 
 from . import config as cfg
 from . import utils
+
+if sys.version_info >= (3, 12):
+    from typing import TypeVar
+else:
+    from typing_extensions import TypeVar
 
 logger = logging.getLogger(__name__)
 

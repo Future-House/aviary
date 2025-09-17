@@ -209,7 +209,7 @@ async def nbformat_run_notebook(  # noqa: D417
     """  # noqa: DOC502
     error_messages = []
     logger.debug(f"Running notebook with cell_idx: {cell_idx}")
-    try:  # noqa: PLR1702
+    try:  # noqa: PLR1702 # pylint: disable=R1702
         logger.debug("Beginning cell execution")
         for idx, cell in enumerate(cells):
             if cell_idx is not None and idx != cell_idx:
@@ -367,7 +367,7 @@ def collect_notebook_stats(
         "bash_cells": 0,
         "shell_commands": 0,
     }
-    for cell in nb.cells:  # noqa: PLR1702
+    for cell in nb.cells:  # noqa: PLR1702 # pylint: disable=R1702
         # Split cell source into lines and count non-empty lines
         lines = [line for line in cell.source.split("\n") if line.strip()]
 
