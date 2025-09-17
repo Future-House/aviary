@@ -84,3 +84,6 @@ jobs:
           path: dist
       - name: Clean up aviary.notebook build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         run: rm -r ${{ steps.build-aviary-notebook.outputs.dist }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
