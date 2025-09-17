@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import json
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
@@ -122,7 +120,7 @@ class Message(BaseModel):
         cls,
         role: str = DEFAULT_ROLE,
         text: str | None = None,
-        images: list[np.ndarray | str] | str | np.ndarray | None = None,
+        images: "list[np.ndarray | str] | str | np.ndarray | None" = None,
     ) -> Self:
         """Create a message with optional multimodal (just images so far) support.
 
@@ -173,7 +171,7 @@ class MalformedMessageError(ValueError):
     """Error to throw if some aspect of a Message variant is malformed."""
 
     @classmethod
-    def common_retryable_errors_log_filter(cls, record: LogRecord) -> bool:
+    def common_retryable_errors_log_filter(cls, record: "LogRecord") -> bool:
         """
         Filter out common parsing failures not worth looking into from logs.
 
