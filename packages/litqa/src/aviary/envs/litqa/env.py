@@ -13,8 +13,8 @@ from paperqa.docs import Docs
 from paperqa.settings import Settings
 
 from aviary.core import (
+    CorrectnessEvaluation,
     Messages,
-    MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
     ToolRequestMessage,
 )
@@ -26,13 +26,13 @@ else:
 
 logger = logging.getLogger(__name__)
 
-TEvaluation = TypeVar("TEvaluation", default=MultipleChoiceEvaluation)
+TEvaluation = TypeVar("TEvaluation", default=CorrectnessEvaluation)
 
 DEFAULT_REWARD_MAPPING = {"correct": 1.0, "unsure": 0.1, "incorrect": -1.0}
 
 
 def make_discounted_returns(
-    evaluation: MultipleChoiceEvaluation,
+    evaluation: CorrectnessEvaluation,
     num_steps: int,
     rewards: Mapping[str, float] = DEFAULT_REWARD_MAPPING,
     discount: float = 1.0,
@@ -148,7 +148,7 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
 
         return (
             messages,
-            reward + self._rewards[cast("MultipleChoiceEvaluation", evaluation).value],
+            reward + self._rewards[cast("CorrectnessEvaluation", evaluation).value],
             done,
             truncated,
         )
