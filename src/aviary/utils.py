@@ -5,7 +5,7 @@ import io
 import random
 from collections.abc import Sequence
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast
 
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema as cs
@@ -17,6 +17,14 @@ except ImportError:
 
 if TYPE_CHECKING:
     import numpy as np
+
+# Work around super weird bug where np.random.Generator in quotes
+# is not being respected as a forward reference
+try:
+    SeedTypes: TypeAlias = "int | random.Random | np.random.Generator | None"
+except ImportError:  # NumPy isn't installed
+    SeedTypes = int | random.Random | None  # type: ignore[misc]
+
 
 DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
 LLM_BOOL_EVAL_CONFIG: dict[str, Any] = {
@@ -249,9 +257,7 @@ class RandomAnnotation:
 T = TypeVar("T")
 
 
-def shuffle(
-    value: Sequence[T], seed: "int | random.Random | np.random.Generator | None" = None
-) -> Sequence[T]:
+def shuffle(value: Sequence[T], seed: SeedTypes = None) -> Sequence[T]:
     """Shuffle a non-mutable sequence."""
     # Since most shuffle fn's are in-place, we employ sampling without replacement
     if isinstance(seed, int):
