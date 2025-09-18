@@ -44,7 +44,9 @@ class Question(BaseModel, Generic[TGrade]):
         return await method(answer)
 
 
-class MultipleChoiceEvaluation(StrEnum):
+class CorrectnessEvaluation(StrEnum):
+    """Evaluation for binary correctness, with an unsure failover."""
+
     CORRECT = "correct"
     INCORRECT = "incorrect"
     UNSURE = "unsure"  # May be irrelevant if no unsure option provided
@@ -75,7 +77,7 @@ class MultipleChoiceEvaluation(StrEnum):
 _CAPITAL_A_INDEX = ord("A")
 
 
-class MultipleChoiceQuestion(Question[MultipleChoiceEvaluation]):
+class MultipleChoiceQuestion(Question[CorrectnessEvaluation]):
     model_config = ConfigDict(extra="forbid")
 
     QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "{question_id}: {question}"
@@ -221,32 +223,32 @@ class MultipleChoiceQuestion(Question[MultipleChoiceEvaluation]):
 
     async def extract_then_exact_match(
         self, answer: str
-    ) -> tuple[MultipleChoiceEvaluation, dict[str, str | None]]:
+    ) -> tuple[CorrectnessEvaluation, dict[str, str | None]]:
         """Grade by first extracting an answer, then exact matching it to an option."""
         extracted_answer = await extract_answer(
             proposed_answer=answer, options=self.options
         )
         metadata = {"extracted_answer": extracted_answer}
         if extracted_answer is None:
-            return MultipleChoiceEvaluation.INCORRECT, metadata
+            return CorrectnessEvaluation.INCORRECT, metadata
         # From here, if we don't match either the ideal or the unsure multiple choice
         # options then we declare the answer as incorrect.
         if extracted_answer == self.ideal_answer:
-            return MultipleChoiceEvaluation.CORRECT, metadata
+            return CorrectnessEvaluation.CORRECT, metadata
         if self.unsure_answer and extracted_answer == self.unsure_answer:
-            return MultipleChoiceEvaluation.UNSURE, metadata
-        return MultipleChoiceEvaluation.INCORRECT, metadata
+            return CorrectnessEvaluation.UNSURE, metadata
+        return CorrectnessEvaluation.INCORRECT, metadata
 
     async def grade(
         self,
         answer: str,
         method: (
             Callable[
-                [str], Awaitable[tuple[MultipleChoiceEvaluation, dict[str, str | None]]]
+                [str], Awaitable[tuple[CorrectnessEvaluation, dict[str, str | None]]]
             ]
             | None
         ) = None,
-    ) -> tuple[MultipleChoiceEvaluation, dict[str, str | None]]:
+    ) -> tuple[CorrectnessEvaluation, dict[str, str | None]]:
         return await super().grade(
             answer, method=method or self.extract_then_exact_match
         )

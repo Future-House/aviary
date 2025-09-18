@@ -2,7 +2,7 @@ from collections.abc import Iterable, Sequence
 
 import pytest
 
-from aviary.core import MultipleChoiceEvaluation, MultipleChoiceQuestion
+from aviary.core import CorrectnessEvaluation, MultipleChoiceQuestion
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
@@ -62,63 +62,63 @@ class TestMultipleChoice:
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "the answer is 94107",
-                MultipleChoiceEvaluation.CORRECT,
+                CorrectnessEvaluation.CORRECT,
                 "94107",
                 id="matched-correct-option",
             ),
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "the answer is 14004",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 None,
                 id="didnt-match-and-no-llm-innate-knowledge",
             ),
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "the answer is 94106",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 "94106",
                 id="matched-incorrect-option",
             ),
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "Insufficient information",
-                MultipleChoiceEvaluation.UNSURE,
+                CorrectnessEvaluation.UNSURE,
                 MultipleChoiceQuestion.DEFAULT_UNSURE_OPTION,
                 id="matched-unsure-option",
             ),
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "the answer is 94106 or 94107",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 None,
                 id="matched-several-options",
             ),
             pytest.param(
                 *ZIP_CODE_QUESTION_IDEAL_DISTRACTORS,
                 "",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 None,
                 id="empty-answer1",
             ),
             pytest.param(
                 *MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS,
                 "14",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 None,
                 id="didnt-match-and-llm-has-innate-knowledge",
             ),
             pytest.param(
                 *MEANING_OF_LIFE_QUESTION_IDEAL_DISTRACTORS,
                 "",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 None,
                 id="empty-answer2",
             ),
             pytest.param(
                 *LITQA2_QUESTION_IDEAL_DISTRACTORS,
                 "",
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.INCORRECT,
                 None,
                 id="empty-answer3",
             ),
@@ -130,7 +130,7 @@ class TestMultipleChoice:
         ideal_answer: str,
         distractors: str | list[str],
         actual_answer: str,
-        expected_eval: MultipleChoiceEvaluation,
+        expected_eval: CorrectnessEvaluation,
         expected_extracted_answer: str | None,
     ) -> None:
         """Tests that we can create a multiple choice question and evaluate answers."""
@@ -143,7 +143,7 @@ class TestMultipleChoice:
         self._assert_prompt_is_valid(mc_question, question, ideal_answer, distractors)
         evaluation, metadata = await mc_question.grade(actual_answer)
         assert evaluation == expected_eval
-        if evaluation == MultipleChoiceEvaluation.CORRECT:
+        if evaluation == CorrectnessEvaluation.CORRECT:
             assert metadata["extracted_answer"] == ideal_answer
         assert metadata["extracted_answer"] == expected_extracted_answer
 
@@ -266,22 +266,24 @@ class TestMultipleChoice:
         if unsure_answer is not None:
             assert unsure_answer in mc_question.options
 
+
+class TestCorrectnessEvaluation:
     @pytest.mark.parametrize(
         ("evals", "accuracy_precision"),
         [
             (
                 [
-                    MultipleChoiceEvaluation.CORRECT,
-                    MultipleChoiceEvaluation.CORRECT,
-                    MultipleChoiceEvaluation.CORRECT,
+                    CorrectnessEvaluation.CORRECT,
+                    CorrectnessEvaluation.CORRECT,
+                    CorrectnessEvaluation.CORRECT,
                 ],
                 (1, 1),
             ),
             (["correct", "correct", "unsure"], (2 / 3, 1)),
             (
                 [
-                    MultipleChoiceEvaluation.CORRECT,
-                    MultipleChoiceEvaluation.UNSURE,
+                    CorrectnessEvaluation.CORRECT,
+                    CorrectnessEvaluation.UNSURE,
                     "incorrect",
                 ],
                 (1 / 3, 1 / 2),
@@ -290,10 +292,10 @@ class TestMultipleChoice:
     )
     def test_calculate_accuracy_precision(
         self,
-        evals: Sequence[MultipleChoiceEvaluation],
+        evals: Sequence[CorrectnessEvaluation],
         accuracy_precision: tuple[float, float],
     ) -> None:
         assert (
-            MultipleChoiceEvaluation.calculate_accuracy_precision(evals)
+            CorrectnessEvaluation.calculate_accuracy_precision(evals)
             == accuracy_precision
         )

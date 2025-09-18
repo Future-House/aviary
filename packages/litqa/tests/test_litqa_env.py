@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import pytest
 from aviary.core import (
     TASK_DATASET_REGISTRY,
-    MultipleChoiceEvaluation,
+    CorrectnessEvaluation,
     MultipleChoiceQuestion,
     TaskConfig,
     TaskDataset,
@@ -51,13 +51,13 @@ def fixture_stub_gradable_env(
 @pytest.mark.parametrize(
     ("evaluation", "expected_dreturns"),
     [
-        (MultipleChoiceEvaluation.CORRECT, [0.25, 0.5, 1.0]),
-        (MultipleChoiceEvaluation.INCORRECT, [-0.25, -0.5, -1.0]),
-        (MultipleChoiceEvaluation.UNSURE, [0.025, 0.05, 0.1]),
+        (CorrectnessEvaluation.CORRECT, [0.25, 0.5, 1.0]),
+        (CorrectnessEvaluation.INCORRECT, [-0.25, -0.5, -1.0]),
+        (CorrectnessEvaluation.UNSURE, [0.025, 0.05, 0.1]),
     ],
 )
 def test_make_discounted_returns(
-    evaluation: MultipleChoiceEvaluation, expected_dreturns: list[float]
+    evaluation: CorrectnessEvaluation, expected_dreturns: list[float]
 ) -> None:
     assert (
         make_discounted_returns(evaluation, num_steps=3, discount=0.5)
@@ -283,8 +283,8 @@ class TestTaskDataset:
         correct_reward, incorrect_reward = (
             DEFAULT_REWARD_MAPPING[evaluation.value]
             for evaluation in (
-                MultipleChoiceEvaluation.CORRECT,
-                MultipleChoiceEvaluation.INCORRECT,
+                CorrectnessEvaluation.CORRECT,
+                CorrectnessEvaluation.INCORRECT,
             )
         )
         worst_case_reward_given_correct = (
