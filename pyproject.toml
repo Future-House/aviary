@@ -26,6 +26,7 @@ dependencies = [
     "httpx",
     "httpx-aiohttp",
     "pydantic~=2.0",
+    "typing-extensions; python_version <= '3.12'",  # For TypeVar default
 ]
 description = "Gymnasium framework for training language model agents on constructive tasks"
 dynamic = ["version"]

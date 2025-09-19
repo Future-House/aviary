@@ -2,12 +2,12 @@ import random
 import string
 from ast import literal_eval
 from collections.abc import Awaitable, Callable, Sequence
-from enum import StrEnum
 from typing import Annotated, ClassVar, Generic, Literal, Self, TypeVar
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from aviary.evaluators import CorrectnessEvaluation
 from aviary.utils import RandomAnnotation, extract_answer, shuffle
 
 TGrade = TypeVar("TGrade")
@@ -42,36 +42,6 @@ class Question(BaseModel, Generic[TGrade]):
                 " please specify one."
             )
         return await method(answer)
-
-
-class CorrectnessEvaluation(StrEnum):
-    """Evaluation for binary correctness, with an unsure failover."""
-
-    CORRECT = "correct"
-    INCORRECT = "incorrect"
-    UNSURE = "unsure"  # May be irrelevant if no unsure option provided
-
-    @classmethod
-    def calculate_accuracy_precision(
-        cls, evaluations: Sequence[Self | str]
-    ) -> tuple[float, float]:
-        """
-        Calculate QA-specific accuracy and precision metrics upon evaluations.
-
-        Raises:
-            ZeroDivisionError: if an empty input.
-
-        Returns:
-            Two-tuple of accuracy = (num correct) / (num questions) and
-                precision = (num correct) / ((num questions) - (num unsure)).
-        """  # noqa: DOC502
-        evaluations = [e if isinstance(e, cls) else cls(e) for e in evaluations]
-        num_correct = sum(e == cls.CORRECT for e in evaluations)
-        accuracy = num_correct / len(evaluations)
-        precision = num_correct / sum(
-            e in {cls.CORRECT, cls.INCORRECT} for e in evaluations
-        )
-        return accuracy, precision
 
 
 _CAPITAL_A_INDEX = ord("A")

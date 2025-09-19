@@ -15,9 +15,10 @@ from aviary.env_client import (
     TaskEnvClientState,
     TaskEnvironmentClient,
 )
+from aviary.evaluators import CorrectnessEvaluation
 from aviary.functional import DynamicState, fenv
 from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
-from aviary.questions import CorrectnessEvaluation, MultipleChoiceQuestion
+from aviary.questions import MultipleChoiceQuestion
 from aviary.render import Renderer
 from aviary.tools import (
     INVALID_TOOL_NAME,
