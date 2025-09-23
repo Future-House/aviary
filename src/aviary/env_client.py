@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from typing import Any, Generic, TypeVar, cast
 
 import httpx
+import httpx_aiohttp
 from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
@@ -14,7 +15,9 @@ logger = logging.getLogger(__name__)
 
 # Not sure why, but mypy complains if we use the TEnvState in aviary.env, so redefine here
 TEnvState = TypeVar("TEnvState")
-TClient = TypeVar("TClient", httpx.Client, httpx.AsyncClient)
+TClient = TypeVar(
+    "TClient", httpx.Client, httpx.AsyncClient, httpx_aiohttp.HttpxAiohttpClient
+)
 
 
 class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
@@ -35,7 +38,7 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         self._api_key = api_key
 
     async def _post(self, url: str, json: Mapping[str, Any]) -> httpx.Response:
-        async with httpx.AsyncClient() as client:
+        async with httpx_aiohttp.HttpxAiohttpClient() as client:
             headers = httpx.Headers(self._request_headers)
             if self._api_key:
                 headers["X-API-Key"] = self._api_key
@@ -142,7 +145,7 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
 
     def _get_http_client(
         self,
-        client_class: type[TClient] = httpx.AsyncClient,  # type: ignore[assignment]
+        client_class: type[TClient] = httpx_aiohttp.HttpxAiohttpClient,  # type: ignore[assignment]
     ) -> TClient:
         headers = {}
         if self.api_key:

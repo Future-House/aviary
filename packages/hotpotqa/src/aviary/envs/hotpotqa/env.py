@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 from uuid import UUID
 
 import httpx
+import httpx_aiohttp
 from bs4 import BeautifulSoup
 from datasets import load_dataset
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -424,7 +425,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             response_text = self.wiki_cache[search_entity]
         except KeyError:
             # follow_redirects=True because wikipedia frequently redirects to the correct page
-            async with httpx.AsyncClient(
+            async with httpx_aiohttp.HttpxAiohttpClient(
                 follow_redirects=True, proxy=self.proxy
             ) as client:
                 response = await fetch_with_retry(

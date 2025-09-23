@@ -562,6 +562,9 @@ class TestParallelism:
 def server_async_client() -> AsyncClient:
     dataset = TaskDataset.from_name("dummy")
     server = TaskDatasetServer[DummyEnv](dataset)
+    # Use httpx.AsyncClient over httpx_aiohttp.HttpxAiohttpClient in tests here,
+    # as httpx_aiohttp.AiohttpTransport doesn't support an app argument
+    # as of httpx-aiohttp==0.1.8
     return AsyncClient(transport=ASGITransport(app=server.app), base_url="http://test")
 
 
