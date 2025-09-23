@@ -327,6 +327,7 @@ dependencies = [
     { name = "datasets" },
     { name = "fhaviary" },
     { name = "httpx" },
+    { name = "httpx-aiohttp" },
     { name = "pydantic" },
     { name = "tenacity" },
 ]
@@ -337,6 +338,7 @@ requires-dist = [
     { name = "datasets", specifier = ">=2.15,<4" },
     { name = "fhaviary", editable = "." },
     { name = "httpx" },
+    { name = "httpx-aiohttp" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tenacity" },
 ]
@@ -985,6 +987,7 @@ source = { editable = "." }
 dependencies = [
     { name = "docstring-parser" },
     { name = "httpx" },
+    { name = "httpx-aiohttp" },
     { name = "pydantic" },
 ]
 
@@ -1098,6 +1101,7 @@ requires-dist = [
     { name = "fhaviary", extras = ["image", "llm", "server", "typing", "xml"], marker = "extra == 'dev'", editable = "." },
     { name = "fhlmi", marker = "extra == 'llm'" },
     { name = "httpx" },
+    { name = "httpx-aiohttp" },
     { name = "ipython", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "litellm", marker = "extra == 'dev'", specifier = ">=1.65.5,<1.71" },
@@ -1369,6 +1373,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "httpx-aiohttp"
+version = "0.1.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/37/19/ae2d2bf1f57fdd23c8ad83675599fb5c407fa13bc20e90f00cffa4dea3aa/httpx_aiohttp-0.1.8.tar.gz", hash = "sha256:756c5e74cdb568c3248ba63fe82bfe8bbe64b928728720f7eaac64b3cf46f308", size = 25401, upload-time = "2025-07-04T10:40:32.329Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/7a/514c484b88cc4ebbcd2e27e92b86019c0c5bb920582f5fbb10b7e6c78574/httpx_aiohttp-0.1.8-py3-none-any.whl", hash = "sha256:b7bd958d1331f3759a38a0ba22ad29832cb63ca69498c17735228055bf78fa7e", size = 6180, upload-time = "2025-07-04T10:40:31.522Z" },
 ]
 
 [[package]]
