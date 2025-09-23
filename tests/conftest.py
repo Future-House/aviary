@@ -1,8 +1,10 @@
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs, urlencode, urlparse
 
+import httpx_aiohttp
+import litellm.llms.custom_httpx.aiohttp_transport
 import pytest
-import vcr.request
 
 from . import CASSETTES_DIR
 
@@ -56,3 +58,29 @@ def fixture_vcr_config() -> dict[str, Any]:
         "allow_playback_repeats": True,
         "cassette_library_dir": str(CASSETTES_DIR),
     }
+
+
+class PreReadCompatibleAiohttpResponseStream(
+    httpx_aiohttp.transport.AiohttpResponseStream
+):
+    """aiohttp-backed response stream that works if the response was pre-read."""
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        with httpx_aiohttp.transport.map_aiohttp_exceptions():
+            if self._aiohttp_response._body is not None:
+                # Happens if some intermediary called `await _aiohttp_response.read()`
+                # TODO: take into account chunk size
+                yield self._aiohttp_response._body
+            else:
+                async for chunk in self._aiohttp_response.content.iter_chunked(
+                    self.CHUNK_SIZE
+                ):
+                    yield chunk
+
+
+# Permanently patch the original response stream,
+# to work around https://github.com/karpetrosyan/httpx-aiohttp/issues/23
+# and https://github.com/BerriAI/litellm/issues/11724
+httpx_aiohttp.transport.AiohttpResponseStream = (  # type: ignore[misc]
+    litellm.llms.custom_httpx.aiohttp_transport.AiohttpResponseStream  # type: ignore[misc]
+) = PreReadCompatibleAiohttpResponseStream  # type: ignore[assignment]
