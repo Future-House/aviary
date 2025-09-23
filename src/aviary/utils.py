@@ -93,7 +93,7 @@ class EvalAnswerMode(StrEnum):
         return {}
 
 
-def partial_format(value: str, **formats: dict[str, Any]) -> str:
+def partial_format(value: str, **formats) -> str:
     """Partially format a string given a variable amount of formats."""
     for template_key, template_value in formats.items():
         with contextlib.suppress(KeyError):
