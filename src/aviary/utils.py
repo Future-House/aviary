@@ -7,7 +7,18 @@ import string
 from ast import literal_eval
 from collections.abc import Sequence
 from enum import StrEnum
-from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, Self, TypeVar, cast
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    ClassVar,
+    Literal,
+    Self,
+    TypeAlias,
+    TypeVar,
+    cast,
+    overload,
+)
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, GetCoreSchemaHandler, model_validator
@@ -20,6 +31,13 @@ except ImportError:
 
 if TYPE_CHECKING:
     import numpy as np
+
+# Work around super weird bug where np.random.Generator in quotes
+# is not being respected as a forward reference
+try:
+    SeedTypes: TypeAlias = "int | random.Random | np.random.Generator | None"
+except ImportError:  # NumPy isn't installed
+    SeedTypes = int | random.Random | None  # type: ignore[misc]
 
 
 DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
@@ -75,7 +93,7 @@ class EvalAnswerMode(StrEnum):
         return {}
 
 
-def partial_format(value: str, **formats: dict[str, Any]) -> str:
+def partial_format(value: str, **formats) -> str:
     """Partially format a string given a variable amount of formats."""
     for template_key, template_value in formats.items():
         with contextlib.suppress(KeyError):
@@ -253,9 +271,15 @@ class RandomAnnotation:
 T = TypeVar("T")
 
 
-def shuffle(
-    value: Sequence[T], seed: "int | random.Random | np.random.Generator | None" = None
-) -> Sequence[T]:
+@overload
+def shuffle(value: "np.ndarray", seed: SeedTypes = None) -> "np.ndarray": ...
+
+
+@overload
+def shuffle(value: Sequence[T], seed: SeedTypes = None) -> Sequence[T]: ...
+
+
+def shuffle(value, seed: SeedTypes = None):
     """Shuffle a non-mutable sequence."""
     # Since most shuffle fn's are in-place, we employ sampling without replacement
     if isinstance(seed, int):
@@ -265,7 +289,7 @@ def shuffle(
     if seed is None:
         return random.sample(value, k=len(value))
     # Numpy RNG. Note this will have a type error for sequences like str, but oh well
-    return seed.choice(value, size=len(value), replace=False)  # type: ignore[arg-type,return-value]
+    return seed.choice(value, size=len(value), replace=False)
 
 
 _CAPITAL_A_INDEX = ord("A")
