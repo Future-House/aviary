@@ -22,6 +22,7 @@ dependencies = [
     "datasets>=2.15,<4",  # Lower pin for https://github.com/huggingface/datasets/pull/6404, upper pin for https://huggingface.co/datasets/hotpotqa/hotpot_qa/discussions/8
     "fhaviary",
     "httpx",
+    "httpx-aiohttp",
     "pydantic~=2.0",
     "tenacity",
 ]
