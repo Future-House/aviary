@@ -1,3 +1,4 @@
+import json
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
@@ -9,7 +10,13 @@ from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
 from aviary.message import Message
-from aviary.tools import MessagesAdapter, Tool, ToolRequestMessage, ToolsAdapter
+from aviary.tools import (
+    MessagesAdapter,
+    Tool,
+    ToolRequestMessage,
+    ToolResponseMessage,
+    ToolsAdapter,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +36,27 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         request_headers: httpx._types.HeaderTypes | None = None,
         request_timeout: float | None = None,
         api_key: str | None = None,
+        catch_http_errors: bool = False,
     ):
+        """Environment client.
+
+        Args:
+            reset_endpoint_url: The URL of the reset endpoint.
+            step_endpoint_url: The URL of the step endpoint.
+            request_params: The query parameters to send with the request.
+            request_headers: The headers to send with the request.
+            request_timeout: The timeout for the request. Defaults to None, which means no timeout.
+            api_key: The API key to send with the request. Defaults to None, which means no API key.
+            catch_http_errors: Whether to catch HTTP errors (either status or bad JSON) and return
+                empty/placeholder messages instead of raising an error.
+        """
         self._reset_request_url = reset_endpoint_url
         self._step_request_url = step_endpoint_url
         self._request_params = request_params
         self._request_headers = request_headers
         self._request_timeout = request_timeout
         self._api_key = api_key
+        self._catch_http_errors = catch_http_errors
 
     async def _post(self, url: str, json: Mapping[str, Any]) -> httpx.Response:
         async with httpx_aiohttp.HttpxAiohttpClient() as client:
@@ -56,7 +77,13 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         response = await self._post(
             self._reset_request_url, json=self._make_post_json(self.state)
         )
-        msgs, tools = response.json()
+        try:
+            response.raise_for_status()
+            msgs, tools = response.json()
+        except (httpx.HTTPStatusError, json.JSONDecodeError):
+            if self._catch_http_errors:
+                return [], []
+            raise
         return (
             MessagesAdapter.validate_python(msgs),
             ToolsAdapter.validate_python(tools),
@@ -70,7 +97,17 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
             json=self._make_post_json(self.state)
             | {"action": action.model_dump(mode="json")},
         )
-        messages, reward, done, truncated = response.json()
+        try:
+            response.raise_for_status()
+            messages, reward, done, truncated = response.json()
+        except (httpx.HTTPStatusError, json.JSONDecodeError) as e:
+            if self._catch_http_errors:
+                messages = [
+                    ToolResponseMessage.from_call(tool_call, content=str(e))
+                    for tool_call in action.tool_calls
+                ]
+                return messages, 0.0, True, False
+            raise
         return MessagesAdapter.validate_python(messages), reward, done, truncated
 
     @abstractmethod
