@@ -170,10 +170,12 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
         # Note that None means no timeout, which is not a good default
         request_timeout: float | None = 300.0,
         api_key: str | None = None,
+        catch_http_errors: bool = False,
     ):
         self.server_url = server_url
         self.request_timeout = request_timeout
         self.api_key = api_key
+        self.catch_http_errors = catch_http_errors
 
         with self._get_http_client(httpx.Client) as http_client:
             response = http_client.get("/info")
@@ -203,6 +205,7 @@ class TaskDatasetClient(TaskDataset[TaskEnvironmentClient]):
             base_url=self.server_url,
             request_timeout=self.request_timeout,
             api_key=self.api_key,
+            catch_http_errors=self.catch_http_errors,
         )
 
     def __len__(self) -> int:
