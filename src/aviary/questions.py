@@ -8,7 +8,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from aviary.utils import RandomAnnotation, extract_answer, shuffle
+from aviary.utils import RandomAnnotation, extract_answer, partial_format, shuffle
 
 TGrade = TypeVar("TGrade")
 
@@ -117,6 +117,13 @@ class MultipleChoiceQuestion(Question[CorrectnessEvaluation]):
             " making the prompt be open answer."
         ),
     )
+    prompt_template: str | None = Field(
+        default=None,
+        description=(
+            "Optional manual prompt template. If left unspecified,"
+            " the class variable default prompt template will be used."
+        ),
+    )
     options: Sequence[str] = Field(description="All multiple choice options.")
     ideal_answer: str = Field(
         description=(
@@ -200,8 +207,11 @@ class MultipleChoiceQuestion(Question[CorrectnessEvaluation]):
             ),
         }
         if self.prompt_without_options:
-            return self.QUESTION_PROMPT_TEMPLATE.format(**template_vars)
-        return self.MC_QUESTION_PROMPT_TEMPLATE.format(
+            return partial_format(
+                self.prompt_template or self.QUESTION_PROMPT_TEMPLATE, **template_vars
+            )
+        return partial_format(
+            self.prompt_template or self.MC_QUESTION_PROMPT_TEMPLATE,
             options="\n".join([
                 f"{_CAPITAL_A_INDEX + i:c}) {o}" for i, o in enumerate(self.options)
             ]),
