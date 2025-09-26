@@ -33,6 +33,9 @@ CATCHABLE_REQUEST_EXCEPTIONS = (
 )
 
 
+FAILED_RESET_MESSAGE = "Environment.reset() failed: {error}"
+
+
 class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     def __init__(
         self,
@@ -86,9 +89,9 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
             )
             response.raise_for_status()
             msgs, tools = response.json()
-        except CATCHABLE_REQUEST_EXCEPTIONS:
+        except CATCHABLE_REQUEST_EXCEPTIONS as e:
             if self._catch_http_errors:
-                return [], []
+                return [Message(content=FAILED_RESET_MESSAGE.format(error=e))], []
             raise
         return (
             MessagesAdapter.validate_python(msgs),
@@ -109,7 +112,7 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
         except CATCHABLE_REQUEST_EXCEPTIONS as e:
             if self._catch_http_errors:
                 messages = [
-                    ToolResponseMessage.from_call(tool_call, content=str(e))
+                    ToolResponseMessage.from_call(tool_call, content=repr(e))
                     for tool_call in action.tool_calls
                 ]
                 return messages, 0.0, True, False
