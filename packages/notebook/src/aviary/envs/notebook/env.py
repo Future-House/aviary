@@ -350,10 +350,12 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
             # Have to do this since wildcard expansion doesn't work
             if self.use_tmp_work_dir:
                 await self._exec_cmd(["sh", "-c", "rm -r /workspace/*"])
-            await self.state.close()
-            await self.state._docker_client.close()
+            if hasattr(self, "state"):
+                await self.state.close()
+                await self.state._docker_client.close()
         else:
-            await self.state.close()
+            if hasattr(self, "state"):
+                await self.state.close()
             self._cleanup_tmp_work_dir()
 
     def _cleanup_tmp_work_dir(self) -> None:
