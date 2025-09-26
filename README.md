@@ -32,10 +32,8 @@ See the following [tutorial][2] for an example of how to run an LDP language age
 
 ## What's New?
 
-- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb)
-  notebook on running an LDP agent in an Aviary environment!
-- The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)!
-  Further updates forthcoming!
+- We have a new environment to run Jupyter notebooks at
+  [packages/notebook](packages/notebook).
 
 ## Overview
 
