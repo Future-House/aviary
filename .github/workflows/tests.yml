@@ -41,7 +41,9 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - run: uv python pin ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
+      - name: Unset UV_PYTHON for BAIPP # SEE: https://github.com/hynek/build-and-inspect-python-package/issues/180
+        run: echo "UV_PYTHON=" >> "$GITHUB_ENV"
       - name: Check fhaviary build
         id: build-fhaviary
         if: matrix.python-version == '3.11'
@@ -91,13 +93,18 @@ jobs:
       - name: Clean up aviary.lfrqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         if: matrix.python-version == '3.11'
         run: rm -r ${{ steps.build-lfrqa.outputs.dist }}
-      - run: uv sync --python-preference=only-managed
+      - name: Reset UV_PYTHON after BAIPP # SEE: https://github.com/hynek/build-and-inspect-python-package/issues/180
+        run: echo "UV_PYTHON=${{ matrix.python-version }}" >> "$GITHUB_ENV"
+      - run: uv sync
       - run: uv run refurb .
       - run: uv run pylint src packages
       - if: matrix.python-version == '3.11' # Only need to run this on one version
         uses: suzuki-shunsuke/github-action-renovate-config-validator@v1.1.1
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.13]
     steps:
       - uses: actions/checkout@v5
         with:
@@ -105,6 +112,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+          python-version: ${{ matrix.python-version }}
       - run: uv sync
       - name: Login to Hugging Face Hub
         run: uv run --no-project hf auth login --token $HUGGINGFACE_HUB_ACCESS_TOKEN
