@@ -26,6 +26,10 @@ TClient = TypeVar(
     "TClient", httpx.Client, httpx.AsyncClient, httpx_aiohttp.HttpxAiohttpClient
 )
 
+# Sometimes the environment runner code gets
+# killed by any one environment in a job failing
+# So this can be used to ensure one remote environment's 
+# failure doesn't kill an entire job
 CATCHABLE_REQUEST_EXCEPTIONS = (
     httpx.TimeoutException,
     httpx.HTTPStatusError,
