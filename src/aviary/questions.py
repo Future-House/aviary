@@ -17,8 +17,20 @@ class Question(BaseModel, Generic[TGrade]):
     """
     Base class for question variants.
 
-    All questions should be JSON serializable.
+    All questions should be JSON serializable via `.model_dump(mode="json")`.
     """
+
+    QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "{question_id}: {question}"
+
+    question_id: str | UUID = Field(
+        default="Q", description="Optional question identifier used in the prompt."
+    )
+    question: str = Field(
+        description=(
+            "Question to answer, without modifiers such as unsure instructions"
+            " or multiple-choice options."
+        )
+    )
 
     async def grade(
         self,
@@ -50,9 +62,8 @@ _CAPITAL_A_INDEX = ord("A")
 class MultipleChoiceQuestion(Question[CorrectnessEvaluation]):
     model_config = ConfigDict(extra="forbid")
 
-    QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "{question_id}: {question}"
     MC_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = "\n\n".join((
-        QUESTION_PROMPT_TEMPLATE,
+        Question.QUESTION_PROMPT_TEMPLATE,
         "Options:\n{options}",
     ))
     DEFAULT_UNSURE_OPTION: ClassVar[str] = (
@@ -60,14 +71,6 @@ class MultipleChoiceQuestion(Question[CorrectnessEvaluation]):
     )
     SEED_USING_QUESTION: ClassVar[Literal["SEED_USING_QUESTION"]] = (
         "SEED_USING_QUESTION"
-    )
-
-    question: str = Field(
-        description="Question to answer (without multiple choice options)."
-    )
-
-    question_id: str | UUID = Field(
-        default="Q", description="Question identifier used in the prompt."
     )
 
     prompt_without_id: bool = Field(
