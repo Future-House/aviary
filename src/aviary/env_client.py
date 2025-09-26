@@ -27,7 +27,7 @@ TClient = TypeVar(
 )
 
 CATCHABLE_REQUEST_EXCEPTIONS = (
-    httpx.Timeout,
+    httpx.TimeoutException,
     httpx.HTTPStatusError,
     json.JSONDecodeError,
 )
