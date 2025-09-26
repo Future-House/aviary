@@ -1,9 +1,8 @@
 from collections.abc import Awaitable, Callable
 
+from aviary.core import TASK_DATASET_REGISTRY, TaskDataset
 from lmi import CommonLLMNames, LLMModel
 from paperqa import Docs, Settings
-
-from aviary.core import TASK_DATASET_REGISTRY, TaskDataset
 
 from .env import LFRQAPairwiseEvalEnv, LFRQAQuestion
 

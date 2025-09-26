@@ -10,9 +10,8 @@ from typing import TYPE_CHECKING, assert_never
 import litellm
 import nbformat
 from aiodocker.containers import DockerContainer
-from PIL import Image
-
 from aviary.core import Message
+from PIL import Image
 
 from . import config as cfg
 

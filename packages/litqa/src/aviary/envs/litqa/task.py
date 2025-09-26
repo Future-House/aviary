@@ -6,6 +6,16 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Any, assert_never, cast
 from uuid import UUID
 
+from aviary.core import (
+    DEFAULT_EVAL_MODEL_NAME,
+    TASK_DATASET_REGISTRY,
+    Environment,
+    Frame,
+    MultipleChoiceQuestion,
+    TaskDataset,
+    ToolResponseMessage,
+)
+from aviary.env import ENV_REGISTRY
 from ldp.alg import (
     Callback,
     ComputeTrajectoryMetricsMixin,
@@ -18,16 +28,6 @@ from paperqa.docs import Docs
 from paperqa.settings import Settings
 from paperqa.types import DocDetails, PQASession
 
-from aviary.core import (
-    DEFAULT_EVAL_MODEL_NAME,
-    TASK_DATASET_REGISTRY,
-    Environment,
-    Frame,
-    MultipleChoiceQuestion,
-    TaskDataset,
-    ToolResponseMessage,
-)
-from aviary.env import ENV_REGISTRY
 from aviary.envs.litqa import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
@@ -342,7 +342,7 @@ class LitQAv2TaskSplit(StrEnum):
             return 1
         if self == self.TEST:
             return 2
-        assert_never(self)  # type: ignore[arg-type]
+        assert_never(self)
 
 
 class LitQAv2TaskDataset(LitQATaskDataset):

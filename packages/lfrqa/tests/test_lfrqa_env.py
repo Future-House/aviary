@@ -2,8 +2,8 @@ import pathlib
 
 import pandas as pd
 import pytest
-
 from aviary.core import Environment
+
 from aviary.envs.lfrqa.env import LFRQAPairwiseEvalEnv, LFRQAQuestion
 from aviary.envs.lfrqa.task import LFRQATaskDataset
 
