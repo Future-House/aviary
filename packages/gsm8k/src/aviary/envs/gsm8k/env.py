@@ -8,8 +8,6 @@ from logging import getLogger
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import datasets
-from pydantic import BaseModel, ConfigDict
-
 from aviary.core import (
     Environment,
     Frame,
@@ -20,6 +18,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
+from pydantic import BaseModel, ConfigDict
 
 if TYPE_CHECKING:
     import pandas as pd

@@ -9,6 +9,7 @@ import tempfile
 
 import nbformat.v4 as nbf
 import pytest
+from aviary.message import EnvStateMessage
 
 from aviary.envs.notebook import NBEnvironment
 from aviary.envs.notebook.config import NB_ENVIRONMENT_DOCKER_IMAGE
@@ -18,7 +19,6 @@ from aviary.envs.notebook.utils import (
     process_cell_output,
     view_notebook,
 )
-from aviary.message import EnvStateMessage
 
 logger = logging.getLogger(__name__)
 

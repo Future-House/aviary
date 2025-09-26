@@ -7,6 +7,15 @@ from unittest.mock import patch
 from uuid import UUID, uuid4
 
 import pytest
+from aviary.core import (
+    TASK_DATASET_REGISTRY,
+    MultipleChoiceEvaluation,
+    MultipleChoiceQuestion,
+    TaskConfig,
+    TaskDataset,
+    ToolCall,
+    ToolRequestMessage,
+)
 from ldp.agent import SimpleAgent
 from ldp.alg.callbacks import Callback, MeanMetricsCallback, StoreTrajectoriesCallback
 from ldp.alg.runners import Evaluator, EvaluatorConfig
@@ -17,15 +26,6 @@ from paperqa.agents.tools import Complete, GatherEvidence, GenerateAnswer
 from paperqa.prompts import CANNOT_ANSWER_PHRASE
 from pytest_subtests import SubTests
 
-from aviary.core import (
-    TASK_DATASET_REGISTRY,
-    MultipleChoiceEvaluation,
-    MultipleChoiceQuestion,
-    TaskConfig,
-    TaskDataset,
-    ToolCall,
-    ToolRequestMessage,
-)
 from aviary.envs.litqa import (
     DEFAULT_REWARD_MAPPING,
     GradablePaperQAEnvironment,
