@@ -50,7 +50,7 @@ dev = [
     "litellm>=1.71",  # Lower pin for aiohttp transport adoption
     "mypy>=1.8",  # Pin for mutable-override
     "numpy>=1",  # Pin to keep recent
-    "pre-commit>=3.4",  # Pin to keep recent
+    "prek",
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
     "pylint>=3.3.3",  # Pin for Python>=3.13.1's 'collections.abc' import error
@@ -111,15 +111,6 @@ preview = true
 check-filenames = true
 check-hidden = true
 ignore-words-list = "astroid,ser"
-
-[tool.markdownlint]
-no-inline-html = false
-
-[tool.markdownlint.line-length]
-code_block_line_length = 88  # Match ruff line-length
-line_length = 120  # Match ruff max-doc-length
-stern = true
-tables = false
 
 [tool.mypy]
 # Type-checks the interior of functions without type annotations.
@@ -222,8 +213,9 @@ disable = [
     "arguments-differ",  # Ops intentionally differ arguments
     "attribute-defined-outside-init",  # Disagrees with reset pattern
     "bare-except",  # Rely on ruff E722 for this
-    "broad-exception-caught",  # Don't care to enforce this
+    "broad-exception-caught",  # Rely on ruff BLE001 for this
     "broad-exception-raised",  # Rely on ruff TRY002 for this
+    "consider-using-in",  # Rely on ruff PLR1714 for this
     "cyclic-import",  # Let Python blow up
     "dangerous-default-value",  # Rely on ruff W0102 for this
     "duplicate-code",  # Too aggressive
@@ -258,7 +250,7 @@ disable = [
     "too-many-instance-attributes",  # Don't care to enforce this
     "too-many-lines",  # Don't care to enforce this
     "too-many-locals",  # Rely on ruff PLR0914 for this
-    "too-many-positional-arguments",  # Don't care to enforce this
+    "too-many-positional-arguments",  # Rely on ruff PLR0917 for this
     "too-many-public-methods",  # Rely on ruff PLR0904 for this
     "too-many-return-statements",  # Rely on ruff PLR0911 for this
     "too-many-statements",  # Rely on ruff PLR0915 for this
@@ -288,6 +280,16 @@ score = false
 # Minimum lines number of a similarity.
 min-similarity-lines = 12
 
+[tool.pymarkdown]
+plugins.line-length.code_block_line_length = 88  # Match ruff line-length
+plugins.line-length.enabled = true
+plugins.line-length.line_length = 120  # Match ruff max-doc-length
+plugins.line-length.stern = true
+plugins.line-length.tables = false
+plugins.no-duplicate-heading.siblings_only = true  # GitHub appends -X for duplicated headings
+plugins.no-emphasis-as-heading.enabled = false
+plugins.no-inline-html.enabled = false
+
 [tool.pytest.ini_options]
 # Add the specified OPTS to the set of command line arguments as if they had been
 # specified by the user.
@@ -310,6 +312,7 @@ enable_all = true
 ignore = [
     "FURB101",  # Rely on ruff FURB101 for this
     "FURB103",  # Rely on ruff FURB103 for this
+    "FURB108",  # Rely on ruff PLR1714 for this
     "FURB141",  # Rely on ruff PTH110 for this
     "FURB144",  # Rely on ruff PTH107 for this
     "FURB146",  # Rely on ruff PTH113 for this
@@ -333,15 +336,11 @@ preview = true
 [tool.ruff.lint]
 explicit-preview-rules = true
 extend-select = [
-    "AIR002",
-    "AIR301",
-    "AIR302",
-    "ASYNC116",
+    "ASYNC212",
+    "ASYNC250",
     "B901",
     "B903",
     "B909",
-    "B911",
-    "C420",
     "CPY001",
     "DOC201",
     "DOC202",
@@ -349,7 +348,6 @@ extend-select = [
     "DOC403",
     "DOC501",
     "DOC502",
-    "DTZ901",
     "E111",
     "E112",
     "E113",
@@ -391,16 +389,12 @@ extend-select = [
     "E305",
     "E306",
     "E502",
-    "FAST003",
     "FURB101",
     "FURB103",
     "FURB110",
     "FURB113",
-    "FURB116",
     "FURB118",
-    "FURB122",
     "FURB131",
-    "FURB132",
     "FURB140",
     "FURB142",
     "FURB145",
@@ -408,19 +402,13 @@ extend-select = [
     "FURB152",
     "FURB154",
     "FURB156",
-    "FURB157",
-    "FURB162",
     "FURB164",
-    "FURB166",
     "FURB171",
     "FURB180",
     "FURB189",
     "FURB192",
     "LOG004",
-    "LOG014",
-    "LOG015",
-    "PLC0415",
-    "PLC1802",
+    "PLC0207",
     "PLC1901",
     "PLC2701",
     "PLC2801",
@@ -434,60 +422,34 @@ extend-select = [
     "PLR0916",
     "PLR0917",
     "PLR1702",
-    "PLR1733",
     "PLR6104",
     "PLR6201",
     "PLR6301",
     "PLW0108",
-    "PLW0177",
     "PLW0244",
-    "PLW1507",
     "PLW1514",
-    "PLW1641",
     "PLW3201",
-    "PT028",
     "PT029",
-    "PT030",
-    "PT031",
-    "PTH208",
-    "PTH210",
-    "PYI059",
-    "PYI061",
     "RUF027",
-    "RUF028",
     "RUF029",
     "RUF031",
     "RUF036",
     "RUF037",
     "RUF038",
     "RUF039",
-    "RUF040",
-    "RUF041",
-    "RUF043",
     "RUF045",
-    "RUF046",
     "RUF047",
-    "RUF048",
-    "RUF049",
-    "RUF051",
     "RUF052",
-    "RUF053",
     "RUF054",
     "RUF055",
     "RUF056",
-    "RUF057",
-    "RUF058",
-    "RUF059",
-    "SIM905",
-    "TC006",
-    "TC007",
+    "RUF060",
+    "RUF061",
+    "RUF063",
+    "RUF064",
+    "RUF102",
     "TC008",
     "UP042",
-    "UP044",
-    "UP045",
-    "UP046",
-    "UP047",
-    "UP049",
     "W391",
 ]
 external = [
@@ -565,6 +527,8 @@ unfixable = [
     "ERA001",  # While debugging, temporarily commenting code can be useful
     "F401",  # While debugging, unused imports can be useful
     "F841",  # While debugging, unused locals can be useful
+    "PIE794",  # Autoremoving the latter of two fields is dangerous
+    "RUF059",  # While debugging, unused locals can be useful
     "TC004",  # While debugging, it can be nice to keep TYPE_CHECKING in-tact
 ]
 

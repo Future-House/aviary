@@ -1,5 +1,7 @@
 # Aviary
 
+<!-- pyml disable-num-lines 10 line-length -->
+
 [![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Future-House/aviary)
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
@@ -32,10 +34,8 @@ See the following [tutorial][2] for an example of how to run an LDP language age
 
 ## What's New?
 
-- Check out our new [Tutorial](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb)
-  notebook on running an LDP agent in an Aviary environment!
-- The Aviary paper has been posted to [arXiv](https://arxiv.org/abs/2412.21154)!
-  Further updates forthcoming!
+- We have a new environment to run Jupyter notebooks at
+  [packages/notebook](packages/notebook).
 
 ## Overview
 
@@ -73,10 +73,13 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Tutorial Notebooks
 
-1. [Building a Custom Environment in Aviary](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb)
-2. [Building a GSM8K Environment in Aviary](https://github.com/Future-House/aviary/blob/main/tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb)
-3. [Creating Language Agents to Interact with Aviary Environments](https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb)
-4. [Evaluate a Llama Agent on GSM8K](https://github.com/Future-House/ldp/blob/main/tutorials/evaluating_a_llama_agent.ipynb)
+1. [Building a Custom Environment in Aviary](tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb)
+2. [Building a GSM8K Environment in Aviary](tutorials/Building%20a%20GSM8k%20Environment%20in%20Aviary.ipynb)
+3. [Creating Language Agents to Interact with Aviary Environments][4]
+4. [Evaluate a Llama Agent on GSM8K][5]
+
+[4]: https://github.com/Future-House/ldp/blob/main/tutorials/creating_a_language_agent.ipynb
+[5]: https://github.com/Future-House/ldp/blob/main/tutorials/evaluating_a_llama_agent.ipynb
 
 ## Defining a Custom Environment
 

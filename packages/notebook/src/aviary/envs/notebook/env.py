@@ -11,13 +11,12 @@ from typing import Any, ClassVar, Generic, Self, TypeAlias, cast
 
 import aiodocker
 import nbformat
+from aviary.core import Environment, Messages, Tool, ToolRequestMessage
+from aviary.message import EnvStateMessage
 from jupyter_client.manager import AsyncKernelManager
 from nbformat import NotebookNode
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field, PrivateAttr, model_validator
-
-from aviary.core import Environment, Messages, Tool, ToolRequestMessage
-from aviary.message import EnvStateMessage
 
 from . import config as cfg
 from . import utils

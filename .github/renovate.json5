@@ -24,5 +24,10 @@
       matchUpdateTypes: ["minor", "patch"],
       automerge: true,
     },
+    {
+      // Disable here since we don't have test coverage
+      matchFileNames: ["packages/notebook/docker/requirements.txt"],
+      enabled: false,
+    },
   ],
 }

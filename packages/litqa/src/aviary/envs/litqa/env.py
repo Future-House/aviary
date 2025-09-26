@@ -5,19 +5,18 @@ from copy import deepcopy
 from typing import Any, Generic, Self, cast
 from uuid import UUID
 
-from ldp.utils import discounted_returns
-from lmi import EmbeddingModel, LiteLLMModel
-from paperqa.agents.env import POPULATE_FROM_SETTINGS, PaperQAEnvironment
-from paperqa.agents.search import SearchIndex, maybe_get_manifest
-from paperqa.docs import Docs
-from paperqa.settings import Settings
-
 from aviary.core import (
     Messages,
     MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
     ToolRequestMessage,
 )
+from ldp.utils import discounted_returns
+from lmi import EmbeddingModel, LiteLLMModel
+from paperqa.agents.env import POPULATE_FROM_SETTINGS, PaperQAEnvironment
+from paperqa.agents.search import SearchIndex, maybe_get_manifest
+from paperqa.docs import Docs
+from paperqa.settings import Settings
 
 if sys.version_info >= (3, 13):
     from typing import TypeVar

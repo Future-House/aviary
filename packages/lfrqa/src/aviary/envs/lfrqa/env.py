@@ -10,10 +10,6 @@ from collections.abc import Mapping
 from enum import StrEnum, unique
 from typing import Any, assert_never
 
-from lmi import CommonLLMNames, LiteLLMModel, LLMModel
-from paperqa.utils import strip_citations
-from pydantic import Field, model_validator
-
 from aviary.core import (
     Message,
     Messages,
@@ -22,6 +18,9 @@ from aviary.core import (
 )
 from aviary.env import ENV_REGISTRY
 from aviary.envs.litqa import GradablePaperQAEnvironment
+from lmi import CommonLLMNames, LiteLLMModel, LLMModel
+from paperqa.utils import strip_citations
+from pydantic import Field, model_validator
 
 logger = logging.getLogger(__name__)
 

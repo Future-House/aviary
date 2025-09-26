@@ -3,11 +3,11 @@ import re
 from uuid import UUID
 
 import pytest
-
 from aviary.core import Environment, TaskDataset
+from aviary.utils import EvalAnswerMode
+
 from aviary.envs.hotpotqa import HotPotQAEnv
 from aviary.envs.hotpotqa.env import HotPotQADataset
-from aviary.utils import EvalAnswerMode
 
 
 def test_env_construction() -> None:
