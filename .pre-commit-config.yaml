@@ -3,10 +3,9 @@ default_language_version:
   python: python3
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
-      - id: check-byte-order-marker
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
@@ -16,16 +15,17 @@ repos:
       - id: debug-statements
       - id: detect-private-key
       - id: end-of-file-fixer
+      - id: fix-byte-order-marker
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.13.2
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.3
+    rev: v3.6.2
     hooks:
       - id: prettier
   - repo: https://github.com/Yelp/detect-secrets
@@ -49,7 +49,7 @@ repos:
         exclude_types: [jupyter]
         exclude: '.*\.b64$|litqa/tests/stub_data'
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.24.2
+    rev: v0.24.3
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/jsh9/markdown-toc-creator
@@ -57,7 +57,7 @@ repos:
     hooks:
       - id: markdown-toc-creator
   - repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.19.1
+    rev: 1.20.0
     hooks:
       - id: blacken-docs
   - repo: https://github.com/srstevenson/nb-clean
@@ -70,11 +70,11 @@ repos:
     hooks:
       - id: pymarkdown
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.04.07
+    rev: 2025.09.26
     hooks:
       - id: validate-pyproject
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.13
+    rev: 0.8.22
     hooks:
       - id: uv-lock
   - repo: local # Use local to ensure we don't pull aviary from PyPI
