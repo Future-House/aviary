@@ -26,6 +26,12 @@ TClient = TypeVar(
     "TClient", httpx.Client, httpx.AsyncClient, httpx_aiohttp.HttpxAiohttpClient
 )
 
+CATCHABLE_REQUEST_EXCEPTIONS = (
+    httpx.Timeout,
+    httpx.HTTPStatusError,
+    json.JSONDecodeError,
+)
+
 
 class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     def __init__(
@@ -74,13 +80,13 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
             return response
 
     async def reset(self) -> tuple[list[Message], list[Tool]]:
-        response = await self._post(
-            self._reset_request_url, json=self._make_post_json(self.state)
-        )
         try:
+            response = await self._post(
+                self._reset_request_url, json=self._make_post_json(self.state)
+            )
             response.raise_for_status()
             msgs, tools = response.json()
-        except (httpx.HTTPStatusError, json.JSONDecodeError):
+        except CATCHABLE_REQUEST_EXCEPTIONS:
             if self._catch_http_errors:
                 return [], []
             raise
@@ -92,15 +98,15 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[list[Message], float, bool, bool]:
-        response = await self._post(
-            self._step_request_url,
-            json=self._make_post_json(self.state)
-            | {"action": action.model_dump(mode="json")},
-        )
         try:
+            response = await self._post(
+                self._step_request_url,
+                json=self._make_post_json(self.state)
+                | {"action": action.model_dump(mode="json")},
+            )
             response.raise_for_status()
             messages, reward, done, truncated = response.json()
-        except (httpx.HTTPStatusError, json.JSONDecodeError) as e:
+        except CATCHABLE_REQUEST_EXCEPTIONS as e:
             if self._catch_http_errors:
                 messages = [
                     ToolResponseMessage.from_call(tool_call, content=str(e))
