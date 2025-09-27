@@ -3,11 +3,12 @@ import string
 from ast import literal_eval
 from collections.abc import Awaitable, Callable, Sequence
 from enum import StrEnum
-from typing import Annotated, ClassVar, Generic, Literal, Self, TypeVar
+from typing import Annotated, ClassVar, Generic, Literal, Self, TypeVar, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
+import aviary.version
 from aviary.utils import RandomAnnotation, extract_answer, partial_format, shuffle
 
 TGrade = TypeVar("TGrade")
@@ -30,6 +31,16 @@ class Question(BaseModel, Generic[TGrade]):
             "Question to answer, without modifiers such as unsure instructions"
             " or multiple-choice options."
         )
+    )
+    metadata: dict[str, JsonValue] = Field(
+        default_factory=lambda: cast(
+            dict[str, JsonValue],
+            {
+                # Use aviary.version.__version__ to work around fhaviary awkwardness
+                "aviary_version": aviary.version.__version__
+            },
+        ),
+        description="Metadata about the question, for traceability.",
     )
 
     async def grade(
