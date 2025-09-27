@@ -1,12 +1,21 @@
+import sys
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
+from typing import Generic
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar
+else:
+    from typing_extensions import TypeVar  # For TypeVar.default backport
 
 from pydantic import BaseModel, Field
 
+TEvaluation = TypeVar("TEvaluation", default=float)
 
-class BaseEvaluator(BaseModel, ABC):
+
+class BaseEvaluator(BaseModel, ABC, Generic[TEvaluation]):
     @abstractmethod
-    async def __call__(self, value: str) -> float:
+    async def __call__(self, value: str) -> TEvaluation:
         """Evaluate the input value and return an evaluation (e.g. score in [0-1])."""
 
 

@@ -968,6 +968,7 @@ dependencies = [
     { name = "httpx" },
     { name = "httpx-aiohttp" },
     { name = "pydantic" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 
 [package.optional-dependencies]
@@ -1109,6 +1110,7 @@ requires-dist = [
     { name = "tenacity", marker = "extra == 'dev'" },
     { name = "typeguard", marker = "extra == 'dev'" },
     { name = "types-pillow", marker = "extra == 'typing'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
     { name = "uvicorn", marker = "extra == 'server'" },
     { name = "vcrpy", marker = "extra == 'dev'", specifier = ">=6" },
 ]
