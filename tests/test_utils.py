@@ -2,7 +2,7 @@ import json
 import random
 from collections.abc import Iterable, Sequence
 from copy import deepcopy
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 import pytest
@@ -14,7 +14,7 @@ from aviary.core import (
     eval_answer,
     extract_answer,
 )
-from aviary.utils import RandomAnnotation, T, shuffle
+from aviary.utils import RandomAnnotation, T, partial_format, shuffle
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
@@ -454,3 +454,27 @@ class TestMultipleChoiceEvaluation:
             MultipleChoiceEvaluation.calculate_accuracy_precision(evals)
             == accuracy_precision
         )
+
+
+@pytest.mark.parametrize(
+    ("value", "formats", "expected"),
+    [
+        pytest.param("Hi {name}", {"name": "Alice"}, "Hi Alice", id="single-var"),
+        pytest.param("({x}, {y})", {"x": 10, "y": 20}, "(10, 20)", id="two-vars"),
+        pytest.param(
+            "Hi {fname} {lname}",
+            {"fname": "Bob"},
+            "Hi Bob {lname}",
+            id="one-of-two-vars",
+        ),
+        pytest.param("String.", {"unused": "value"}, "String.", id="not-a-template"),
+        pytest.param(
+            "Hi {fname} {mname} {lname}",
+            {"fname": "Bob", "lname": "Bobson"},
+            "Hi Bob {mname} Bobson",
+            id="two-of-three-vars",
+        ),
+    ],
+)
+def test_partial_format(value: str, formats: dict[str, Any], expected: str) -> None:
+    assert partial_format(value, **formats) == expected
