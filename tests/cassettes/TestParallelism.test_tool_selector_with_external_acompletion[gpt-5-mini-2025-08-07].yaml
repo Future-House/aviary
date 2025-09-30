@@ -3,7 +3,7 @@ interactions:
       body:
         '{"messages":[{"role":"user","content":"You are the president of the United
         States of America. Please move both hands at the same time, and then smile and
-        wave."}],"model":"gpt-4o-mini-2024-07-18","tool_choice":"required","tools":[{"type":"function","function":{"name":"move_left_hand","description":"Move
+        wave."}],"model":"gpt-5-mini-2025-08-07","tool_choice":"required","tools":[{"type":"function","function":{"name":"move_left_hand","description":"Move
         your left hand forward or backward.","parameters":{"type":"object","properties":{"distance":{"description":"Integer
         distance to move (mm), where forward is positive.","title":"Distance","type":"integer"}},"required":["distance"]}}},{"type":"function","function":{"name":"move_right_hand","description":"Move
         your right hand forward or backward.","parameters":{"type":"object","properties":{"distance":{"description":"Integer
@@ -17,13 +17,13 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "997"
+          - "996"
         content-type:
           - application/json
         host:
           - api.openai.com
         user-agent:
-          - AsyncOpenAI/Python 1.86.0
+          - AsyncOpenAI/Python 1.109.1
         x-stainless-arch:
           - arm64
         x-stainless-async:
@@ -33,7 +33,7 @@ interactions:
         x-stainless-os:
           - MacOS
         x-stainless-package-version:
-          - 1.86.0
+          - 1.109.1
         x-stainless-raw-response:
           - "true"
         x-stainless-read-timeout:
@@ -49,20 +49,21 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//xFRNb+IwEL3nV1g+wyqE8BGOqLtlu6gLagXdbivLOJPExbGztkNLEf+9
-          Sigk0P3opdocomSe38x7tmc2DkKYh3iAMEuoZWkmmkM+9Tri6ktvOho/jqbe9Wh9M0y637omir7i
-          RsFQiwdgds/6xFSaCbBcyR3MNFALRdZWzw8Cr+u5rRJIVQiioMWZbfqqmXLJm57r+U2312z1X9mJ
-          4gwMHqCfDkIIbcp3oVOG8IQHyG3sIykYQ2PAg8MihLBWoohgagw3lkqLGxXIlLQgC+kyF6IGWKUE
-          YVSIqvDu2dS+q82iQpDZ7eL6YtVfnc8+q2TY7bmXk5a/+jWs1dulXmeloCiX7LBJNfwQH5wUQwhL
-          mpbcVK2ACIgsSagMTzIghKmO8xSkLdTjzR0OS+sM7opDcN0tPiJsa3/bxrvMni2DZTt4nl9M7W2g
-          An/x8DSeuFPxYWY1j5P/5/Z8fjmeja/m8Y8FvTH9Tm+i1t+fzz7CrUm5AEJlSB7pCv5l9m/eDt/3
-          tYutIcoNFW9vPJVSWVqoK6/8vXOyQ1ioONNqYU6oOOKSm4RooKZ0Vu8dZy+klIDzo/bEmVZpZolV
-          SyiLtvzXXsbVCKnQ7h60ylJRxT13DxzlIyFYysv+PYwMRlkCYUWtRgfNQ65qgFPz/lbN73Lv/HMZ
-          vyd9BTAGmYWQZBpCzo4dV8s0FBP2T8sOu1wKxgb0ijMgloMuziOEiOZiN/ewWRsLKYm4jEFnmpfD
-          D0cZafu041MI2gw7W+cFAAD//wMA7b3InwoGAAA=
+          H4sIAAAAAAAAA7RUXW/bIBR9969APMeT49T5epvabWrXSpuURpvWysJwbdNhsAB3SaP89wrc2E7a
+          SnupHyzgcM4993JhFyCEOcNLhGlJLK1qEZ5f09Uk3or11/jm8uxnEf86L5/W+SRRt9kTHjmGyh6A
+          2gPrE1VVLcByJVuYaiAWnOp4lizi6Xy2mHigUgyEoxW1DZOw4pKHcRQnYTQPo9kLuVScgsFL9CdA
+          CKGd/zubksEGL1E0OqxUYAwpAC+7TQhhrYRbwcQYbiyRFo96kCppQTrnshFiAFilREqJEH3g9tsN
+          xn2tiBApzfQ2+/ElWV1fzLNos1ldPKji29XnQbxWelt7Q3kjaVejAd6tL0+CIYQlqTy3Uo+QCsht
+          WhLJThQQwkQXTQXSOvd4d4eZT53CnTuDKNrjI8J+MNuP/ivZf1f6cv19pWSSj2kc8wm9vfm9ltmH
+          Jat5UX5Att34fnD4GvLGEPG6K4iUyhLn17fFfXBSM5xzyU2ZaiDG5zTso+AQ0IfCzVGr4lqrqrap
+          VX/Bi8fxuFXF/W3q0ekieUGtskT0wGI8Hb0hmDKwhPtm7u4PJbQE1lP7e0QaxtUACAZJvrbzlnZb
+          AC6LgeWz9wP0AKVQW2BprYFxepx0v02De2/e29YV2lvGBvQjp5BaDtodCYOcNKJ9BrDZGgtVmnNZ
+          gK41796CYB88AwAA//8DAPk7IbgNBQAA
       headers:
+        Access-Control-Expose-Headers:
+          - X-Request-ID
         CF-RAY:
-          - 94fbef489ffef208-LAX
+          - 9876e9e7abde15a4-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -70,21 +71,21 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Sat, 14 Jun 2025 18:36:42 GMT
+          - Tue, 30 Sep 2025 21:46:50 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=OydJlGLWHJNIj72w6ZQ7PHtwdeK_GvL6vHJsGnTj0f8-1749926202-1.0.1.1-hN8UnVVJ46drlMMNNVRPf2zICFmJV3etVoNVNHHeT1kwAcow64PvowaBN6UMadJzthgOS3O5l3CsOp1VPDsKG48kmedzIQtWRpTvP2LwrJg;
-            path=/; expires=Sat, 14-Jun-25 19:06:42 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=mXelFKM3RvPgBwBhwGanmMkcYSqi18JGmj9frnZyHLM-1759268810-1.0.1.1-EFiLZshaf9qI3AxsiJEs5uFSnB8oqxsW0FTqnJ137sQr4KvsrxS97nH3854PojKqQJrEvv7OiNY_3vVILo3OkNzSaoVytnucReUyEYkMupQ;
+            path=/; expires=Tue, 30-Sep-25 22:16:50 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=4pp2.fAE3rmucrRa975kFXDp7f5lSCXGIo9P.iz2OCg-1749926202605-0.0.1.1-604800000;
+          - _cfuvid=K7WLTXRjVtQXo3Glk.U.2qjSBzwabF1aKKRBnEmg1V0-1759268810795-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubDomains; preload
         Transfer-Encoding:
           - chunked
         X-Content-Type-Options:
           - nosniff
-        access-control-expose-headers:
-          - X-Request-ID
         alt-svc:
           - h3=":443"; ma=86400
         cf-cache-status:
@@ -92,27 +93,29 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "791"
+          - "17079"
+        openai-project:
+          - proj_RpeV6PrPclPHBb5GlExPXSBj
         openai-version:
           - "2020-10-01"
-        strict-transport-security:
-          - max-age=31536000; includeSubDomains; preload
         x-envoy-upstream-service-time:
-          - "819"
+          - "17180"
+        x-openai-proxy-wasm:
+          - v0.1
         x-ratelimit-limit-requests:
           - "30000"
         x-ratelimit-limit-tokens:
-          - "150000000"
+          - "180000000"
         x-ratelimit-remaining-requests:
           - "29999"
         x-ratelimit-remaining-tokens:
-          - "149999968"
+          - "179999967"
         x-ratelimit-reset-requests:
           - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_4426fea448c450dda4a9a23180f57974
+          - req_7a64e5458838486abc01b66995c4883d
       status:
         code: 200
         message: OK

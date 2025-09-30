@@ -3,7 +3,7 @@ interactions:
       body:
         '{"messages":[{"role":"user","content":"You are the president of the United
         States of America. Please move both hands at the same time, and then smile and
-        wave."}],"model":"gpt-4o-mini-2024-07-18","tool_choice":"required","tools":[{"type":"function","function":{"name":"move_left_hand","description":"Move
+        wave."}],"model":"gpt-5-mini-2025-08-07","tool_choice":"required","tools":[{"type":"function","function":{"name":"move_left_hand","description":"Move
         your left hand forward or backward.","parameters":{"type":"object","properties":{"distance":{"description":"Integer
         distance to move (mm), where forward is positive.","title":"Distance","type":"integer"}},"required":["distance"]}}},{"type":"function","function":{"name":"move_right_hand","description":"Move
         your right hand forward or backward.","parameters":{"type":"object","properties":{"distance":{"description":"Integer
@@ -17,13 +17,13 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "997"
+          - "996"
         content-type:
           - application/json
         host:
           - api.openai.com
         user-agent:
-          - AsyncOpenAI/Python 1.86.0
+          - AsyncOpenAI/Python 1.109.1
         x-stainless-arch:
           - arm64
         x-stainless-async:
@@ -33,7 +33,7 @@ interactions:
         x-stainless-os:
           - MacOS
         x-stainless-package-version:
-          - 1.86.0
+          - 1.109.1
         x-stainless-raw-response:
           - "true"
         x-stainless-read-timeout:
@@ -49,20 +49,22 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//xFTJbtswEL3rKwie7UKSncW+JYDRIkWapY2DtgmICTWi2HBRScpxYvjf
-          C8mxJTtdcgmqgyDN45t5j+TMIiKEyoyOCeUFBK5L1T+WF+meE+JscDWdniaH1TGUV6k6m5zfTT7S
-          Xs2wdz+QhzXrHbe6VBikNSuYO4SAddbkYDgapftpnDSAthmqmibK0B/avpZG9tM4Hfbjg35y+Mwu
-          rOTo6Zh8jwghZNG8a50mwzkdk7i3jmj0HgTS8WYRIdRZVUcoeC99ABNorwW5NQFNLd1USnWAYK1i
-          HJRqC6+eRee73SxQiklRPGm4jkdPE/41NupJj07NEahOvVXqx7IRlFeGbzapg2/i451ihFADuuFq
-          O0OmMA+sAJPtZCCEghOVRhNq9XRxQ7PGOseb+hDieEm3CMvO37L3KrPzgZpezj5dzLEU397P8fzn
-          Q3Iy/3D0ZmadFMV/c3udHon7L5PLy2QgTox/iPfV/WecPr6FW6+lQgYmYw8ww3+Z/Zu3zfdt52I7
-          zCsP6uWNB2NsgFpdc+Vvo50dosqK0tk7v0OluTTSF8wh+MZZt3eitZBGAq222pOWzuoysGDvsSma
-          DJ97mbYjpEX312CwAVQbT+M1sJWPZRhANv27GRkceIFZS21HB1SZtB0g6nh/qeZ3uVf+pRGvSd8C
-          nGMZMGOlw0zybcftMof1hP3Tss0uN4KpRzeTHFmQ6OrzyDCHSq3mHvWPPqBmuTQCXelkM/xoXrLB
-          EPaGgKMBp9Ey+gUAAP//AwDlMamQCgYAAA==
+          H4sIAAAAAAAAA8RUTVPbMBC9+1dodE46jtt8HulQpoGWBkKhLYxHkda2QF+RZAPN5L937BDbCaXt
+          hakPHltP+/a9lXZXAUKYMzxBmGbEU2lE9/0JPRffF9HF1fz0QR7dzo5UEWXT4+k8XArcKSP04hao
+          30a9oVoaAZ5rtYGpBeKhZO0N++NoMBoO+xUgNQNRhqXGd/tdyRXvRmHU74ajbjh8Cs40p+DwBP0I
+          EEJoVb1LmYrBA56gsLNdkeAcSQFP6k0IYatFuYKJc9x5ojzuNCDVyoMqlatciBbgtRYxJUI0iTfP
+          qvXd1IoIESfLiyN2+NOo8dVBSAwU0y/nvU+s18q3oX40laAkV7SuUQuv1yd7yRDCisgqVuoCYgGJ
+          jzOi2B4DQpjYNJegfKker64xq6xTuC7PIAzXeCdg3fpbd/7J7Pz022B29vFupo8/fPXUEGdHLhvO
+          X82s5Wn239ymo8vlQyoH7P7k8jMv9IGZ++KQLV7DrZNcQEwUi+9JAX8z+ydv9fdN62JbSHJHxPMb
+          T5TSnpTqqit/E+xVCCdccZfFFoirHLR7JNgmrFLhfKcNsbFaGh97fQcVeRT1Nqy4mRQNOgzHT6jX
+          nogGGL99avVdwpiBJ7xq1Ho2UEIzYE1oMyNIzrhuAUHL5HM5v+PeFICrtGEZvHs5QQNQCsYDi40F
+          xumu6WabhXKWvrStLnQlGTuwBacQew62PBIGCcnFZsRh9+g8yDjhKgVrLK/nXLAOfgEAAP//AwBi
+          KY5o6QUAAA==
       headers:
+        Access-Control-Expose-Headers:
+          - X-Request-ID
         CF-RAY:
-          - 94fbef48a81dcbab-LAX
+          - 9876e974edc4ce7c-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -70,21 +72,21 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Sat, 14 Jun 2025 18:36:42 GMT
+          - Tue, 30 Sep 2025 21:46:27 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=a2am9V9P4.ul2caK.O8UFILEVQWGtVAgL8LBIKJNvfw-1749926202-1.0.1.1-p6TyCkUpINm6w4loZUyzMD3kBXqUUVtMv1.GhWkW_VREmf538w_kNqR6rGD5CTWJCHkTxt55I9VLX1TwS20ygvgXFcYrCnYW.QGy5C9oWl8;
-            path=/; expires=Sat, 14-Jun-25 19:06:42 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=bb6fqMJsEAJdnrxsftRPLPLWKPvcI9vrVlhHXIpwFgU-1759268787-1.0.1.1-dzgJ6f380DiigOSkehT3yr251E7gZNQr91nd35K6DfELHyc.ib.0zrhEm7Ut2BE.BDr71DURV2_oOkuMXsw9eE3fBYPXQ6_Ia9R41hk7.M8;
+            path=/; expires=Tue, 30-Sep-25 22:16:27 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=t4eUyzu_jjJa7hDGlKOLM9puZuq7XGboHudn1Gp8K.8-1749926202593-0.0.1.1-604800000;
+          - _cfuvid=HpITPne8gKUK4seleSY4NPuaj6hJDnQCyqC5370_GdQ-1759268787334-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubDomains; preload
         Transfer-Encoding:
           - chunked
         X-Content-Type-Options:
           - nosniff
-        access-control-expose-headers:
-          - X-Request-ID
         alt-svc:
           - h3=":443"; ma=86400
         cf-cache-status:
@@ -92,27 +94,29 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "795"
+          - "12027"
+        openai-project:
+          - proj_RpeV6PrPclPHBb5GlExPXSBj
         openai-version:
           - "2020-10-01"
-        strict-transport-security:
-          - max-age=31536000; includeSubDomains; preload
         x-envoy-upstream-service-time:
-          - "798"
+          - "12065"
+        x-openai-proxy-wasm:
+          - v0.1
         x-ratelimit-limit-requests:
           - "30000"
         x-ratelimit-limit-tokens:
-          - "150000000"
+          - "180000000"
         x-ratelimit-remaining-requests:
           - "29999"
         x-ratelimit-remaining-tokens:
-          - "149999968"
+          - "179999967"
         x-ratelimit-reset-requests:
           - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_d50afe83c456106203279cc8b04d326b
+          - req_2cc066b5c13d4a379e75564867be24a6
       status:
         code: 200
         message: OK
@@ -120,7 +124,7 @@ interactions:
       body:
         '{"messages":[{"role":"user","content":"You are the president of the United
         States of America. Please move both hands at the same time, and then smile and
-        wave."}],"model":"gpt-4o-mini-2024-07-18","tool_choice":"auto","tools":[{"type":"function","function":{"name":"move_left_hand","description":"Move
+        wave."}],"model":"gpt-5-mini-2025-08-07","tool_choice":"auto","tools":[{"type":"function","function":{"name":"move_left_hand","description":"Move
         your left hand forward or backward.","parameters":{"type":"object","properties":{"distance":{"description":"Integer
         distance to move (mm), where forward is positive.","title":"Distance","type":"integer"}},"required":["distance"]}}},{"type":"function","function":{"name":"move_right_hand","description":"Move
         your right hand forward or backward.","parameters":{"type":"object","properties":{"distance":{"description":"Integer
@@ -134,13 +138,13 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "993"
+          - "992"
         content-type:
           - application/json
         host:
           - api.openai.com
         user-agent:
-          - AsyncOpenAI/Python 1.86.0
+          - AsyncOpenAI/Python 1.109.1
         x-stainless-arch:
           - arm64
         x-stainless-async:
@@ -150,7 +154,7 @@ interactions:
         x-stainless-os:
           - MacOS
         x-stainless-package-version:
-          - 1.86.0
+          - 1.109.1
         x-stainless-raw-response:
           - "true"
         x-stainless-read-timeout:
@@ -166,20 +170,21 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAAwAAAP//xFRdT9swFH3Pr7D83ExpGgrtWxHSphXYymAVG8hy7ZvExR+R7UBL1f8+
-          JaVNWvbBC1oeouQen3vPsX3vKkAIC46HCLOceqYKGZ6KSdw3/vzqzA5ObiYn8/6nb3rxfHZ2OXow
-          uFMxzGwOzG9ZH5hRhQQvjN7AzAL1UGXtHieDQdyPo7gGlOEgK1pW+DAxoRJahHEUJ2F0HHZPXti5
-          EQwcHqKfAUIIrep3pVNzWOAhijrbiALnaAZ4uFuEELZGVhFMnRPOU+1xpwGZ0R50JV2XUrYAb4wk
-          jErZFN48q9Z3s1lUSnI60X2ulupyARM+MvYmub0uz2PdqrdJvSxqQWmp2W6TWvguPjwohhDWVNVc
-          ZR6BSEg9yanmBxkQwtRmpQLtK/V4dYd5bZ3BXXUIUbTGe4R162/deZPZ3vJIwPTq4njqZ0+TL91b
-          cwH04/jzu5m1Isv/m9vrSfF9/OCnX597Qv8YD+bmalzepKP3cOuUkECo5uSJPsK/zP7N2+77vnWx
-          LaSlo/L1jadaG08rdfWVvw8OdghLkxXWzNwBFadCC5cTC9TVztq9E2yF1BJwudeeuLBGFZ548wB1
-          0W7y0su4GSEN2t+C3ngqm3gcbYG9fISDp6Lu393IYJTlwBtqMzpoyYVpAUHL+2s1v8u98S909pb0
-          DcAYFB44KSxwwfYdN8ssVBP2T8t2u1wLxg7so2BAvABbnQeHlJZyM/ewWzoPiqRCZ2ALK+rhh9OC
-          9BJ6lFAY9BgO1sEvAAAA//8DAG0ynAMKBgAA
+          H4sIAAAAAAAAA7RUy27bMBC86ysInq1Clq3K8a1p0yJG2gKxL20TCDS1kujyFT4CO4b/vZAUS7KT
+          AL1EB4HkcGZ3lkvuA4Qwy/EcYVoRR4Xm4ecbutxW5Yo/ba71N8YWy4vIlVtfrsT3MR7VDLXeAHVH
+          1geqhObgmJItTA0QB7XqOE0u4o+zdJY2gFA58JpWahcmoWCShXEUJ2E0C6P0mVwpRsHiOfoTIITQ
+          vvnXacoctniOotFxRYC1pAQ87zYhhI3i9Qom1jLriHR41INUSQeyzlx6zgeAU4pnlHDeB26//WDc
+          14pwnkVXS+83u9vbibbr3dXPxH3ZsYfJdBCvld7pJqHCS9rVaIB36/OzYAhhSUTDFeoRMg6Fyyoi
+          8zMFhDAxpRcgXZ093t/hvLFO4a4+gyg64BPCYTA7jP7L7I/ycnLz6+vDIh1fz/ynBf19maytWr2b
+          WcPK6h3cduP7weEbKLwl/GVXECmVI3W+TVvcB2c1wwWTzFaZAWIbT8M+Co4Bm1DYn7Qq1kYJ7TKn
+          /kIjHsfjVhX3t6lHk2jyjDrlCO+BNJ6OXhHMcnCENc3c3R9KaAV5T+3vEfE5UwMgGJh8mc5r2m0B
+          mCx7lel09maAHqAUtIM80wZyRk9N99sM1O/NW9u6QjcpYwvmkVHIHANTH0kOBfG8fQaw3VkHIiuY
+          LMFow7q3IDgE/wAAAP//AwCNu3CWDQUAAA==
       headers:
+        Access-Control-Expose-Headers:
+          - X-Request-ID
         CF-RAY:
-          - 94fbef4e8830cbab-LAX
+          - 9876e9c13841ce7c-SJC
         Connection:
           - keep-alive
         Content-Encoding:
@@ -187,15 +192,15 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Sat, 14 Jun 2025 18:36:43 GMT
+          - Tue, 30 Sep 2025 21:46:33 GMT
         Server:
           - cloudflare
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubDomains; preload
         Transfer-Encoding:
           - chunked
         X-Content-Type-Options:
           - nosniff
-        access-control-expose-headers:
-          - X-Request-ID
         alt-svc:
           - h3=":443"; ma=86400
         cf-cache-status:
@@ -203,27 +208,29 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "752"
+          - "5878"
+        openai-project:
+          - proj_RpeV6PrPclPHBb5GlExPXSBj
         openai-version:
           - "2020-10-01"
-        strict-transport-security:
-          - max-age=31536000; includeSubDomains; preload
         x-envoy-upstream-service-time:
-          - "754"
+          - "5926"
+        x-openai-proxy-wasm:
+          - v0.1
         x-ratelimit-limit-requests:
           - "30000"
         x-ratelimit-limit-tokens:
-          - "150000000"
+          - "180000000"
         x-ratelimit-remaining-requests:
           - "29999"
         x-ratelimit-remaining-tokens:
-          - "149999968"
+          - "179999967"
         x-ratelimit-reset-requests:
           - 2ms
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_7c999009c14e502c9a1a35d94387e171
+          - req_5d98a006a86a49b88ba0c064429e8d8e
       status:
         code: 200
         message: OK
