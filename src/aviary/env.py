@@ -237,22 +237,36 @@ class Environment(ABC, Generic[TEnvState]):
                 if need_to_filter
                 else function_kwargs
             )
+
+            sig = inspect.signature(tool._tool_fn)
+            tool_call_arguments = {}
+            for param_name, param_value in tool_call.function.arguments.items():
+                if param_name in sig.parameters:
+                    # Attempt to recover Pydantic BaseModel arguments
+                    param_type = sig.parameters[param_name].annotation
+                    if (
+                        param_type != inspect.Parameter.empty
+                        and inspect.isclass(param_type)
+                        and issubclass(param_type, BaseModel)
+                        # NOTE: ToolCallFunction deserializes to dict for us
+                        and isinstance(param_value, dict)
+                    ):
+                        param_value = param_type(**param_value)
+
+                tool_call_arguments[param_name] = param_value
+
             tool_exc: Exception | None = None
             try:
                 if is_coroutine_callable(tool._tool_fn):
                     content = await maybe_wait_for(
-                        tool._tool_fn(
-                            **tool_call.function.arguments, **filtered_kwargs
-                        ),
+                        tool._tool_fn(**tool_call_arguments, **filtered_kwargs),
                         exec_timeout,
                     )
                 else:
                     # If the function is synchronous, run on a thread
                     content = await maybe_wait_for(
                         asyncio.to_thread(
-                            tool._tool_fn,
-                            **tool_call.function.arguments,
-                            **filtered_kwargs,
+                            tool._tool_fn, **tool_call_arguments, **filtered_kwargs
                         ),
                         exec_timeout,
                     )
