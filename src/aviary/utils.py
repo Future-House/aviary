@@ -1,10 +1,10 @@
 import base64
-import contextlib
 import inspect
 import io
 import random
 import string
 from ast import literal_eval
+from collections import UserDict
 from collections.abc import Sequence
 from enum import StrEnum
 from typing import (
@@ -95,10 +95,12 @@ class EvalAnswerMode(StrEnum):
 
 def partial_format(value: str, **formats) -> str:
     """Partially format a string given a variable amount of formats."""
-    for template_key, template_value in formats.items():
-        with contextlib.suppress(KeyError):
-            value = value.format(**{template_key: template_value})
-    return value
+
+    class PartialDict(UserDict):
+        def __missing__(self, key: str) -> str:
+            return f"{{{key}}}"
+
+    return value.format_map(PartialDict(formats))
 
 
 def encode_image_to_base64(img: "np.ndarray") -> str:
