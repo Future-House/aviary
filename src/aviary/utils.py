@@ -3,7 +3,7 @@ import inspect
 import io
 import random
 from collections import UserDict
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, overload
 
@@ -150,6 +150,7 @@ async def eval_answer(
     question: str | None = None,
     eval_mode: str | EvalAnswerMode = EvalAnswerMode.CONTAINS,
     llm_eval_config: dict | None = None,
+    prompt_runner: Callable[[str], Awaitable[str]] | None = None,
 ) -> float:
     """Evaluate a proposed answer against a correct answer.
 
@@ -166,11 +167,14 @@ async def eval_answer(
             correct_answer=correct,
             proposed_answer=proposed,
         )
-        response_msg = await run_prompt(
-            prompt,
-            model=config.get("model", default_config["model"]),
-            temperature=config.get("temperature", default_config["temperature"]),
-        )
+        if prompt_runner:
+            response_msg = await prompt_runner(prompt)
+        else:
+            response_msg = await run_prompt(
+                prompt,
+                model=config.get("model", default_config["model"]),
+                temperature=config.get("temperature", default_config["temperature"]),
+            )
         if eval_mode == EvalAnswerMode.LLM:
             return await eval_answer(
                 response_msg.strip().casefold(), "yes", eval_mode=EvalAnswerMode.EXACT

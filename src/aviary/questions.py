@@ -1,20 +1,25 @@
 import random
 import string
+from abc import ABC, abstractmethod
 from ast import literal_eval
-from collections.abc import Awaitable, Callable, Sequence
-from typing import Annotated, ClassVar, Generic, Literal, Self, TypeVar, cast
+from collections.abc import Sequence
+from typing import Annotated, Any, ClassVar, Generic, Literal, Self, TypeVar, cast
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 import aviary.version
-from aviary.evaluators import CorrectnessEvaluation
-from aviary.utils import RandomAnnotation, extract_answer, partial_format, shuffle
+from aviary.evaluators import (
+    BaseEvaluator,
+    CorrectnessEvaluation,
+    LLMCorrectnessEvaluator,
+)
+from aviary.utils import RandomAnnotation, partial_format, shuffle
 
 TGrade = TypeVar("TGrade")
 
 
-class Question(BaseModel, Generic[TGrade]):
+class Question(BaseModel, ABC, Generic[TGrade]):
     """
     Base class for question variants.
 
@@ -32,6 +37,13 @@ class Question(BaseModel, Generic[TGrade]):
             " or multiple-choice options."
         )
     )
+    evaluator: BaseEvaluator[TGrade] = Field(
+        default=None,  # type: ignore[arg-type]
+        description=(
+            "Optional evaluator to use as a grader,"
+            " if unspecified then the default evaluation method is used."
+        ),
+    )
     metadata: dict[str, JsonValue] = Field(
         default_factory=lambda: cast(
             dict[str, JsonValue],
@@ -43,28 +55,25 @@ class Question(BaseModel, Generic[TGrade]):
         description="Metadata about the question, for traceability.",
     )
 
-    async def grade(
-        self,
-        answer: str,
-        method: (
-            Callable[[str], Awaitable[tuple[TGrade, dict[str, str | None]]]] | None
-        ) = None,
-    ) -> tuple[TGrade, dict[str, str | None]]:
-        """Grade a raw answer according to the specified method.
+    @model_validator(mode="after")
+    def set_default_evaluator(self) -> Self:
+        if self.evaluator is None:
+            self.evaluator = self._make_default_evaluator()  # type: ignore[unreachable]
+        return self
 
-        Raises:
-            ValueError: If no grading method is specified,
-                and the subclass defines no default.
+    @abstractmethod
+    def _make_default_evaluator(self) -> BaseEvaluator[TGrade]:
+        """Construct the default evaluation method this question type uses."""
+
+    async def grade(self, answer: str) -> tuple[TGrade, dict[str, str | None]]:
+        """Grade a raw answer using the stored evaluation method.
 
         Returns:
             Two-tuple of evaluation and any intermediary calculations.
         """
-        if method is None:
-            raise ValueError(
-                f"{type(self).__name__} didn't define a default grading method,"
-                " please specify one."
-            )
-        return await method(answer)
+        context: dict[str, Any] = {}
+        evaluation = await self.evaluator(answer, context)
+        return evaluation, context
 
 
 _CAPITAL_A_INDEX = ord("A")
@@ -215,34 +224,75 @@ class MultipleChoiceQuestion(Question[CorrectnessEvaluation]):
             split_options = [d.strip("'[ ]\"") for d in options.split(",")]
         return split_options
 
-    async def extract_then_exact_match(
-        self, answer: str
-    ) -> tuple[CorrectnessEvaluation, dict[str, str | None]]:
-        """Grade by first extracting an answer, then exact matching it to an option."""
-        extracted_answer = await extract_answer(
-            proposed_answer=answer, options=self.options
+    def _make_default_evaluator(self):
+        return LLMCorrectnessEvaluator.make_llm_extract(
+            options=self.options,
+            ideal_answer=self.ideal_answer,
+            unsure_answer=self.unsure_answer,
         )
-        metadata = {"extracted_answer": extracted_answer}
-        if extracted_answer is None:
-            return CorrectnessEvaluation.INCORRECT, metadata
-        # From here, if we don't match either the ideal or the unsure multiple choice
-        # options then we declare the answer as incorrect.
-        if extracted_answer == self.ideal_answer:
-            return CorrectnessEvaluation.CORRECT, metadata
-        if self.unsure_answer and extracted_answer == self.unsure_answer:
-            return CorrectnessEvaluation.UNSURE, metadata
-        return CorrectnessEvaluation.INCORRECT, metadata
 
-    async def grade(
-        self,
-        answer: str,
-        method: (
-            Callable[
-                [str], Awaitable[tuple[CorrectnessEvaluation, dict[str, str | None]]]
-            ]
-            | None
-        ) = None,
-    ) -> tuple[CorrectnessEvaluation, dict[str, str | None]]:
-        return await super().grade(
-            answer, method=method or self.extract_then_exact_match
+
+class OpenAnswerQuestion(Question[CorrectnessEvaluation]):
+    model_config = ConfigDict(extra="forbid")
+
+    OA_QUESTION_PROMPT_TEMPLATE: ClassVar[str] = (
+        f"{Question.QUESTION_PROMPT_TEMPLATE}\n\n{{unsure_instruction}}"
+    )
+    UNSURE_INSTRUCTION_TEMPLATE: ClassVar[str] = (
+        "If unable to confidently answer, please answer with '{unsure_answer}'."
+    )
+    DEFAULT_UNSURE_OPTION: ClassVar[str] = (
+        "Insufficient information to answer this question"
+    )
+
+    prompt_without_id: bool = Field(
+        default=False,
+        description=(
+            "Opt-in flag to exclude question_id from the question_prompt,"
+            " if worried about the model memorizing question IDs."
+        ),
+    )
+    prompt_template: str | None = Field(
+        default=None,
+        description=(
+            "Optional manual prompt template. If left unspecified,"
+            " the class variable default prompt template will be used."
+        ),
+    )
+    ideal_answer: str = Field(description="Desired ideal answer.")
+    unsure_answer: str | None = Field(
+        default=DEFAULT_UNSURE_OPTION,
+        description=(
+            "Optional unsure answer text. If set to None,"
+            " the unsure instruction is unspecified."
+        ),
+    )
+
+    @property
+    def question_prompt(self) -> str:
+        template_vars = {
+            "question": self.question,
+            "question_id": (
+                type(self).model_fields["question_id"].default
+                if self.prompt_without_id
+                else self.question_id
+            ),
+            "unsure_instruction": (
+                self.UNSURE_INSTRUCTION_TEMPLATE.format(
+                    unsure_answer=self.unsure_answer
+                )
+                if self.unsure_answer
+                else ""
+            ),
+        }
+        return partial_format(
+            self.prompt_template or self.OA_QUESTION_PROMPT_TEMPLATE,
+            **template_vars,
+        ).strip()  # Strip for empty unsure_instruction
+
+    def _make_default_evaluator(self):
+        return LLMCorrectnessEvaluator.make_llm_judge(
+            question=self.question_prompt,
+            correct_answer=self.ideal_answer,
+            unsure_answer=self.unsure_answer,
         )
