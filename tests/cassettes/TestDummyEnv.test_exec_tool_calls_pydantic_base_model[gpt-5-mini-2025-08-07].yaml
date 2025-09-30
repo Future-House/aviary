@@ -1,0 +1,119 @@
+interactions:
+  - request:
+      body:
+        '{"messages":[{"role":"user","content":"What am I supposed to do again?"}],"model":"gpt-5-mini-2025-08-07","tool_choice":"required","tools":[{"type":"function","function":{"name":"check_shopping_list","description":"Check
+        the shopping list if you forgot the goal.","parameters":{"type":"object","properties":{"value":{"$ref":"#/$defs/ShoppingList","description":"Shopping
+        list to be printed."}},"required":["value"],"$defs":{"Fruits":{"description":"The
+        best fruits on the market.","enum":["fig","honeydew"],"title":"Fruits","type":"string"},"ShoppingList":{"description":"A
+        list of items to buy.","properties":{"item1":{"title":"Item1","type":"integer"},"item2":{"anyOf":[{"type":"integer"},{"type":"null"}],"title":"Item2"},"item3":{"anyOf":[{"type":"integer"},{"type":"null"}],"default":null,"title":"Item3"},"item4":{"$ref":"#/$defs/Fruits"},"item5":{"$ref":"#/$defs/Fruits","default":"honeydew"}},"required":["item1","item2","item4"],"title":"ShoppingList","type":"object"}}}}}]}'
+      headers:
+        accept:
+          - application/json
+        accept-encoding:
+          - gzip, deflate
+        connection:
+          - keep-alive
+        content-length:
+          - "983"
+        content-type:
+          - application/json
+        host:
+          - api.openai.com
+        user-agent:
+          - AsyncOpenAI/Python 1.109.1
+        x-stainless-arch:
+          - arm64
+        x-stainless-async:
+          - async:asyncio
+        x-stainless-lang:
+          - python
+        x-stainless-os:
+          - MacOS
+        x-stainless-package-version:
+          - 1.109.1
+        x-stainless-raw-response:
+          - "true"
+        x-stainless-read-timeout:
+          - "600.0"
+        x-stainless-retry-count:
+          - "0"
+        x-stainless-runtime:
+          - CPython
+        x-stainless-runtime-version:
+          - 3.12.8
+      method: POST
+      uri: https://api.openai.com/v1/chat/completions
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAAA3RT227bMAx991cIfI6HxIuTzG9DsRYFtgHdMKzbXBiKTNtKdYMuXbsg/z7YTmyn
+          Fz8YEg95SB5S+4gQ4CVkBFhDPZNGxBef2fVjbf6mH3ERbtOfXoWLIC+/PKrm6yeYtRF6u0PmT1Hv
+          mJZGoOda9TCzSD22rIt1+iFZbRardQdIXaJow2rj4zSWXPE4mSdpPN/E8/UxuNGcoYOM/IkIIWTf
+          /dsyVYmPkJH57GSR6BytEbLBiRCwWrQWoM5x56nyMBtBppVH1VaughATwGstCkaFGBP3335yHrWi
+          QhS738t/Nz9urrbX7vvV5bew284ryna/Jvl66ifTFVQFxQaNJvhgz54lIwQUldjLjOy+cI02hqu6
+          ENz5ZzSEALV1kKh82wLsc3igImAO2T4H7lEucsgWs/6c5JB1CvTXZQ5ZDhWvczgc4Iz3EL12vptI
+          Z7EKjoqXmlKltKdta52od0fkMMyv4oq7prBIXdf+dArRKWGXCsLZoMFYLY0vvL7HjjxJNj0rjLs4
+          osskOaJeeypGYJUel+mcsCjRU96twrB9jLIGyzF03EIaSq4nQDRp8mU5r3H3ArSDHVjeb5ZvJhgB
+          xtB4LAtjseTsvOnRzWL7Wt9yG4TuSgaH9oEzLDxH246kxIoG0W8buCfnURYVVzVaY/nwkqJD9B8A
+          AP//AwDzjUDXSwQAAA==
+      headers:
+        Access-Control-Expose-Headers:
+          - X-Request-ID
+        CF-RAY:
+          - 9876da9cda2afa1e-SJC
+        Connection:
+          - keep-alive
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json
+        Date:
+          - Tue, 30 Sep 2025 21:36:14 GMT
+        Server:
+          - cloudflare
+        Set-Cookie:
+          - __cf_bm=kIJcl.vvQ1yq.PkKS0tZsuTYZD8mgro6em286C4WBIg-1759268174-1.0.1.1-2dr2fDbabeITD6fQVDQ45aRu6iVpD4UqSSpKi_IJS1cAoJrJWfsUj1AkwVnngs.4kfDFr2mcvhJiG5mFqaWTP1wHyKG20k177bPwBSvy9Jk;
+            path=/; expires=Tue, 30-Sep-25 22:06:14 GMT; domain=.api.openai.com; HttpOnly;
+            Secure; SameSite=None
+          - _cfuvid=.9draVjHGUNYP0B1IHFjLrVFwL8JNFFerRXxYalLyfg-1759268174147-0.0.1.1-604800000;
+            path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+        Strict-Transport-Security:
+          - max-age=31536000; includeSubDomains; preload
+        Transfer-Encoding:
+          - chunked
+        X-Content-Type-Options:
+          - nosniff
+        alt-svc:
+          - h3=":443"; ma=86400
+        cf-cache-status:
+          - DYNAMIC
+        openai-organization:
+          - future-house-xr4tdh
+        openai-processing-ms:
+          - "6562"
+        openai-project:
+          - proj_RpeV6PrPclPHBb5GlExPXSBj
+        openai-version:
+          - "2020-10-01"
+        x-envoy-upstream-service-time:
+          - "6669"
+        x-openai-proxy-wasm:
+          - v0.1
+        x-ratelimit-limit-requests:
+          - "30000"
+        x-ratelimit-limit-tokens:
+          - "180000000"
+        x-ratelimit-remaining-requests:
+          - "29999"
+        x-ratelimit-remaining-tokens:
+          - "179999991"
+        x-ratelimit-reset-requests:
+          - 2ms
+        x-ratelimit-reset-tokens:
+          - 0s
+        x-request-id:
+          - req_7c3b09dd73c141508e3cc56df7cf8761
+      status:
+        code: 200
+        message: OK
+version: 1

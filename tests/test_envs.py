@@ -5,6 +5,7 @@ import re
 import tempfile
 import time
 from collections.abc import Sequence
+from enum import StrEnum
 from typing import ClassVar
 
 import litellm
@@ -207,6 +208,63 @@ class TestDummyEnv:
             assert 1 <= len(new_messages) <= 2
         else:
             assert len(new_messages) == 2
+
+    @pytest.mark.vcr
+    @pytest.mark.parametrize(
+        "model_name",
+        # TODO: add Anthropic model after https://github.com/BerriAI/litellm/issues/13837
+        [CILLMModelNames.OPENAI.value],
+    )
+    @pytest.mark.asyncio
+    async def test_exec_tool_calls_pydantic_base_model(
+        self, dummy_env: DummyEnv, model_name: str
+    ) -> None:
+        class Fruits(StrEnum):  # Use to check nested types
+            """The best fruits on the market."""
+
+            FIG = "fig"
+            HONEYDEW = "honeydew"
+
+        class ShoppingList(BaseModel):
+            """A list of items to buy."""
+
+            item1: int
+            item2: int | None
+            item3: int | None = None
+            item4: Fruits
+            item5: Fruits = Fruits.HONEYDEW
+
+        def check_shopping_list(value: ShoppingList) -> None:
+            """Check the shopping list if you forgot the goal.
+
+            Args:
+                value: Shopping list to be printed.
+            """
+            assert isinstance(value.item1, int)
+            assert isinstance(value.item2, int | None)
+            assert isinstance(value.item3, int | None)
+            assert isinstance(value.item4, Fruits)
+            assert isinstance(value.item5, Fruits)
+
+        dummy_env.tools = [Tool.from_function(check_shopping_list)]
+
+        # 1. Have an 'agent' LLM propose a tool call involving a Pydantic BaseModel
+        selector = ToolSelector(model_name)
+        tool_request_message = await selector(
+            messages=[Message(content="What am I supposed to do again?")],
+            tools=dummy_env.tools,
+        )
+        (tool_call,) = tool_request_message.tool_calls
+        assert tool_call.function.name == check_shopping_list.__name__
+        assert isinstance(tool_call.function.arguments, dict)
+        assert isinstance(tool_call.function.arguments.get("value"), dict)
+
+        # 2. Actually call the tool (which asserts upon the BaseModel)
+        new_messages = await dummy_env.exec_tool_calls(tool_request_message)
+
+        # 3. Confirm the tool response is as expected
+        (new_message,) = new_messages
+        assert new_message.tool_call_id == tool_request_message.tool_calls[0].id
 
 
 @pytest.mark.asyncio
