@@ -95,10 +95,10 @@ class TestMessage:
         assert str(message) == expected
 
     @pytest.mark.parametrize(
-        ("message", "expected"),
+        ("message", "dump_kwargs", "expected"),
         [
-            (Message(), {"role": "user"}),
-            (Message(content="stub"), {"role": "user", "content": "stub"}),
+            (Message(), {}, {"role": "user"}),
+            (Message(content="stub"), {}, {"role": "user", "content": "stub"}),
             (
                 Message(
                     content=[
@@ -106,6 +106,7 @@ class TestMessage:
                         {"type": "image_url", "image_url": {"url": "stub_url"}},
                     ]
                 ),
+                {},
                 {
                     "role": "user",
                     "content": [
@@ -114,10 +115,15 @@ class TestMessage:
                     ],
                 },
             ),
+            (
+                Message(content="stub", info={"foo": "bar"}),
+                {"context": {"include_info": True}},
+                {"role": "user", "content": "stub", "info": {"foo": "bar"}},
+            ),
         ],
     )
-    def test_dump(self, message: Message, expected: dict) -> None:
-        assert message.model_dump(exclude_none=True) == expected
+    def test_dump(self, message: Message, dump_kwargs: dict, expected: dict) -> None:
+        assert message.model_dump(exclude_none=True, **dump_kwargs) == expected
 
     @pytest.mark.parametrize(
         ("images", "message_text", "expected_error", "expected_content_length"),

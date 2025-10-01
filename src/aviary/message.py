@@ -2,7 +2,14 @@ import json
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    SerializationInfo,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 from aviary.utils import encode_image_to_base64, validate_base64_image
 
@@ -74,6 +81,17 @@ class Message(BaseModel):
         except TypeError as e:
             raise ValueError("Content must be a string or JSON-serializable.") from e
 
+        return data
+
+    @model_serializer(mode="wrap")
+    def maybe_serialize_info(self, handler, serialization_info: SerializationInfo):
+        """Allows us to call model_dump(context={"include_info": True}).
+
+        This overrides its Field-level exclusion.
+        """
+        data = handler(self)
+        if (serialization_info.context or {}).get("include_info"):
+            data["info"] = self.info
         return data
 
     def __str__(self) -> str:
