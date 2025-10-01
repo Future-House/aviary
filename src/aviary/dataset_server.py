@@ -141,6 +141,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 obs, tools = await env.reset()
 
             return (
+                # Include info so the client receives the full message
                 MessagesAdapter.dump_python(obs, context={"include_info": True}),
                 ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
             )
@@ -153,6 +154,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
             with handle_exc_as_http_exc():
                 obs, *reward_done_trunc = await env.step(req.action)
 
+            # Include info so the client receives the full message
             obs_serialized = MessagesAdapter.dump_python(
                 obs, context={"include_info": True}
             )

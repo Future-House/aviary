@@ -53,7 +53,9 @@ class Message(BaseModel):
 
     info: dict | None = Field(
         default=None,
-        description="Optional metadata about the message.",
+        description="Optional metadata about the message. "
+        "Excluded because we don't want to serialize it for "
+        "models. To include it, see Message.maybe_serialize_info.",
         exclude=True,
         repr=False,
     )
