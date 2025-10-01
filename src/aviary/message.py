@@ -55,7 +55,7 @@ class Message(BaseModel):
         default=None,
         description="Optional metadata about the message. "
         "Excluded because we don't want to serialize it for "
-        "models. To include it, see Message.maybe_serialize_info.",
+        "models. To include it, call model_dump(context={'include_info': True}).",
         exclude=True,
         repr=False,
     )
