@@ -141,7 +141,8 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 obs, tools = await env.reset()
 
             return (
-                MessagesAdapter.dump_python(obs),
+                # Include info so the client receives the full message
+                MessagesAdapter.dump_python(obs, context={"include_info": True}),
                 ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
             )
 
@@ -153,7 +154,10 @@ class TaskDatasetServer(Generic[TEnvironment]):
             with handle_exc_as_http_exc():
                 obs, *reward_done_trunc = await env.step(req.action)
 
-            obs_serialized = MessagesAdapter.dump_python(obs)
+            # Include info so the client receives the full message
+            obs_serialized = MessagesAdapter.dump_python(
+                obs, context={"include_info": True}
+            )
             return obs_serialized, *reward_done_trunc
 
         @self.app.post("/close", dependencies=[Depends(verify_api_key)])
@@ -211,12 +215,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
             }
 
     def start(self):
-        uvicorn.run(
-            self.app,
-            host=self.host,
-            port=self.port,
-            log_level="debug",
-        )
+        uvicorn.run(self.app, host=self.host, port=self.port, log_level="debug")
 
     async def astart(self):
         """Async equivalent of start()."""
@@ -233,6 +232,7 @@ def handle_exc_as_http_exc():
     try:
         yield
     except Exception as e:
+        logger.exception("Exception in environment.")
         raise HTTPException(
             status_code=500, detail=traceback.format_exc() + "\n" + repr(e)
         ) from None

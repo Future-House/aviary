@@ -2,7 +2,14 @@ import json
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    SerializationInfo,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 from aviary.utils import encode_image_to_base64, validate_base64_image
 
@@ -46,7 +53,9 @@ class Message(BaseModel):
 
     info: dict | None = Field(
         default=None,
-        description="Optional metadata about the message.",
+        description="Optional metadata about the message. "
+        "Excluded because we don't want to serialize it for "
+        "models. To include it, call model_dump(context={'include_info': True}).",
         exclude=True,
         repr=False,
     )
@@ -74,6 +83,17 @@ class Message(BaseModel):
         except TypeError as e:
             raise ValueError("Content must be a string or JSON-serializable.") from e
 
+        return data
+
+    @model_serializer(mode="wrap")
+    def maybe_serialize_info(self, handler, serialization_info: SerializationInfo):
+        """Allows us to call model_dump(context={"include_info": True}).
+
+        This overrides its Field-level exclusion.
+        """
+        data = handler(self)
+        if (serialization_info.context or {}).get("include_info"):
+            data["info"] = self.info
         return data
 
     def __str__(self) -> str:
@@ -121,6 +141,7 @@ class Message(BaseModel):
         role: str = DEFAULT_ROLE,
         text: str | None = None,
         images: "list[np.ndarray | str] | str | np.ndarray | None" = None,
+        **kwargs,
     ) -> Self:
         """Create a message with optional multimodal (just images so far) support.
 
@@ -131,6 +152,7 @@ class Message(BaseModel):
                 making the message a multimodal message.
                 This can be a standalone single image or multiple images in a list.
                 Images can be a numpy array or a base64-encoded image string.
+            kwargs: Additional keyword arguments to pass to the message constructor.
 
         Returns:
             The created message.
@@ -156,7 +178,7 @@ class Message(BaseModel):
             ]
             if text is not None:
                 content.append({"type": "text", "text": text})
-        return cls(role=role, content=content)
+        return cls(role=role, content=content, **kwargs)
 
 
 def join(
