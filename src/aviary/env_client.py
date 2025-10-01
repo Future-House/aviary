@@ -26,6 +26,19 @@ TClient = TypeVar(
     "TClient", httpx.Client, httpx.AsyncClient, httpx_aiohttp.HttpxAiohttpClient
 )
 
+# Sometimes the environment runner code gets
+# killed by any one environment in a job failing
+# So this can be used to ensure one remote environment's
+# failure doesn't kill an entire job
+CATCHABLE_REQUEST_EXCEPTIONS = (
+    httpx.TimeoutException,
+    httpx.HTTPStatusError,
+    json.JSONDecodeError,
+)
+
+
+FAILED_RESET_MESSAGE = "Environment.reset() failed: {error}"
+
 
 class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     def __init__(
@@ -74,15 +87,15 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
             return response
 
     async def reset(self) -> tuple[list[Message], list[Tool]]:
-        response = await self._post(
-            self._reset_request_url, json=self._make_post_json(self.state)
-        )
         try:
+            response = await self._post(
+                self._reset_request_url, json=self._make_post_json(self.state)
+            )
             response.raise_for_status()
             msgs, tools = response.json()
-        except (httpx.HTTPStatusError, json.JSONDecodeError):
+        except CATCHABLE_REQUEST_EXCEPTIONS as e:
             if self._catch_http_errors:
-                return [], []
+                return [Message(content=FAILED_RESET_MESSAGE.format(error=e))], []
             raise
         return (
             MessagesAdapter.validate_python(msgs),
@@ -92,18 +105,18 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
     async def step(
         self, action: ToolRequestMessage
     ) -> tuple[list[Message], float, bool, bool]:
-        response = await self._post(
-            self._step_request_url,
-            json=self._make_post_json(self.state)
-            | {"action": action.model_dump(mode="json")},
-        )
         try:
+            response = await self._post(
+                self._step_request_url,
+                json=self._make_post_json(self.state)
+                | {"action": action.model_dump(mode="json")},
+            )
             response.raise_for_status()
             messages, reward, done, truncated = response.json()
-        except (httpx.HTTPStatusError, json.JSONDecodeError) as e:
+        except CATCHABLE_REQUEST_EXCEPTIONS as e:
             if self._catch_http_errors:
                 messages = [
-                    ToolResponseMessage.from_call(tool_call, content=str(e))
+                    ToolResponseMessage.from_call(tool_call, content=repr(e))
                     for tool_call in action.tool_calls
                 ]
                 return messages, 0.0, True, False
