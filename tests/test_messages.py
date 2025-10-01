@@ -188,8 +188,11 @@ class TestMessage:
                 Message.create_message(text=message_text, images=images)
             return
 
-        message_with_images = Message.create_message(text=message_text, images=images)
+        message_with_images = Message.create_message(
+            text=message_text, images=images, info={"foo": "bar"}
+        )
         assert message_with_images.content
+        assert message_with_images.info == {"foo": "bar"}
         specialized_content = json.loads(message_with_images.content)
         assert len(specialized_content) == expected_content_length
 
