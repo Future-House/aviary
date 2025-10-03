@@ -17,7 +17,7 @@ from aviary.core import (
     ToolRequestMessage,
 )
 from aviary.env import ENV_REGISTRY
-from aviary.envs.litqa import GradablePaperQAEnvironment
+from aviary.envs.labbench import GradablePaperQAEnvironment
 from lmi import CommonLLMNames, LiteLLMModel, LLMModel
 from paperqa.utils import strip_citations
 from pydantic import Field, model_validator
