@@ -246,12 +246,10 @@ class LitQATaskDataset(
         self,
         ideal_answer: str,
         distractors: str | list[str],
-        question_id: str | UUID,
+        question_id: UUID,
         question: str,
         sources: str | list[str] | None = None,
     ) -> GradablePaperQAEnvironment:
-        if isinstance(question_id, str):
-            question_id = UUID(question_id)
         mc_question = MultipleChoiceQuestion(
             question_id=question_id,
             question=question,
