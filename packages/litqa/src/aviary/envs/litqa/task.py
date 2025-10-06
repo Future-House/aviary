@@ -246,7 +246,7 @@ class LitQATaskDataset(
         self,
         ideal_answer: str,
         distractors: str | list[str],
-        question_id: str | UUID,
+        question_id: UUID,
         question: str,
         sources: str | list[str] | None = None,
     ) -> GradablePaperQAEnvironment:
@@ -268,6 +268,7 @@ class LitQATaskDataset(
             docs=self._base_docs.model_copy(),
             sources=sources,
             rewards=self._rewards,
+            session_id=question_id,  # Expedite manual inspection
             **self._env_kwargs,
         )
 
