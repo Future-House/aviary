@@ -250,6 +250,8 @@ class LitQATaskDataset(
         question: str,
         sources: str | list[str] | None = None,
     ) -> GradablePaperQAEnvironment:
+        if isinstance(question_id, str):
+            question_id = UUID(question_id)
         mc_question = MultipleChoiceQuestion(
             question_id=question_id,
             question=question,
@@ -268,6 +270,7 @@ class LitQATaskDataset(
             docs=self._base_docs.model_copy(),
             sources=sources,
             rewards=self._rewards,
+            session_id=question_id,  # Expedite manual inspection
             **self._env_kwargs,
         )
 

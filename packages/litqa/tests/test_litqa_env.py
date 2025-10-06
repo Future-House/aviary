@@ -201,8 +201,9 @@ class TestTaskDataset:
         for i in range(len(task_dataset)):
             env = task_dataset.get_new_env_by_idx(i)
             if i == 0 and split == LitQAv2TaskSplit.TRAIN:
+                expected_question_id = "dbfbae3d-62f6-4710-8d13-8ce4c8485567"
                 # Getting ID can work before reset
-                assert await env.get_id() == "dbfbae3d-62f6-4710-8d13-8ce4c8485567"
+                assert await env.get_id() == expected_question_id
                 # Yes this assertion is somewhat brittle, but it reliably
                 # checks the seeding's behavior so we keep it
                 obs, _ = await env.reset()
@@ -211,6 +212,9 @@ class TestTaskDataset:
                     " cells in which organ?\n\nOptions:\nA) liver\nB) Insufficient"
                     " information to answer this question\nC) prostate\nD) eye\nE)"
                     " heart" in (obs[0].content or "")
+                )
+                assert str(env.state.session.id) == expected_question_id, (
+                    "Expected session ID to match the question ID, for readability"
                 )
             assert env.sources, "Sources need to be accessible"
             assert isinstance(env.sources, Iterable), (
@@ -300,6 +304,7 @@ class TestTaskDataset:
             for env in store_env_callback.query_to_envs.values():
                 await env.reset()
                 assert env.state.docs == raw_docs_deepcopy
+                assert await env.get_id() == str(env.state.session.id)
 
         with subtests.test(msg="zero-shot"):
             # Confirm we can just directly call gen_answer
