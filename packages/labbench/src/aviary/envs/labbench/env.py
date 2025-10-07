@@ -245,6 +245,14 @@ class ImageQAEnvironment(GradablePaperQAEnvironment):
                 (cast("bytes | Image", images), Path(image_paths).name)
             ]
 
+    def get_images(self) -> "list[bytes | Image]":
+        """
+        Get the image(s) used in the environment, helpful for recall measurement.
+
+        NOTE: FigQA has 1 image with paths, TableQA has 1+ images with paths.
+        """
+        return [image for image, _ in self._images_with_names]
+
     async def _reset_docs(self) -> None:
         """Hook to reset the docs when creating the initial state."""
         self._docs.clear_docs()
