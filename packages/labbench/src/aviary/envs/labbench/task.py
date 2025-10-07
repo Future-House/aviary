@@ -419,6 +419,42 @@ class TextQATaskDataset(PaperQATaskDataset[TGradableEnv]):
     def __len__(self) -> int:
         return len(self.data)
 
+    async def get_images(
+        self, value: str | UUID | MultipleChoiceQuestion | GradablePaperQAEnvironment
+    ) -> bytes | list[bytes]:
+        """
+        Get the image(s) used in the environment, helpful for recall measurement.
+
+        NOTE: FigQA has 1 image with paths, TableQA has 1+ images with paths.
+        """
+        if isinstance(value, GradablePaperQAEnvironment):
+            question_id: str | UUID = await value.get_id()
+        elif isinstance(value, MultipleChoiceQuestion):
+            question_id = value.question_id
+        else:
+            question_id = value
+
+        matching_rows = self.data[self.data["id"] == str(question_id)]
+        if len(matching_rows) != 1:
+            raise ValueError(
+                f"Question ID {question_id} matched {len(matching_rows)} rows,"
+                " require exactly 1 match."
+            )
+
+        try:
+            images_col = self._dataset.images_column
+        except ValueError as exc:
+            raise ValueError(
+                f"Dataset {self._dataset.value!r} has no images column."
+            ) from exc
+
+        images = matching_rows.iloc[0][images_col]
+        return (
+            images["bytes"]
+            if isinstance(images, dict)
+            else [image["bytes"] for image in images]
+        )
+
 
 for dataset_name in ("figqa-text", "litqa2", "tableqa-text"):
     TASK_DATASET_REGISTRY[dataset_name] = (
