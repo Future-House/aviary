@@ -435,6 +435,26 @@ class TestTextQATaskDataset:
             for i in range(3)
         ] == first_three
 
+    @pytest.mark.parametrize(
+        "dataset",
+        [LABBenchDatasets.FIG_QA, LABBenchDatasets.TABLE_QA, LABBenchDatasets.LIT_QA2],
+    )
+    @pytest.mark.asyncio
+    async def test_get_images(self, dataset: str | LABBenchDatasets) -> None:
+        task_dataset = TextQATaskDataset(dataset=dataset, read_data_kwargs={"seed": 42})
+
+        # Confirm a UUID not in the dataset is not matched
+        with pytest.raises(ValueError, match="0 rows"):
+            await task_dataset.get_images(uuid4())
+
+        # Now check we can get images if they're present
+        env = task_dataset.get_new_env_by_idx(0)
+        if dataset in {LABBenchDatasets.FIG_QA, LABBenchDatasets.TABLE_QA}:
+            assert isinstance(await task_dataset.get_images(env), bytes | list)
+        else:
+            with pytest.raises(ValueError, match="no images"):
+                await task_dataset.get_images(env)
+
 
 class TestImageQATaskDataset:
     @pytest.mark.asyncio
