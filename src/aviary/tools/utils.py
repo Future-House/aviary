@@ -3,7 +3,7 @@ from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from aviary.message import MalformedMessageError, Message
 
@@ -114,13 +114,21 @@ class ToolSelector:
                 f" response was {model_response} and tool choice was {tool_choice!r}."
             )
         usage = model_response.usage
-        selection = ToolRequestMessage(
-            **choice.message.model_dump(),
-            info={
-                "usage": (usage.prompt_tokens, usage.completion_tokens),
-                "model": self._model_name,
-            },
-        )
+        try:
+            selection = ToolRequestMessage(
+                **choice.message.model_dump(),
+                info={
+                    "usage": (usage.prompt_tokens, usage.completion_tokens),
+                    "model": self._model_name,
+                },
+            )
+        except ValidationError as exc:
+            raise MalformedMessageError(
+                f"Failed to convert model response's message {choice.message}"
+                f" into a tool request message."
+                f" Got finish reason {choice.finish_reason!r}, full"
+                f" response was {model_response} and tool choice was {tool_choice!r}."
+            ) from exc
         if self._ledger is not None:
             self._ledger.messages.append(selection)
         return selection

@@ -10,7 +10,7 @@ from typing import ClassVar
 import litellm
 import pytest
 from httpx import ASGITransport, AsyncClient
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from pytest_subtests import SubTests
 
 from aviary.core import (
@@ -30,6 +30,7 @@ from aviary.core import (
     ToolSelectorLedger,
 )
 from aviary.dataset_server import TaskDatasetServer
+from aviary.message import MalformedMessageError
 from aviary.tools import FunctionInfo, Messages
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
@@ -481,6 +482,31 @@ class TestParallelism:
         )
         assert "BOOM" in tool_response_msg.content, (
             "Expected sub-exceptions to be displayed"
+        )
+
+    @pytest.mark.asyncio
+    async def test_tool_selector_bad_agent_llm_response(
+        self, dummy_env: DummyEnv
+    ) -> None:
+        obs, tools = await dummy_env.reset()
+
+        async def stub_acompletion(*_, **__) -> litellm.ModelResponse:  # noqa: RUF029
+            return litellm.ModelResponse(
+                choices=[
+                    litellm.Choices(
+                        # Malformatted because it contains null tool calls
+                        message=ToolRequestMessage().model_dump() | {"tool_calls": None}
+                    )
+                ]
+            )
+
+        selector = ToolSelector("stub", acompletion=stub_acompletion)
+        with pytest.raises(
+            MalformedMessageError, match="tool request message"
+        ) as exc_info:
+            await selector(obs, tools=tools)
+        assert isinstance(exc_info.value.__cause__, ValidationError), (
+            "We should be able to retrieve the original validation error"
         )
 
     @pytest.mark.vcr(match_on=[*VCR_DEFAULT_MATCH_ON, "body"])
