@@ -103,15 +103,15 @@ class ToolSelector:
 
         if (num_choices := len(model_response.choices)) != 1:
             raise MalformedMessageError(
-                f"Expected one choice in LiteLLM model response, got {num_choices}"
+                f"Expected one choice in model response, got {num_choices}"
                 f" choices, full response was {model_response}."
             )
         choice = model_response.choices[0]
         if choice.finish_reason not in expected_finish_reason:
             raise MalformedMessageError(
-                f"Expected a finish reason in {expected_finish_reason} in LiteLLM"
+                f"Expected a finish reason in {expected_finish_reason} in"
                 f" model response, got finish reason {choice.finish_reason!r}, full"
-                f" response was {model_response} and tool choice was {tool_choice}."
+                f" response was {model_response} and tool choice was {tool_choice!r}."
             )
         usage = model_response.usage
         selection = ToolRequestMessage(
