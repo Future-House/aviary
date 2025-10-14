@@ -165,8 +165,10 @@ class ToolResponseMessage(Message):
     )
 
     @classmethod
-    def from_call(cls, call: ToolCall, content: str) -> Self:
-        return cls(content=content, name=call.function.name, tool_call_id=call.id)
+    def from_call(cls, call: ToolCall, content: str, **kwargs) -> Self:
+        return cls(
+            content=content, name=call.function.name, tool_call_id=call.id, **kwargs
+        )
 
     @classmethod
     def from_request(
