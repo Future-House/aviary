@@ -690,6 +690,7 @@ PARAMETERS:
             new_messages = await dummy_env.exec_tool_calls(action)
             assert new_messages[0].content == "Go for a walk"
 
+    @pytest.mark.asyncio
     async def test_tool_timing(self, dummy_env: DummyEnv) -> None:
         sleep_time = 0.1
 
