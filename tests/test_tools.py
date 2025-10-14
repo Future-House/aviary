@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import pickle
@@ -688,6 +689,24 @@ PARAMETERS:
             action = ToolRequestMessage(tool_calls=[tool_call])
             new_messages = await dummy_env.exec_tool_calls(action)
             assert new_messages[0].content == "Go for a walk"
+
+    async def test_tool_timing(self, dummy_env: DummyEnv) -> None:
+        sleep_time = 0.1
+
+        async def sleep_tool_fn() -> None:
+            await asyncio.sleep(sleep_time)
+
+        tool = Tool.from_function(sleep_tool_fn)
+        tool_calls = [ToolCall.from_tool(tool) for _ in range(3)]
+        responses = await dummy_env.exec_tool_calls(
+            ToolRequestMessage(tool_calls=tool_calls)
+        )
+
+        for resp in responses:
+            assert resp.info, "Expected timing info to be present"
+            assert resp.info["end_ts"] - resp.info["start_ts"] >= sleep_time, (
+                "Expected non-trivial time elapsed."
+            )
 
 
 def test_argref_by_name_basic_usage() -> None:

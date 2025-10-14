@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import random
+import time
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator
 from copy import deepcopy
@@ -216,6 +217,7 @@ class Environment(ABC, Generic[TEnvState]):
         """
 
         async def _exec_tool_call(tool_call: ToolCall) -> ToolResponseMessage:
+            start = time.monotonic()
             try:
                 tool = next(
                     t for t in self.tools if t.info.name == tool_call.function.name
@@ -283,7 +285,14 @@ class Environment(ABC, Generic[TEnvState]):
                 s_content = content.model_dump_json(exclude_none=True, by_alias=True)
             else:  # Fallback when content is another type, or None
                 s_content = json.dumps(content)
-            return ToolResponseMessage.from_call(tool_call, content=s_content)
+            return ToolResponseMessage.from_call(
+                tool_call,
+                content=s_content,
+                info={
+                    "start_ts": start,
+                    "end_ts": time.monotonic(),
+                },
+            )
 
         invalid_responses = []
         valid_action = message
