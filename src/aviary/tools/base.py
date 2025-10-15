@@ -391,6 +391,7 @@ class Tool(BaseModel):
         docstring_style: DocstringStyle = DocstringStyle.AUTO,
         allow_empty_param_descriptions: bool = False,
         types_in_param_descriptions: bool = False,
+        concurrency_safe: bool = True,
         **formats,
     ) -> "Tool":
         """Hydrate this class via inspection from a free function with a docstring."""
@@ -459,6 +460,7 @@ class Tool(BaseModel):
                 ),
                 parameters=json_schema,
             ),
+            concurrency_safe=concurrency_safe,
         )
 
 
