@@ -979,7 +979,7 @@ async def test_mixed_concurrency() -> None:
         """Stub."""
         return await sleep_fn()
 
-    safe_sleep = Tool.from_function(sleep_fn, concurrency_safe=True)
+    safe_sleep = Tool.from_function(sleep_fn)
     unsafe_sleep = Tool.from_function(unsafe_sleep_fn, concurrency_safe=False)
 
     dummy_env = DummyEnv()
