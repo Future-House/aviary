@@ -344,6 +344,15 @@ class Tool(BaseModel):
             " serialization, and the validation alias enables deserialization."
         ),
     )
+    concurrency_safe: bool = Field(
+        default=True,
+        exclude=True,
+        description=(
+            "Whether the tool is safe to run concurrently with itself and other tools. "
+            "If set to False (not default), then executing this tool will block all "
+            "other tool calls (including concurrency-safe tools)."
+        ),
+    )
 
     def __init__(
         self,
