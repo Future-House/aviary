@@ -1,6 +1,5 @@
 import asyncio
 import base64
-from contextlib import asynccontextmanager
 import inspect
 import io
 import random
@@ -8,6 +7,7 @@ import string
 from ast import literal_eval
 from collections import UserDict
 from collections.abc import Sequence
+from contextlib import asynccontextmanager
 from enum import StrEnum
 from typing import (
     TYPE_CHECKING,
@@ -527,15 +527,15 @@ class ReaderWriterLock:
         self._readers = 0
         self._writer = False
         self._lock = asyncio.Lock()
-        self._read_ok = asyncio.Condition(self._lock)
         self._write_ok = asyncio.Condition(self._lock)
+        self._read_ok = asyncio.Condition(self._lock)
 
     @asynccontextmanager
     async def read_lock(self):
         """Acquire a read lock. This blocks all writers."""
         async with self._lock:
             while self._writer:
-                await self._write_ok.wait()
+                await self._read_ok.wait()
             self._readers += 1
         try:
             yield
@@ -543,19 +543,19 @@ class ReaderWriterLock:
             async with self._lock:
                 self._readers -= 1
                 if self._readers == 0:
-                    self._read_ok.notify_all()
+                    self._write_ok.notify_all()
 
     @asynccontextmanager
     async def write_lock(self):
         """Acquire a write lock. This blocks all readers and writers."""
         async with self._lock:
             while self._writer or self._readers > 0:
-                await self._read_ok.wait()
+                await self._write_ok.wait()
             self._writer = True
         try:
             yield
         finally:
             async with self._lock:
                 self._writer = False
-                self._write_ok.notify_all()
                 self._read_ok.notify_all()
+                self._write_ok.notify_all()
