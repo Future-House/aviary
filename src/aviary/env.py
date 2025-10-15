@@ -31,7 +31,7 @@ from aviary.tools import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
-from aviary.utils import format_exc, is_coroutine_callable
+from aviary.utils import ReaderWriterLock, format_exc, is_coroutine_callable
 
 logger = logging.getLogger(__name__)
 
@@ -215,6 +215,7 @@ class Environment(ABC, Generic[TEnvState]):
             Ordered list of ToolResponseMessages, order matches the order of tool calls
                 in the input message.
         """
+        concurrency_lock = ReaderWriterLock()
 
         async def _exec_tool_call(tool_call: ToolCall) -> ToolResponseMessage:
             start = time.monotonic()
@@ -227,6 +228,7 @@ class Environment(ABC, Generic[TEnvState]):
                     f"{tool_call.function.name!r} not a valid name in"
                     f" { {t.info.name for t in self.tools} }."
                 ) from exc
+
             # we do a special convenience to make
             # state be optional in the function signature
             need_to_filter = (
@@ -239,25 +241,33 @@ class Environment(ABC, Generic[TEnvState]):
                 if need_to_filter
                 else function_kwargs
             )
+
+            concurrency_context = (
+                concurrency_lock.read_lock()
+                if tool.concurrency_safe
+                else concurrency_lock.write_lock()
+            )
+
             tool_exc: Exception | None = None
             try:
-                if is_coroutine_callable(tool._tool_fn):
-                    content = await maybe_wait_for(
-                        tool._tool_fn(
-                            **tool_call.function.arguments, **filtered_kwargs
-                        ),
-                        exec_timeout,
-                    )
-                else:
-                    # If the function is synchronous, run on a thread
-                    content = await maybe_wait_for(
-                        asyncio.to_thread(
-                            tool._tool_fn,
-                            **tool_call.function.arguments,
-                            **filtered_kwargs,
-                        ),
-                        exec_timeout,
-                    )
+                async with concurrency_context:
+                    if is_coroutine_callable(tool._tool_fn):
+                        content = await maybe_wait_for(
+                            tool._tool_fn(
+                                **tool_call.function.arguments, **filtered_kwargs
+                            ),
+                            exec_timeout,
+                        )
+                    else:
+                        # If the function is synchronous, run on a thread
+                        content = await maybe_wait_for(
+                            asyncio.to_thread(
+                                tool._tool_fn,
+                                **tool_call.function.arguments,
+                                **filtered_kwargs,
+                            ),
+                            exec_timeout,
+                        )
             except Exception as exc:
                 if not handle_tool_exc:
                     raise

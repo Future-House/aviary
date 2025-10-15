@@ -4,7 +4,7 @@ import os
 import pickle
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
-from typing import Any
+from typing import Any, cast
 from unittest.mock import patch
 
 import pytest
@@ -956,3 +956,54 @@ async def test_make_tool_server():
         )
         assert response.status_code == 200
         assert response.json()["result"] == "3"
+
+
+@pytest.mark.asyncio
+async def test_mixed_concurrency() -> None:
+    # Counts the number of tools executing concurrently
+    counter = 0
+    counter_lock = asyncio.Lock()
+
+    async def sleep_fn() -> int:
+        """Stub."""
+        nonlocal counter
+        async with counter_lock:
+            counter += 1
+            counter_val = counter
+        await asyncio.sleep(0.5)
+        async with counter_lock:
+            counter -= 1
+        return counter_val
+
+    async def unsafe_sleep_fn() -> int:
+        """Stub."""
+        return await sleep_fn()
+
+    safe_sleep = Tool.from_function(sleep_fn)
+    unsafe_sleep = Tool.from_function(unsafe_sleep_fn, concurrency_safe=False)
+
+    dummy_env = DummyEnv()
+    await dummy_env.reset()
+    dummy_env.tools = [safe_sleep, unsafe_sleep]
+
+    safes = [True, True, True, False, True, False, False, True, True]
+    obs, *_ = await dummy_env.step(
+        ToolRequestMessage(
+            tool_calls=[
+                ToolCall.from_tool(safe_sleep if safe else unsafe_sleep)
+                for safe in safes
+            ]
+        )
+    )
+
+    at_least_one_parallel = False
+    for safe, msg in zip(safes, obs, strict=True):
+        count = int(cast(str, msg.content))
+        if safe:
+            at_least_one_parallel |= count > 1
+        else:
+            assert count == 1, "Expected unsafe tools to block all other tool calls."
+
+    assert at_least_one_parallel, (
+        "Expected at least one safe tool call to run concurrently with another."
+    )
