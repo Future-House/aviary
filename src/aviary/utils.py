@@ -6,7 +6,7 @@ import random
 import string
 from ast import literal_eval
 from collections import UserDict
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from enum import StrEnum
 from typing import (
@@ -515,7 +515,7 @@ def format_exc(exc: BaseException) -> str:
 
 
 class ReaderWriterLock:
-    """A lock that allows execution of multiple readers or a single writer.
+    """An asyncio lock that allows execution of multiple readers or a single writer.
 
     When a writer is executing, it will block all readers and writers.
     The main use case here is for concurrency-unsafe tools to block execution
@@ -531,7 +531,7 @@ class ReaderWriterLock:
         self._read_ok = asyncio.Condition(self._lock)
 
     @asynccontextmanager
-    async def read_lock(self):
+    async def read_lock(self) -> AsyncIterator[None]:
         """Acquire a read lock. This blocks all writers."""
         async with self._lock:
             while self._writer:
@@ -546,7 +546,7 @@ class ReaderWriterLock:
                     self._write_ok.notify_all()
 
     @asynccontextmanager
-    async def write_lock(self):
+    async def write_lock(self) -> AsyncIterator[None]:
         """Acquire a write lock. This blocks all readers and writers."""
         async with self._lock:
             while self._writer or self._readers > 0:

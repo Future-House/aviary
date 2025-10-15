@@ -346,6 +346,10 @@ class Tool(BaseModel):
     )
     concurrency_safe: bool = Field(
         default=True,
+        # Exclude since we need Tool.model_dump() to conform to OpenAI schema.
+        # Note that this is safe: while we do (de)serialize tools when e.g. passing to
+        # agents, only Environment.exec_tool_calls uses this field. And we never serialize
+        # an env after reset.
         exclude=True,
         description=(
             "Whether the tool is safe to run concurrently with itself and other tools. "
