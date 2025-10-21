@@ -410,9 +410,12 @@ class TaskDataset(ABC, Generic[TEnvironment]):
         )
 
     def get_new_env(self) -> TEnvironment:
-        """Get an env from a non-indexable dataset."""
+        """Get an env from a non-indexable dataset, or if there's just one item."""
+        if len(self) == 1:
+            return self.get_new_env_by_idx(0)
         raise NotImplementedError(
-            f'"{self.__class__.__name__}" does not implement get_new_env'
+            f'"{self.__class__.__name__}" does not implement get_new_env with'
+            f" {len(self)} envs"
         )
 
     def iter_batches(
