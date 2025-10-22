@@ -9,7 +9,7 @@ import os
 import random
 import time
 from abc import ABC, abstractmethod
-from collections.abc import Awaitable, Iterator
+from collections.abc import Awaitable, Iterator, Sequence
 from copy import deepcopy
 from typing import Annotated, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
 
@@ -445,6 +445,23 @@ class TaskDataset(ABC, Generic[TEnvironment]):
                 batch_idcs = idcs[:batch_size]
                 idcs = idcs[batch_size:]
                 yield [self.get_new_env_by_idx(idx) for idx in batch_idcs]
+
+
+class EnvsTaskDataset(TaskDataset[TEnvironment]):
+    """
+    Task dataset made up of a bunch of individual environments.
+
+    This is useful when doing prototyping with individual environments.
+    """
+
+    def __init__(self, envs: TEnvironment | Sequence[TEnvironment]):
+        self._envs = envs if isinstance(envs, Sequence) else (envs,)
+
+    def __len__(self) -> int:
+        return len(self._envs)
+
+    def get_new_env_by_idx(self, idx: int) -> TEnvironment:
+        return self._envs[idx]
 
 
 # Maps baseline task dataset names to their module and class names

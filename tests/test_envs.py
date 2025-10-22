@@ -30,6 +30,7 @@ from aviary.core import (
     ToolSelectorLedger,
 )
 from aviary.dataset_server import TaskDatasetServer
+from aviary.env import EnvsTaskDataset
 from aviary.message import MalformedMessageError
 from aviary.tools import FunctionInfo, Messages
 from tests import CILLMModelNames
@@ -208,6 +209,14 @@ class TestDummyEnv:
             assert 1 <= len(new_messages) <= 2
         else:
             assert len(new_messages) == 2
+
+
+class TestTaskDataset:
+    def test_dataset_from_envs(self) -> None:
+        env = DummyEnv()
+        dataset = EnvsTaskDataset(envs=[env])
+        assert len(dataset) == 1
+        assert dataset.get_new_env_by_idx(0) == env
 
 
 @pytest.mark.asyncio
