@@ -40,6 +40,7 @@ datasets = [
 dev = [
     "aviary.litqa[datasets]",
     "paper-qa>=5.29.1",  # Pin for gen_answer's EmptyDocsError, with fix
+    "tantivy>=0.25.0; python_version >= '3.14'",  # For Python 3.14 support
 ]
 
 [tool.ruff]
