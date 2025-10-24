@@ -206,6 +206,17 @@ jobs = 0
 load-plugins = [
     "pylint_pydantic",
 ]
+# Add paths to the list of the source roots. Supports globbing patterns.
+# The source root is an absolute path or a path relative to the current working
+# directory used to determine a package namespace for modules located under the source root.
+source-roots = [
+    "packages/gsm8k/src",
+    "packages/hotpotqa/src",
+    "packages/lfrqa/src",
+    "packages/litqa/src",
+    "packages/notebook/src",
+    "src",
+]
 
 [tool.pylint.messages_control]
 # Disable the message, report, category or checker with the given id(s).
