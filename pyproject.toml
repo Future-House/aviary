@@ -53,7 +53,7 @@ dev = [
     "prek",
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
     "pylint-pydantic",
-    "pylint>=3.3.3",  # Pin for Python>=3.13.1's 'collections.abc' import error
+    "pylint>=4",  # Pin for Python 3.14 support
     "pytest-asyncio",
     "pytest-recording",
     "pytest-rerunfailures",
@@ -205,6 +205,17 @@ jobs = 0
 # usually to register additional checkers.
 load-plugins = [
     "pylint_pydantic",
+]
+# Add paths to the list of the source roots. Supports globbing patterns.
+# The source root is an absolute path or a path relative to the current working
+# directory used to determine a package namespace for modules located under the source root.
+source-roots = [
+    "packages/gsm8k/src",
+    "packages/hotpotqa/src",
+    "packages/lfrqa/src",
+    "packages/litqa/src",
+    "packages/notebook/src",
+    "src",
 ]
 
 [tool.pylint.messages_control]
