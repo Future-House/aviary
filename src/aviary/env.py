@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 import importlib
 import inspect
@@ -397,7 +395,7 @@ class TaskDataset(ABC, Generic[TEnvironment]):
     """
 
     @classmethod
-    def from_name(cls, name: str, **env_kwargs) -> TaskDataset:
+    def from_name(cls, name: str, **env_kwargs) -> "TaskDataset":
         return _get_cls_from_name(TASK_DATASET_REGISTRY, name)(**env_kwargs)
 
     def __len__(self) -> int:
@@ -531,7 +529,7 @@ class DummyEnv(Environment[DummyEnvState]):
         return self.task
 
     @classmethod
-    def from_task(cls, task: str) -> DummyEnv:
+    def from_task(cls, task: str) -> "DummyEnv":
         return cls(task=task)
 
     async def step(
