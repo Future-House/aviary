@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -63,7 +64,6 @@ dev = [
     "pytest-xdist",
     "pytest>=8",  # Pin to keep recent
     "refurb>=2",  # Pin to keep recent
-    "tantivy<=0.22.0",  # Pin until https://github.com/quickwit-oss/tantivy-py/issues/371 is resolved
     "tenacity",
     "typeguard",
     "vcrpy>=6",  # Pin for https://github.com/kevin1024/vcrpy/issues/884
