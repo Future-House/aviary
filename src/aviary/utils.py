@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import inspect
 import io
@@ -5,7 +6,8 @@ import random
 import string
 from ast import literal_eval
 from collections import UserDict
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
+from contextlib import asynccontextmanager
 from enum import StrEnum
 from typing import (
     TYPE_CHECKING,
@@ -510,3 +512,50 @@ def format_exc(exc: BaseException) -> str:
             f" {', '.join(repr(e) for e in exc.exceptions)}"
         )
     return repr(exc)
+
+
+class ReaderWriterLock:
+    """An asyncio lock that allows execution of multiple readers or a single writer.
+
+    When a writer is executing, it will block all readers and writers.
+    The main use case here is for concurrency-unsafe tools to block execution
+    of other tool calls, while still allowing concurrency-safe tools to execute
+    in parallel with each other.
+    """
+
+    def __init__(self):
+        self._readers = 0
+        self._writer = False
+        self._lock = asyncio.Lock()
+        self._write_ok = asyncio.Condition(self._lock)
+        self._read_ok = asyncio.Condition(self._lock)
+
+    @asynccontextmanager
+    async def read_lock(self) -> AsyncIterator[None]:
+        """Acquire a read lock. This blocks all writers."""
+        async with self._lock:
+            while self._writer:
+                await self._read_ok.wait()
+            self._readers += 1
+        try:
+            yield
+        finally:
+            async with self._lock:
+                self._readers -= 1
+                if self._readers == 0:
+                    self._write_ok.notify_all()
+
+    @asynccontextmanager
+    async def write_lock(self) -> AsyncIterator[None]:
+        """Acquire a write lock. This blocks all readers and writers."""
+        async with self._lock:
+            while self._writer or self._readers > 0:
+                await self._write_ok.wait()
+            self._writer = True
+        try:
+            yield
+        finally:
+            async with self._lock:
+                self._writer = False
+                self._read_ok.notify_all()
+                self._write_ok.notify_all()

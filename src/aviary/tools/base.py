@@ -165,8 +165,10 @@ class ToolResponseMessage(Message):
     )
 
     @classmethod
-    def from_call(cls, call: ToolCall, content: str) -> Self:
-        return cls(content=content, name=call.function.name, tool_call_id=call.id)
+    def from_call(cls, call: ToolCall, content: str, **kwargs) -> Self:
+        return cls(
+            content=content, name=call.function.name, tool_call_id=call.id, **kwargs
+        )
 
     @classmethod
     def from_request(
@@ -342,6 +344,19 @@ class Tool(BaseModel):
             " serialization, and the validation alias enables deserialization."
         ),
     )
+    concurrency_safe: bool = Field(
+        default=True,
+        # Exclude since we need Tool.model_dump() to conform to OpenAI schema.
+        # Note that this is safe: while we do (de)serialize tools when e.g. passing to
+        # agents, only Environment.exec_tool_calls uses this field. And we never serialize
+        # an env after reset.
+        exclude=True,
+        description=(
+            "Whether the tool is safe to run concurrently with itself and other tools. "
+            "If set to False (not default), then executing this tool will block all "
+            "other tool calls (including concurrency-safe tools)."
+        ),
+    )
 
     def __init__(
         self,
@@ -380,6 +395,7 @@ class Tool(BaseModel):
         docstring_style: DocstringStyle = DocstringStyle.AUTO,
         allow_empty_param_descriptions: bool = False,
         types_in_param_descriptions: bool = False,
+        concurrency_safe: bool = True,
         **formats,
     ) -> "Tool":
         """Hydrate this class via inspection from a free function with a docstring."""
@@ -448,6 +464,7 @@ class Tool(BaseModel):
                 ),
                 parameters=json_schema,
             ),
+            concurrency_safe=concurrency_safe,
         )
 
 

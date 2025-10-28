@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -39,6 +40,7 @@ datasets = [
 dev = [
     "aviary.litqa[datasets]",
     "paper-qa>=5.29.1",  # Pin for gen_answer's EmptyDocsError, with fix
+    "tantivy>=0.25.0; python_version >= '3.14'",  # For Python 3.14 support
 ]
 
 [tool.ruff]
