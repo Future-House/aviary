@@ -15,7 +15,7 @@ jobs:
         with:
           upload-name-suffix: -fhaviary
       - name: Download built fhaviary artifact to dist/
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ steps.build-fhaviary.outputs.artifact-name }}
           path: dist
@@ -27,7 +27,7 @@ jobs:
           path: packages/gsm8k
           upload-name-suffix: -gsm8k
       - name: Download built aviary.gsm8k artifact to dist/
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ steps.build-aviary-gsm8k.outputs.artifact-name }}
           path: dist
@@ -39,7 +39,7 @@ jobs:
           path: packages/hotpotqa
           upload-name-suffix: -hotpotqa
       - name: Download built aviary.hotpotqa artifact to dist/
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ steps.build-aviary-hotpotqa.outputs.artifact-name }}
           path: dist
@@ -51,7 +51,7 @@ jobs:
           path: packages/litqa
           upload-name-suffix: -litqa
       - name: Download built aviary.litqa artifact to dist/
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ steps.build-aviary-litqa.outputs.artifact-name }}
           path: dist
@@ -63,7 +63,7 @@ jobs:
           path: packages/lfrqa
           upload-name-suffix: -lfrqa
       - name: Download built aviary.lfrqa artifact to dist/
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ steps.build-aviary-lfrqa.outputs.artifact-name }}
           path: dist
@@ -75,7 +75,7 @@ jobs:
           path: packages/notebook
           upload-name-suffix: -notebook
       - name: Download built aviary.notebook artifact to dist/
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: ${{ steps.build-aviary-notebook.outputs.artifact-name }}
           path: dist
