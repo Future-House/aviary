@@ -168,8 +168,8 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 # the env crashed, not that we somehow lost track of it.
                 del self.envs[req.env_id]
 
-                with handle_exc_as_http_exc():
-                    await env.close()
+            with handle_exc_as_http_exc():
+                await env.close()
 
             return {"env_id": req.env_id}
 
