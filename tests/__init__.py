@@ -11,3 +11,4 @@ class CILLMModelNames(StrEnum):
 
 TESTS_DIR = pathlib.Path(__file__).parent
 CASSETTES_DIR = TESTS_DIR / "cassettes"
+TEST_IMAGES_DIR = TESTS_DIR / "fixtures" / "test_images"

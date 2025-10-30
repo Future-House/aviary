@@ -1,5 +1,4 @@
 import json
-import pathlib
 
 import numpy as np
 import pytest
@@ -11,12 +10,11 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
-
-FIXTURES_DIR = pathlib.Path(__file__).parent / "fixtures" / "test_images"
+from tests import TEST_IMAGES_DIR
 
 
 def load_base64_image(filename: str) -> str:
-    return (FIXTURES_DIR / filename).read_text().strip()
+    return (TEST_IMAGES_DIR / filename).read_text().strip()
 
 
 class TestMessage:
