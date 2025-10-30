@@ -6,7 +6,9 @@ from typing import Annotated, Any
 
 import numpy as np
 import pytest
+from PIL import Image
 from pydantic import BaseModel
+from pytest_subtests import SubTests
 
 from aviary.core import (
     MultipleChoiceEvaluation,
@@ -14,7 +16,14 @@ from aviary.core import (
     eval_answer,
     extract_answer,
 )
-from aviary.utils import RandomAnnotation, T, partial_format, shuffle
+from aviary.utils import (
+    RandomAnnotation,
+    T,
+    encode_image_to_base64,
+    partial_format,
+    shuffle,
+)
+from tests import TEST_IMAGES_DIR
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
 
@@ -478,3 +487,32 @@ class TestMultipleChoiceEvaluation:
 )
 def test_partial_format(value: str, formats: dict[str, Any], expected: str) -> None:
     assert partial_format(value, **formats) == expected
+
+
+@pytest.mark.parametrize(
+    ("raw_image_file", "b64_image_file", "format"),
+    [
+        ("sample_image.png", "sample_png_image.b64", "PNG"),
+        ("sample_image.jpeg", "sample_jpeg_image.b64", "JPEG"),
+    ],
+)
+def test_encode_image_to_base64_pil(
+    subtests: SubTests,
+    raw_image_file: str,
+    b64_image_file: str,
+    format: str,  # noqa: A002
+) -> None:
+    image = Image.open(TEST_IMAGES_DIR / raw_image_file)
+    with (TEST_IMAGES_DIR / b64_image_file).open(encoding="utf-8") as f:
+        expected_image_str = f.read()
+
+    with subtests.test(msg="PIL"):
+        assert encode_image_to_base64(image)[:40] == expected_image_str[:40], (
+            "Expected header (MIME type, base64) to match"
+        )
+
+    with subtests.test(msg="numpy"):
+        assert (
+            encode_image_to_base64(np.array(image), format=format)[:40]
+            == expected_image_str[:40]
+        ), "Expected header (MIME type, base64) to match"

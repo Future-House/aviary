@@ -170,7 +170,7 @@ class Message(BaseModel):
                             validate_base64_image(image)
                             # If image is a string, assume it's already a base64-encoded image
                             if isinstance(image, str)
-                            else encode_image_to_base64(image)
+                            else encode_image_to_base64(image, format="PNG")
                         )
                     },
                 }

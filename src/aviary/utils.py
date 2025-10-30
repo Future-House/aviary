@@ -108,7 +108,7 @@ def partial_format(value: str, **formats) -> str:
 
 def encode_image_to_base64(
     img: "np.ndarray | Image.Image",
-    format: str | None = "PNG",  # noqa: A002
+    format: str | None = None,  # noqa: A002
 ) -> str:
     """Encode an image to a base64 string, to be included as an image_url in a Message."""
     try:
@@ -120,10 +120,18 @@ def encode_image_to_base64(
         ) from e
 
     image = Image.fromarray(img) if not isinstance(img, Image.Image) else img
+    if format is None:
+        if image.format is None:
+            raise ValueError(
+                "If PIL doesn't infer the image format,"
+                " please manually specify it with the `format` argument."
+            )
+        format = image.format  # noqa: A001
     buffer = io.BytesIO()
     image.save(buffer, format=format)
     return (
-        f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
+        f"data:{Image.MIME[format.upper()]};base64,"
+        f"{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
     )
 
 
