@@ -33,6 +33,7 @@ except ImportError:
 
 if TYPE_CHECKING:
     import numpy as np
+    from PIL import Image
 
 # Work around super weird bug where np.random.Generator in quotes
 # is not being respected as a forward reference
@@ -105,7 +106,10 @@ def partial_format(value: str, **formats) -> str:
     return value.format_map(PartialDict(formats))
 
 
-def encode_image_to_base64(img: "np.ndarray") -> str:
+def encode_image_to_base64(
+    img: "np.ndarray | Image.Image",
+    format: str | None = "PNG",  # noqa: A002
+) -> str:
     """Encode an image to a base64 string, to be included as an image_url in a Message."""
     try:
         from PIL import Image
@@ -115,9 +119,9 @@ def encode_image_to_base64(img: "np.ndarray") -> str:
             " `pip install aviary[image]`."
         ) from e
 
-    image = Image.fromarray(img)
+    image = Image.fromarray(img) if not isinstance(img, Image.Image) else img
     buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
+    image.save(buffer, format=format)
     return (
         f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
     )
