@@ -49,6 +49,7 @@ TGradableEnv = TypeVar(
 )
 
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
+DEFAULT_LITQA3_HF_HUB_NAME = "futurehouse/litqa3"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
 DEFAULT_AVIARY_PAPER_HF_HUB_NAME = "futurehouse/aviary-paper-data"
 
@@ -171,8 +172,10 @@ class LABBenchDatasets(StrEnum):
 
     # NOTE: keys' underscore before QA is supposed to make for easier reading
     FIG_QA = "FigQA"
+    FIG_QA2 = "FigQA2"
     LIT_QA2 = "LitQA2"
     TABLE_QA = "TableQA"
+    TABLE_QA2 = "TableQA2"
 
     @property
     def images_column(self) -> str:
@@ -190,19 +193,39 @@ class LABBenchDatasets(StrEnum):
             return "table-path"
         raise ValueError(f"Dataset {self.value!r} does not have a paths column.")
 
+    @property
+    def key_passage_column(self) -> str:
+        if self == LABBenchDatasets.LIT_QA2:
+            return "key-passage"
+        if self in {LABBenchDatasets.FIG_QA2, LABBenchDatasets.TABLE_QA2}:
+            return "key_passage"
+        raise ValueError(f"Dataset {self.value!r} does not have a key passage column.")
+
+    @property
+    def is_open_answer(self) -> bool:
+        return self in {LABBenchDatasets.FIG_QA2, LABBenchDatasets.TABLE_QA2}
+
     def get_data(
         self, split: "str | TextQATaskSplit" = "train", **kwargs
     ) -> "pd.DataFrame":
         split = TextQATaskSplit(split)
+        hf_name: LABBenchDatasets | None = self
         if split == TextQATaskSplit.TRAIN:
-            hf_path: str = DEFAULT_LABBENCH_HF_HUB_NAME
+            if self not in {LABBenchDatasets.FIG_QA2, LABBenchDatasets.TABLE_QA2}:
+                hf_path: str = DEFAULT_LABBENCH_HF_HUB_NAME
+            else:
+                hf_path = DEFAULT_LITQA3_HF_HUB_NAME
+                hf_name = None
         elif self == LABBenchDatasets.LIT_QA2:
             hf_path = DEFAULT_AVIARY_PAPER_HF_HUB_NAME
         else:
             raise ValueError(f"Dataset {self.value!r} does not have a 'test' split.")
-        return read_ds_from_hub(
-            self.value, hf_path=hf_path, hf_split=split.value, **kwargs
+        ds_df = read_ds_from_hub(
+            hf_name, hf_path=hf_path, hf_split=split.value, **kwargs
         )
+        if self not in {LABBenchDatasets.FIG_QA2, LABBenchDatasets.TABLE_QA2}:
+            return ds_df
+        return ds_df[ds_df["tag"] == self.value.lower()]
 
     def get_sources(self, row: "pd.Series") -> list[str]:
         if self == LABBenchDatasets.LIT_QA2:
@@ -211,27 +234,31 @@ class LABBenchDatasets(StrEnum):
         # `assert_never` with set.__contains__
         elif self == LABBenchDatasets.FIG_QA or self == LABBenchDatasets.TABLE_QA:  # noqa: PLR1714
             raw_sources = [row.source]
+        elif self == LABBenchDatasets.FIG_QA2 or self == LABBenchDatasets.TABLE_QA2:  # noqa: PLR1714
+            raw_sources = list(row.sources)
         else:
             assert_never(self)
         sources: list[str] = []
         for s in raw_sources:
             try:
-                (doi,) = (
+                (source,) = (
                     s.split(substr, maxsplit=1)[1]
                     # HTTP due to https://github.com/Future-House/LAB-Bench/issues/11
                     for substr in {*DocDetails.DOI_URL_FORMATS, "http://doi.org/"}
                     if substr in s
                 )
             except ValueError as exc:
-                raise NotImplementedError(
-                    f"Didn't handle DOI extraction from source {s!r}."
-                ) from exc
-            sources.append(doi)
+                if not isinstance(s, str):
+                    raise NotImplementedError(
+                        f"Didn't handle source extraction from raw source {s!r}."
+                    ) from exc
+                source = s  # Not a DOI
+            sources.append(source)
         return sources
 
 
 def read_ds_from_hub(
-    hf_name: str | LABBenchDatasets,
+    hf_name: str | LABBenchDatasets | None,
     hf_path: str,
     hf_split: str,
     randomize: bool = True,
@@ -241,7 +268,8 @@ def read_ds_from_hub(
     Read in a train or test DataFrame.
 
     Args:
-        hf_name: Hugging Face Hub dataset's name, e.g. "LitQA2" for LitQA v2.
+        hf_name: Hugging Face Hub dataset's name.
+            E.g. "LitQA2" for LitQA v2 or None for FigQA v2.
         hf_path: Hugging Face Hub dataset's path.
         hf_split: Hugging Face Hub dataset's split, e.g. "train" or "test".
         randomize: Opt-out flag to shuffle the dataset after loading in by question.
@@ -262,8 +290,9 @@ def read_ds_from_hub(
     if isinstance(hf_name, LABBenchDatasets):
         hf_name = hf_name.value
     ds = load_dataset(hf_path, hf_name, split=hf_split).to_pandas()
-    # Convert to list so it's not unexpectedly a numpy array
-    ds["distractors"] = ds["distractors"].apply(list)
+    if "distractors" in ds.columns:
+        # Convert to list so it's not unexpectedly a numpy array
+        ds["distractors"] = ds["distractors"].apply(list)
     # Let downstream usage in the TaskDataset's environment factories check for the
     # presence of other DataFrame columns
     if randomize:
@@ -387,7 +416,11 @@ class TextQATaskDataset(PaperQATaskDataset[TGradableEnv]):
         self.data = self._dataset.get_data(split, **(read_data_kwargs or {}))
 
     def _make_query(self, idx: int) -> MultipleChoiceQuestion:
-        distractors = self.data.iloc[idx].distractors
+        distractors = (
+            self.data.iloc[idx].distractors
+            if "distractors" in self.data.columns
+            else []
+        )
         return MultipleChoiceQuestion(
             question_id=UUID(self.data.iloc[idx].id),
             question=self.data.iloc[idx].question,
@@ -398,6 +431,7 @@ class TextQATaskDataset(PaperQATaskDataset[TGradableEnv]):
             ),
             ideal_answer=self.data.iloc[idx].ideal,
             prompt_without_id=True,
+            prompt_without_options=self._dataset.is_open_answer,
             **(self._question_kwargs or {}),
         )
 
@@ -476,6 +510,11 @@ class ImageQATaskDataset(TextQATaskDataset[ImageQAEnvironment]):
         if autogenerate_settings and settings is None:
             settings = ImageQAEnvironment.make_base_settings()
         super().__init__(settings=settings, dataset=dataset, **kwargs)
+        if self._dataset in {LABBenchDatasets.FIG_QA2, LABBenchDatasets.TABLE_QA2}:
+            raise ValueError(
+                f"Dataset {self._dataset.value!r} not supported by {type(self).__name__}"
+                " because it has no image(s) stored in the dataset."
+            )
 
     def get_new_env_by_idx(self, idx: int) -> ImageQAEnvironment:
         mcq = self._make_query(idx)
@@ -500,7 +539,7 @@ class ImageQATaskDataset(TextQATaskDataset[ImageQAEnvironment]):
         )
 
 
-for dataset_name in ("figqa", "tableqa"):
+for dataset_name in ("figqa", "tableqa", "figqa2", "tableqa2"):
     TASK_DATASET_REGISTRY[dataset_name] = (
         ImageQATaskDataset.__module__,
         ImageQATaskDataset.__name__,
