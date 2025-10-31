@@ -411,6 +411,72 @@ class TestTextQATaskDataset:
                 ],
             ),
             (LABBenchDatasets.TABLE_QA, TextQATaskSplit.TEST, None),
+            (
+                LABBenchDatasets.FIG_QA2,
+                TextQATaskSplit.TRAIN,
+                [
+                    (
+                        "Q: In a study looking at the performance of single-cell"
+                        " foundation models, using the scGPT model, which dataset had"
+                        " the highest average BIO score?"
+                    ),
+                    (
+                        "Q: In a study investigating the long-term effects of"
+                        " pregabalin (PGB), researchers also noted a broader impact on"
+                        " dentate gyrus network function. By altering both the"
+                        " excitability of mature neurons and the development of new"
+                        " ones, PGB may shift the balance of inhibition and excitation"
+                        " within this brain region. This suggests a potential mechanism"
+                        " by which PGB could influence cognitive or emotional"
+                        " processing linked to hippocampal activity. In this study,"
+                        " what is the fold-change in the number of Brdu+Cells% in the"
+                        " Neun-/DCX+ condition when comparing control and PGB"
+                        " treatment? Round to the nearest integer."
+                    ),
+                    (
+                        "Q: The researchers made a Drosophila SCENIC database to study"
+                        " how genes control brain cell types. They found how brain"
+                        " cells change as flies age and used machine learning to guess"
+                        " a cell’s age from its gene activity. The study includes"  # noqa: RUF001
+                        " 157,000 single cell profiles from two fly strains, shared"
+                        " through the SCope tool. In this study which type of non"
+                        " neuronal cell had the second-lowest enrichment of the"
+                        " oxidative phosphorlyation pathway based on single-cell"
+                        " analysis?"
+                    ),
+                ],
+            ),
+            (LABBenchDatasets.FIG_QA2, TextQATaskSplit.TEST, None),
+            (
+                LABBenchDatasets.TABLE_QA2,
+                TextQATaskSplit.TRAIN,
+                [
+                    (
+                        "Q: In the ABIS 20-year prospective birth cohort study that"
+                        " used multi-omics analysis to investigate neurodevelopmental"
+                        " disorders, what was the odds ratio for neurodevelopmental"
+                        " disorders when comparing children who had gastroenteritis 3"
+                        " or more times versus those who never had gastroenteritis"
+                        " between 12 months and 2.5 years of age?"
+                    ),
+                    (
+                        "Q: A study analyzed sample and health data from the ABIS"
+                        " cohort to identify early microbiome and metabolite patterns"
+                        " associated to neurodevelopmental disorder risks. In this"
+                        " paper, what is the difference in odds ratio between"
+                        ' "citrobacter 1" and "coprococcus 0" when comparing the'
+                        " propensity match category?"
+                    ),
+                    (
+                        "Q: Which researcher was funded by the Horizon 2020 Framework"
+                        " Programme for a study developing an open-source simulator for"
+                        " prosthetic vision that incorporates quantitative models of"
+                        " cortical stimulation in V1 based on psychophysical and"
+                        " neuroanatomical research?"
+                    ),
+                ],
+            ),
+            (LABBenchDatasets.TABLE_QA2, TextQATaskSplit.TEST, None),
         ],
     )
     def test_creating_questions(
@@ -436,12 +502,23 @@ class TestTextQATaskDataset:
         ] == first_three
 
     @pytest.mark.parametrize(
-        "dataset",
-        [LABBenchDatasets.FIG_QA, LABBenchDatasets.TABLE_QA, LABBenchDatasets.LIT_QA2],
+        ("dataset", "expected_len"),
+        [
+            (LABBenchDatasets.FIG_QA, 181),
+            (LABBenchDatasets.TABLE_QA, 244),
+            (LABBenchDatasets.LIT_QA2, 199),
+            (LABBenchDatasets.FIG_QA2, 100),
+            (LABBenchDatasets.TABLE_QA2, 100),
+        ],
     )
     @pytest.mark.asyncio
-    async def test_get_images(self, dataset: str | LABBenchDatasets) -> None:
+    async def test_get_images(
+        self, dataset: str | LABBenchDatasets, expected_len: int
+    ) -> None:
         task_dataset = TextQATaskDataset(dataset=dataset, read_data_kwargs={"seed": 42})
+        # Yes this len assertion duplicates others, but it helps make sure we
+        # have constructed the right dataset
+        assert len(task_dataset) == expected_len, "Expecting the right dataset"
 
         # Confirm a UUID not in the dataset is not matched
         with pytest.raises(ValueError, match="0 rows"):
@@ -536,3 +613,21 @@ class TestImageQATaskDataset:
             (added_media,) = text.media
             assert isinstance(added_media.data, bytes)
             assert added_media.info["suffix"] == ".png"
+
+    @pytest.mark.asyncio
+    async def test_figqa2(self) -> None:
+        with pytest.raises(ValueError, match="not supported"):
+            TaskDataset.from_name(
+                LABBenchDatasets.FIG_QA2.value.lower(),
+                dataset=LABBenchDatasets.FIG_QA2,
+                read_data_kwargs={"seed": 42},
+            )
+
+    @pytest.mark.asyncio
+    async def test_tableqa2(self) -> None:
+        with pytest.raises(ValueError, match="not supported"):
+            TaskDataset.from_name(
+                LABBenchDatasets.TABLE_QA2.value.lower(),
+                dataset=LABBenchDatasets.TABLE_QA2,
+                read_data_kwargs={"seed": 42},
+            )
