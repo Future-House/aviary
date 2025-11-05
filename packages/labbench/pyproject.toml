@@ -22,7 +22,7 @@ dependencies = [
     "fhaviary>=0.14",  # For MultipleChoiceQuestion
     "fhlmi",
     "ldp>=0.25.2",  # Pin for lmi migration
-    "paper-qa[pymupdf] @ git+https://github.com/Future-House/paper-qa.git",  # Pin for multimodal
+    "paper-qa[pymupdf] @ git+https://github.com/Future-House/paper-qa.git@54eac6c6787a91bec2c150f2e17cc8f7c782964d",  # Pin for multimodal
     "pydantic~=2.0",
     "tenacity",
     "typing-extensions; python_version <= '3.12'",  # For TypeVar default
