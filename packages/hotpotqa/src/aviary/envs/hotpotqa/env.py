@@ -430,6 +430,9 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 response = await fetch_with_retry(
                     client,
                     f"https://en.wikipedia.org/w/index.php?search={search_entity}",
+                    headers={
+                        "User-Agent": "Aviary (https://github.com/Future-House/aviary)"
+                    },
                     timeout=15,
                 )
                 response.raise_for_status()  # Raise an HTTPError for bad responses
