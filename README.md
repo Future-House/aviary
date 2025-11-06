@@ -13,7 +13,7 @@
 [![python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue?style=flat&logo=python&logoColor=white)](https://www.python.org)
 
 <p align="left">
-  <a href="https://arxiv.org/abs/2212.04450">
+  <a href="https://arxiv.org/abs/2412.21154">
     <img src="docs/assets/aviary_art.png" width="500" alt="Crows in a gym" />
   </a>
 </p>
@@ -40,7 +40,7 @@ See the following [tutorial][2] for an example of how to run an LDP language age
 ## Overview
 
 <p align="left">
-  <a href="https://arxiv.org/abs/2212.04450">
+  <a href="https://arxiv.org/abs/2412.21154">
     <img src="docs/assets/Aviary.png" width="800" alt="Aviary and LDP overview from paper" />
   </a>
 </p>
