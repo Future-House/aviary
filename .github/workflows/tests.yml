@@ -14,7 +14,7 @@ jobs:
       matrix:
         python-version: [3.11, 3.14] # Our min and max supported Python versions
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # For setuptools-scm, replace with fetch-tags after https://github.com/actions/checkout/issues/1471
       - uses: astral-sh/setup-uv@v7
@@ -32,7 +32,7 @@ jobs:
       matrix:
         python-version: [3.11, 3.14] # Our min and max supported Python versions
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # For setuptools-scm, replace with fetch-tags after https://github.com/actions/checkout/issues/1471
       - uses: astral-sh/setup-uv@v7
@@ -100,7 +100,7 @@ jobs:
       matrix:
         python-version: [3.13]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # For setuptools-scm, replace with fetch-tags after https://github.com/actions/checkout/issues/1471
       - uses: astral-sh/setup-uv@v7
