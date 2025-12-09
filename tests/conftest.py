@@ -58,7 +58,7 @@ def fixture_vcr_config() -> dict[str, Any]:
         "match_on": ["method", "host", "path", "query"],
         "allow_playback_repeats": True,
         "cassette_library_dir": str(CASSETTES_DIR),
-        "drop_unused_requests": True,
+        # "drop_unused_requests": True,  # Restore after https://github.com/kevin1024/vcrpy/issues/961
     }
 
 
