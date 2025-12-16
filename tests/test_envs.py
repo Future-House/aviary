@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 import litellm
+import numpy as np
 import pytest
 from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel, ValidationError
@@ -271,6 +272,37 @@ async def test_invalid_tool_call(
     for o, t in zip(obs, tool_calls, strict=True):
         assert isinstance(o, ToolResponseMessage)
         assert o.tool_call_id == t.id
+
+
+@pytest.mark.asyncio
+async def test_multimodal_tool_response(dummy_env: DummyEnv) -> None:
+    def capture_image() -> Message:
+        """Capture an image and return it with a description."""
+        return Message.create_message(
+            text="Stub details",
+            images=[np.zeros((8, 8, 3), dtype=np.uint8)],
+        )
+
+    capture_tool = Tool.from_function(capture_image)
+    await dummy_env.reset()
+    dummy_env.tools = [capture_tool]
+
+    tool_call = ToolCall.from_tool(capture_tool)
+    (response,) = await dummy_env.exec_tool_calls(
+        ToolRequestMessage(tool_calls=[tool_call])
+    )
+    assert isinstance(response, ToolResponseMessage)
+    assert response.name == capture_image.__name__
+    assert response.tool_call_id == tool_call.id
+    parsed_content = json.loads(response.content)
+    assert parsed_content["role"] == "user"
+    assert isinstance(parsed_content["content"], list)
+    assert len(parsed_content["content"]) == 2
+    assert parsed_content["content"][0]["type"] == "image_url"
+    assert parsed_content["content"][0]["image_url"]["url"].startswith(
+        "data:image/png;base64,"
+    )
+    assert parsed_content["content"][1] == {"type": "text", "text": "Stub details"}
 
 
 class SlowEnv(Environment[None]):

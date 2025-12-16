@@ -86,24 +86,21 @@ class Message(BaseModel):
         return data
 
     @model_serializer(mode="wrap")
-    def maybe_serialize_info(self, handler, serialization_info: SerializationInfo):
-        """Allows us to call model_dump(context={"include_info": True}).
+    def _serialize(self, handler, info: SerializationInfo):
+        """Stateful serialization.
 
-        This overrides its Field-level exclusion.
+        This overrides Field-level exclusion to allow us to call:
+        `model_dump(context={"include_info": True})`.
         """
         data = handler(self)
-        if (serialization_info.context or {}).get("include_info"):
+        if self.content_is_json_str and "content" in data:
+            data["content"] = json.loads(data["content"])
+        if (info.context or {}).get("include_info"):
             data["info"] = self.info
         return data
 
     def __str__(self) -> str:
         return self.content or ""
-
-    def model_dump(self, *args, **kwargs) -> dict:
-        dump = super().model_dump(*args, **kwargs)
-        if self.content_is_json_str:
-            dump["content"] = json.loads(dump["content"])
-        return dump
 
     def append_text(self, text: str, delim: str = "\n", inplace: bool = True) -> Self:
         """Append text to the content.

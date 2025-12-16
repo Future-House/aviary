@@ -124,6 +124,42 @@ class TestMessage:
         assert message.model_dump(exclude_none=True, **dump_kwargs) == expected
 
     @pytest.mark.parametrize(
+        ("message", "dump_kwargs", "expected"),
+        [
+            (Message(), {}, {"role": "user"}),
+            (Message(content="stub"), {}, {"role": "user", "content": "stub"}),
+            (
+                Message(
+                    content=[
+                        {"type": "text", "text": "stub"},
+                        {"type": "image_url", "image_url": {"url": "stub_url"}},
+                    ]
+                ),
+                {},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "stub"},
+                        {"type": "image_url", "image_url": {"url": "stub_url"}},
+                    ],
+                },
+            ),
+            (
+                Message(content="stub", info={"foo": "bar"}),
+                {"context": {"include_info": True}},
+                {"role": "user", "content": "stub", "info": {"foo": "bar"}},
+            ),
+        ],
+    )
+    def test_dump_json(
+        self, message: Message, dump_kwargs: dict, expected: dict
+    ) -> None:
+        assert (
+            json.loads(message.model_dump_json(exclude_none=True, **dump_kwargs))
+            == expected
+        )
+
+    @pytest.mark.parametrize(
         ("images", "message_text", "expected_error", "expected_content_length"),
         [
             # Case 1: Invalid base64 image should raise error
