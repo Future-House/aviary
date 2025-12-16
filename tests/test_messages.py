@@ -126,7 +126,7 @@ class TestMessage:
     @pytest.mark.parametrize(
         ("message", "dump_kwargs", "expected"),
         [
-            (Message(), {}, {"role": "user", "content": None}),
+            (Message(), {}, {"role": "user"}),
             (Message(content="stub"), {}, {"role": "user", "content": "stub"}),
             (
                 Message(
@@ -154,7 +154,10 @@ class TestMessage:
     def test_dump_json(
         self, message: Message, dump_kwargs: dict, expected: dict
     ) -> None:
-        assert json.loads(message.model_dump_json(**dump_kwargs)) == expected
+        assert (
+            json.loads(message.model_dump_json(exclude_none=True, **dump_kwargs))
+            == expected
+        )
 
     @pytest.mark.parametrize(
         ("images", "message_text", "expected_error", "expected_content_length"),
