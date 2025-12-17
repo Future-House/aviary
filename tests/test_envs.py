@@ -274,10 +274,21 @@ async def test_invalid_tool_call(
         assert o.tool_call_id == t.id
 
 
+@pytest.mark.parametrize("use_tool_response_message", [False, True])
 @pytest.mark.asyncio
-async def test_multimodal_tool_response(dummy_env: DummyEnv) -> None:
-    def capture_image() -> Message:
+async def test_multimodal_tool_response(
+    dummy_env: DummyEnv, use_tool_response_message: bool
+) -> None:
+    def capture_image() -> Message | ToolResponseMessage:
         """Capture an image and return it with a description."""
+        if use_tool_response_message:
+            return ToolResponseMessage.create_message(
+                role="tool",
+                text="Stub details",
+                images=[np.zeros((8, 8, 3), dtype=np.uint8)],
+                name="capture_image",
+                tool_call_id="1",
+            )
         return Message.create_message(
             text="Stub details",
             images=[np.zeros((8, 8, 3), dtype=np.uint8)],
@@ -295,7 +306,13 @@ async def test_multimodal_tool_response(dummy_env: DummyEnv) -> None:
     assert response.name == capture_image.__name__
     assert response.tool_call_id == tool_call.id
     parsed_content = json.loads(response.content)
-    assert parsed_content["role"] == "user"
+    if use_tool_response_message:
+        assert parsed_content["role"] == "tool"
+        assert parsed_content["tool_call_id"] == "1"
+        assert parsed_content["tool_call_id"] != response.tool_call_id
+    else:
+        assert parsed_content["role"] == "user"
+        assert "tool_call_id" not in parsed_content
     assert isinstance(parsed_content["content"], list)
     assert len(parsed_content["content"]) == 2
     assert parsed_content["content"][0]["type"] == "image_url"
