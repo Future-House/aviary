@@ -1203,7 +1203,7 @@ requires-dist = [
     { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "litellm", marker = "extra == 'dev'", specifier = ">=1.71" },
     { name = "litellm", marker = "extra == 'llm'", specifier = ">=1.49.1" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.19" },
     { name = "numpy", marker = "extra == 'dev'", specifier = ">=1" },
     { name = "numpy", marker = "extra == 'typing'" },
     { name = "packaging", marker = "extra == 'llm'" },

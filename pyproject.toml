@@ -49,7 +49,7 @@ dev = [
     "ipython>=8",  # Pin to keep recent
     "jupyter>=1.0.0",  # For running notebooks
     "litellm>=1.71",  # Lower pin for aiohttp transport adoption
-    "mypy>=1.8",  # Pin for mutable-override
+    "mypy>=1.19",  # Pin for better TypeAlias assignment checking
     "numpy>=1",  # Pin to keep recent
     "prek",
     "pydantic~=2.9",  # Pydantic 2.9 changed JSON schema exports 'allOf', so ensure tests match
