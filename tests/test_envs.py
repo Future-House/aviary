@@ -169,6 +169,9 @@ class TestDummyEnv:
         (new_message,) = new_messages
         assert new_message.content == "Go for a walk\nRead a book\nCall a friend"
         assert new_message.tool_call_id == tool_request_message.tool_calls[0].id
+        assert not new_message.content_is_json_str, (
+            "Expecting response to indicate not JSON-serialized content"
+        )
 
         def get_todo_list_no_args() -> str:
             """Get todo list for today."""
@@ -187,6 +190,9 @@ class TestDummyEnv:
         (new_message,) = new_messages
         assert new_message.content == "Go for a walk\nRead a book\nCall a friend"
         assert new_message.tool_call_id == tool_request_message.tool_calls[0].id
+        assert not new_message.content_is_json_str, (
+            "Expecting response to indicate not JSON-serialized content"
+        )
 
         # ok now try with multiple functions
 
@@ -313,6 +319,9 @@ async def test_multimodal_tool_response(
     else:
         assert parsed_content["role"] == "user"
         assert "tool_call_id" not in parsed_content
+    assert response.content_is_json_str, (
+        "Expecting response to indicate JSON-serialized content"
+    )
     assert isinstance(parsed_content["content"], list)
     assert len(parsed_content["content"]) == 2
     assert parsed_content["content"][0]["type"] == "image_url"

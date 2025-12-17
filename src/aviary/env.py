@@ -287,15 +287,20 @@ class Environment(ABC, Generic[TEnvState]):
                 s_content = (
                     f"Encountered exception during tool call: {format_exc(tool_exc)}"
                 )
+                content_is_json_str = False
             elif isinstance(content, str):
                 s_content = content
+                content_is_json_str = False
             elif isinstance(content, BaseModel):
                 s_content = content.model_dump_json(exclude_none=True, by_alias=True)
+                content_is_json_str = True
             else:  # Fallback when content is another type, or None
                 s_content = json.dumps(content)
+                content_is_json_str = True
             return ToolResponseMessage.from_call(
                 tool_call,
                 content=s_content,
+                content_is_json_str=content_is_json_str,
                 info={
                     "start_ts": start,
                     "end_ts": time.monotonic(),
