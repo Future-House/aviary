@@ -387,7 +387,7 @@ requires-dist = [
     { name = "ldp", specifier = ">=0.25.2" },
     { name = "pandas", marker = "extra == 'dev'" },
     { name = "paper-qa", marker = "extra == 'dev'", specifier = ">=5.29.1" },
-    { name = "paper-qa", extras = ["pymupdf"], git = "https://github.com/Future-House/paper-qa.git" },
+    { name = "paper-qa", extras = ["pymupdf"], specifier = ">=2025" },
     { name = "pillow", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "tantivy", marker = "python_full_version >= '3.14' and extra == 'dev'", specifier = ">=0.25.0" },
@@ -3063,8 +3063,8 @@ wheels = [
 
 [[package]]
 name = "paper-qa"
-version = "5.29.2.dev60+gf1c2cfbc2"
-source = { git = "https://github.com/Future-House/paper-qa.git#f1c2cfbc21768eaa15c9a8edd63397c85cece03d" }
+version = "2025.12.17"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "fhaviary", extra = ["llm"] },
@@ -3083,6 +3083,10 @@ dependencies = [
     { name = "tenacity" },
     { name = "tiktoken" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/d5/3b/94ba9b4397b2c6c34685f66fd138c03552fd454e333ccba895ee7cb0f585/paper_qa-2025.12.17.tar.gz", hash = "sha256:eb907197e72cc8e729ef94b3871962df7c04b51d437558063efc1ee9ab2188c0", size = 27401194, upload-time = "2025-12-18T04:59:37.794Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/9d/7b9eda293a783de65da6a65dd095eadb1ee31ec847b45ef4ea08fe840f9b/paper_qa-2025.12.17-py3-none-any.whl", hash = "sha256:8ff60a2a78189231af29ddee2676888395ec0d732aa8193b029665c3a22b1c98", size = 534715, upload-time = "2025-12-18T04:59:29.661Z" },
+]
 
 [package.optional-dependencies]
 pymupdf = [
@@ -3091,20 +3095,28 @@ pymupdf = [
 
 [[package]]
 name = "paper-qa-pymupdf"
-version = "5.29.2.dev60+gf1c2cfbc2"
-source = { git = "https://github.com/Future-House/paper-qa.git?subdirectory=packages%2Fpaper-qa-pymupdf#f1c2cfbc21768eaa15c9a8edd63397c85cece03d" }
+version = "2025.12.17"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "paper-qa" },
     { name = "pymupdf" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/41/b5/f61e051850d99a9991afdb1be677c03ab8d38fec845fa5c36a302aa48253/paper_qa_pymupdf-2025.12.17.tar.gz", hash = "sha256:bd30eb2cfadefd96cd8a8d4d1531a3a9cbfc690ed81c221bd38295bf3a423658", size = 45166, upload-time = "2025-12-18T04:59:43.271Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/d0/1fb65ceb586336ac127808771f983c20ed6886404d870879abf4d7c79ec4/paper_qa_pymupdf-2025.12.17-py3-none-any.whl", hash = "sha256:5b6e1e68f5193b8f234833b1949456113bfdb8525068fe0b3ebc98bfcc7be6a2", size = 30221, upload-time = "2025-12-18T04:59:34.233Z" },
+]
 
 [[package]]
 name = "paper-qa-pypdf"
-version = "5.29.2.dev60+gf1c2cfbc2"
-source = { git = "https://github.com/Future-House/paper-qa.git?subdirectory=packages%2Fpaper-qa-pypdf#f1c2cfbc21768eaa15c9a8edd63397c85cece03d" }
+version = "2025.12.17"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "paper-qa" },
     { name = "pypdf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f5/d3/a18292105e43c3bd030e452c6cf0805f10c6be786fbfb52caa6d099b3563/paper_qa_pypdf-2025.12.17.tar.gz", hash = "sha256:163d680324e45f44447c8b1545ec0dae15a9572ed62369bb233653dc0976b0cd", size = 16347, upload-time = "2025-12-18T04:59:43.98Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/75/4b/f573015f8a0bf1f590323f2301e8601ce3713ba1cf2a5a2e0c767cef305b/paper_qa_pypdf-2025.12.17-py3-none-any.whl", hash = "sha256:26d87dea528b5a4d0748f79de0da82fa15c2eb907821b8bef26e8cc6395f97dd", size = 15659, upload-time = "2025-12-18T04:59:35.463Z" },
 ]
 
 [[package]]
