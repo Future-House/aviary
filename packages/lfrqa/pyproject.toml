@@ -19,7 +19,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "aviary.litqa",
+    "aviary.labbench",
     "fhaviary",
     "fhlmi",
     "paper-qa>=5.14.0",  # Pin for lmi migration
@@ -30,6 +30,10 @@ dynamic = ["version"]
 name = "aviary.lfrqa"
 readme = "README.md"
 requires-python = ">=3.11"
+
+[project.optional-dependencies]
+csv = ["pandas"]
+dev = ["aviary.lfrqa[csv]"]
 
 [tool.ruff]
 extend = "../../pyproject.toml"

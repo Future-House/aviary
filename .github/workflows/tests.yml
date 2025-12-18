@@ -69,16 +69,16 @@ jobs:
       - name: Clean up aviary.hotpotqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         if: matrix.python-version == '3.11'
         run: rm -r ${{ steps.build-hotpotqa.outputs.dist }}
-      - name: Check aviary.litqa build
-        id: build-litqa
+      - name: Check aviary.labbench build
+        id: build-labbench
         if: matrix.python-version == '3.11'
         uses: hynek/build-and-inspect-python-package@v2
         with:
-          path: packages/litqa
-          upload-name-suffix: -litqa
-      - name: Clean up aviary.litqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+          path: packages/labbench
+          upload-name-suffix: -labbench
+      - name: Clean up aviary.labbench build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         if: matrix.python-version == '3.11'
-        run: rm -r ${{ steps.build-litqa.outputs.dist }}
+        run: rm -r ${{ steps.build-labbench.outputs.dist }}
       - name: Check aviary.lfrqa build
         id: build-lfrqa
         if: matrix.python-version == '3.11'
@@ -116,7 +116,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/huggingface/datasets
-          key: ${{ runner.os }}-datasets-${{ hashFiles('packages/gsm8k') }}-${{ hashFiles('packages/hotpotqa') }}-${{ hashFiles('packages/litqa') }}-${{ hashFiles('packages/lfrqa') }}-${{ hashFiles('packages/notebook') }}
+          key: ${{ runner.os }}-datasets-${{ hashFiles('packages/gsm8k') }}-${{ hashFiles('packages/hotpotqa') }}-${{ hashFiles('packages/labbench') }}-${{ hashFiles('packages/lfrqa') }}-${{ hashFiles('packages/notebook') }}
           restore-keys: ${{ runner.os }}-datasets-
       - run: uv run pytest -n 16 --dist=loadfile # auto only launches 8 workers in CI, despite runners have 16 cores
         env:

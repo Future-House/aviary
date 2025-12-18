@@ -45,18 +45,18 @@ jobs:
           path: dist
       - name: Clean up aviary.hotpotqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
         run: rm -r ${{ steps.build-aviary-hotpotqa.outputs.dist }}
-      - id: build-aviary-litqa
+      - id: build-aviary-labbench
         uses: hynek/build-and-inspect-python-package@v2
         with:
-          path: packages/litqa
-          upload-name-suffix: -litqa
-      - name: Download built aviary.litqa artifact to dist/
+          path: packages/labbench
+          upload-name-suffix: -labbench
+      - name: Download built aviary.labbench artifact to dist/
         uses: actions/download-artifact@v7
         with:
-          name: ${{ steps.build-aviary-litqa.outputs.artifact-name }}
+          name: ${{ steps.build-aviary-labbench.outputs.artifact-name }}
           path: dist
-      - name: Clean up aviary.litqa build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
-        run: rm -r ${{ steps.build-aviary-litqa.outputs.dist }}
+      - name: Clean up aviary.labbench build # Work around https://github.com/hynek/build-and-inspect-python-package/issues/174
+        run: rm -r ${{ steps.build-aviary-labbench.outputs.dist }}
       - id: build-aviary-lfrqa
         uses: hynek/build-and-inspect-python-package@v2
         with:
