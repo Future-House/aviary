@@ -9,7 +9,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Iterator, Sequence
 from copy import deepcopy
-from typing import Annotated, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
+from typing import Annotated, Any, ClassVar, Generic, Self, TypeAlias, TypeVar, cast
 
 from pydantic import (
     BaseModel,
@@ -284,27 +284,35 @@ class Environment(ABC, Generic[TEnvState]):
                 tool_exc = exc
             if tool_exc:
                 # No need to mention tool.info.name here, since it'll get wrapped in a ToolResponseMessage
-                s_content = (
-                    f"Encountered exception during tool call: {format_exc(tool_exc)}"
-                )
-                content_is_json_str = False
+                response_kwargs: dict[str, Any] = {
+                    "content": (
+                        f"Encountered exception during tool call: {format_exc(tool_exc)}"
+                    ),
+                    "content_is_json_str": False,
+                }
             elif isinstance(content, str):
-                s_content = content
-                content_is_json_str = False
+                response_kwargs = {"content": content, "content_is_json_str": False}
+            elif isinstance(content, Message):
+                response_kwargs = content.model_dump(
+                    exclude={"role", "tool_call_id", "name"},
+                    context={"deserialize_content": False},
+                ) | {"content_is_json_str": content.content_is_json_str}
             elif isinstance(content, BaseModel):
-                s_content = content.model_dump_json(exclude_none=True, by_alias=True)
-                content_is_json_str = True
+                response_kwargs = {
+                    "content": content.model_dump_json(
+                        exclude_none=True, by_alias=True
+                    ),
+                    "content_is_json_str": True,
+                }
             else:  # Fallback when content is another type, or None
-                s_content = json.dumps(content)
-                content_is_json_str = True
+                response_kwargs = {
+                    "content": json.dumps(content),
+                    "content_is_json_str": True,
+                }
             return ToolResponseMessage.from_call(
                 tool_call,
-                content=s_content,
-                content_is_json_str=content_is_json_str,
-                info={
-                    "start_ts": start,
-                    "end_ts": time.monotonic(),
-                },
+                info={"start_ts": start, "end_ts": time.monotonic()},
+                **response_kwargs,
             )
 
         invalid_responses = []

@@ -93,7 +93,11 @@ class Message(BaseModel):
         `model_dump(context={"include_info": True})`.
         """
         data = handler(self)
-        if self.content_is_json_str and "content" in data:
+        if (
+            self.content_is_json_str
+            and "content" in data
+            and (info.context or {}).get("deserialize_content", True)
+        ):
             data["content"] = json.loads(data["content"])
         if (info.context or {}).get("include_info"):
             data["info"] = self.info

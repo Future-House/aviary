@@ -5,7 +5,7 @@ import re
 import tempfile
 import time
 from collections.abc import Sequence
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import litellm
 import numpy as np
@@ -281,54 +281,62 @@ async def test_invalid_tool_call(
 
 
 @pytest.mark.parametrize("use_tool_response_message", [False, True])
+@pytest.mark.parametrize("use_images", [False, True])
 @pytest.mark.asyncio
-async def test_multimodal_tool_response(
-    dummy_env: DummyEnv, use_tool_response_message: bool
+async def test_message_inside_tool_response(
+    dummy_env: DummyEnv, use_tool_response_message: bool, use_images: bool
 ) -> None:
-    def capture_image() -> Message | ToolResponseMessage:
+    sentinel_clobbered_tool_name = "applesauce"
+    sentinel_clobbered_tool_call_id = "1"
+
+    def some_tool() -> Message | ToolResponseMessage:
         """Capture an image and return it with a description."""
+        kwargs: dict[str, Any] = {"text": "Stub details"}
+        if use_images:
+            kwargs["images"] = [np.zeros((8, 8, 3), dtype=np.uint8)]
         if use_tool_response_message:
             return ToolResponseMessage.create_message(
                 role="tool",
-                text="Stub details",
-                images=[np.zeros((8, 8, 3), dtype=np.uint8)],
-                name="capture_image",
-                tool_call_id="1",
+                name=sentinel_clobbered_tool_name,
+                tool_call_id=sentinel_clobbered_tool_call_id,
+                **kwargs,
             )
-        return Message.create_message(
-            text="Stub details",
-            images=[np.zeros((8, 8, 3), dtype=np.uint8)],
-        )
+        return Message.create_message(**kwargs)
 
-    capture_tool = Tool.from_function(capture_image)
+    tool = Tool.from_function(some_tool)
     await dummy_env.reset()
-    dummy_env.tools = [capture_tool]
+    dummy_env.tools = [tool]
 
-    tool_call = ToolCall.from_tool(capture_tool)
+    tool_call = ToolCall.from_tool(tool)
     (response,) = await dummy_env.exec_tool_calls(
         ToolRequestMessage(tool_calls=[tool_call])
     )
     assert isinstance(response, ToolResponseMessage)
-    assert response.name == capture_image.__name__
+    assert response.name == some_tool.__name__
+    assert response.name != sentinel_clobbered_tool_name, (
+        "Tool names returned from within the tool call should be clobbered"
+    )
     assert response.tool_call_id == tool_call.id
-    parsed_content = json.loads(response.content)
-    if use_tool_response_message:
-        assert parsed_content["role"] == "tool"
-        assert parsed_content["tool_call_id"] == "1"
-        assert parsed_content["tool_call_id"] != response.tool_call_id
+    assert response.tool_call_id != sentinel_clobbered_tool_call_id, (
+        "Tool call IDs returned from within the tool call should be clobbered"
+    )
+    if use_images:
+        assert response.content_is_json_str, (
+            "Expecting response to indicate JSON-serialized content"
+        )
+        parsed_content = json.loads(response.content)
+        assert isinstance(parsed_content, list)
+        assert len(parsed_content) == 2
+        assert parsed_content[0]["type"] == "image_url"
+        assert parsed_content[0]["image_url"]["url"].startswith(
+            "data:image/png;base64,"
+        )
+        assert parsed_content[1] == {"type": "text", "text": "Stub details"}
     else:
-        assert parsed_content["role"] == "user"
-        assert "tool_call_id" not in parsed_content
-    assert response.content_is_json_str, (
-        "Expecting response to indicate JSON-serialized content"
-    )
-    assert isinstance(parsed_content["content"], list)
-    assert len(parsed_content["content"]) == 2
-    assert parsed_content["content"][0]["type"] == "image_url"
-    assert parsed_content["content"][0]["image_url"]["url"].startswith(
-        "data:image/png;base64,"
-    )
-    assert parsed_content["content"][1] == {"type": "text", "text": "Stub details"}
+        assert not response.content_is_json_str, (
+            "Expecting response to indicate non-JSON-serialized content"
+        )
+        assert response.content == "Stub details"
 
 
 class SlowEnv(Environment[None]):
