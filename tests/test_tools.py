@@ -23,6 +23,7 @@ from aviary.core import (
     Tool,
     ToolCall,
     ToolRequestMessage,
+    ToolSelector,
     argref_by_name,
 )
 from aviary.tools.server import make_tool_server
@@ -1007,3 +1008,27 @@ async def test_mixed_concurrency() -> None:
     assert at_least_one_parallel, (
         "Expected at least one safe tool call to run concurrently with another."
     )
+
+
+@pytest.mark.vcr
+@pytest.mark.asyncio
+async def test_structured_tool_response() -> None:
+    """Verify structured tool responses work with Anthropic API."""
+
+    def _stub_list_dict_tool() -> list[dict]:
+        """Stub tool returning structured data."""
+        return [{"key": "value"}]
+
+    tool = Tool.from_function(_stub_list_dict_tool)
+    env = DummyEnv()
+    await env.reset()
+    env.tools = [tool]
+
+    msg_history = [Message(content="Call the stub tool")]
+    selector = ToolSelector("claude-sonnet-4-5-20250929")
+    tool_request1 = await selector(msg_history, [tool], tool_choice=tool)
+    (tool_response1,) = await env.exec_tool_calls(tool_request1)
+    msg_history.extend([tool_request1, tool_response1])
+
+    tool_request2 = await selector(msg_history, [tool], tool_choice=tool)
+    assert tool_request2.tool_calls, "Expected more tool calls to be made"
