@@ -302,12 +302,12 @@ class Environment(ABC, Generic[TEnvState]):
                     "content": content.model_dump_json(
                         exclude_none=True, by_alias=True
                     ),
-                    "content_is_json_str": True,
+                    "content_is_json_str": False,
                 }
             else:  # Fallback when content is another type, or None
                 response_kwargs = {
                     "content": json.dumps(content),
-                    "content_is_json_str": True,
+                    "content_is_json_str": False,
                 }
             return ToolResponseMessage.from_call(
                 tool_call,
