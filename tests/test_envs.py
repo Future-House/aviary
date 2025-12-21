@@ -33,7 +33,7 @@ from aviary.core import (
 from aviary.dataset_server import TaskDatasetServer
 from aviary.env import EnvsTaskDataset
 from aviary.message import MalformedMessageError
-from aviary.tools import FunctionInfo, Messages
+from aviary.tools import FunctionInfo, Messages, MessagesAdapter
 from tests import CILLMModelNames
 from tests.conftest import VCR_DEFAULT_MATCH_ON
 
@@ -337,6 +337,50 @@ async def test_message_inside_tool_response(
             "Expecting response to indicate non-JSON-serialized content"
         )
         assert response.content == "Stub details"
+
+
+class SearchResult(BaseModel):
+    url: str
+    title: str
+
+
+@pytest.mark.parametrize(
+    ("return_value", "return_type"),
+    [
+        ([{"url": "https://example.com"}], "list[dict]"),
+        ({"status": "ok"}, "dict"),
+        (SearchResult(url="https://example.com", title="Test"), "BaseModel"),
+        (42, "int"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_non_multimodal_tool_response_serialization(
+    dummy_env: DummyEnv, return_value: Any, return_type: str
+) -> None:
+    """Non-multimodal structured data should serialize as JSON strings for LLM APIs."""
+
+    def mock_tool() -> Any:
+        """Mock tool."""
+        return return_value
+
+    tool = Tool.from_function(mock_tool)
+    await dummy_env.reset()
+    dummy_env.tools = [tool]
+
+    (response,) = await dummy_env.exec_tool_calls(
+        ToolRequestMessage(tool_calls=[ToolCall.from_tool(tool)])
+    )
+
+    assert isinstance(response.content, str), f"{return_type} content should be string"
+    assert not response.content_is_json_str, (
+        f"{return_type} should have content_is_json_str=False"
+    )
+
+    # Verify LLM API serialization keeps content as string
+    serialized = MessagesAdapter.dump_python([response], exclude_none=True, by_alias=True)
+    assert isinstance(serialized[0]["content"], str), (
+        f"{return_type} should remain string after serialization"
+    )
 
 
 class SlowEnv(Environment[None]):
