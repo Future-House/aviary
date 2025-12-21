@@ -377,7 +377,9 @@ async def test_non_multimodal_tool_response_serialization(
     )
 
     # Verify LLM API serialization keeps content as string
-    serialized = MessagesAdapter.dump_python([response], exclude_none=True, by_alias=True)
+    serialized = MessagesAdapter.dump_python(
+        [response], exclude_none=True, by_alias=True
+    )
     assert isinstance(serialized[0]["content"], str), (
         f"{return_type} should remain string after serialization"
     )
