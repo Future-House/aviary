@@ -7,6 +7,8 @@ from enum import IntEnum, auto
 from typing import Any, cast
 from unittest.mock import patch
 
+import litellm
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
@@ -26,6 +28,7 @@ from aviary.core import (
     ToolSelector,
     argref_by_name,
 )
+from aviary.tools import MessagesAdapter, ToolsAdapter
 from aviary.tools.server import make_tool_server
 
 
@@ -1032,3 +1035,42 @@ async def test_structured_tool_response() -> None:
 
     tool_request2 = await selector(msg_history, [tool], tool_choice=tool)
     assert tool_request2.tool_calls, "Expected more tool calls to be made"
+
+
+@pytest.mark.parametrize(
+    "model_name", ["gpt-5-mini-2025-08-07", "claude-haiku-4-5-20251001"]
+)
+@pytest.mark.vcr
+@pytest.mark.asyncio
+async def test_multimodal_tool_response(model_name: str) -> None:
+    def capture_green_image() -> Message:
+        """Capture an image and return it with a description."""
+        green_image = np.zeros((32, 32, 3), dtype=np.uint8)
+        green_image[:, :, 1] = 255  # Set green channel to max
+        return Message.create_message(
+            images=[green_image], text="Here is the captured image."
+        )
+
+    tool = Tool.from_function(capture_green_image)
+    env = DummyEnv()
+    await env.reset()
+    env.tools = [tool]
+
+    msg_history: list[Message] = [
+        Message(content="Call the capture tool, then tell me what color the image is.")
+    ]
+    tool_request = ToolRequestMessage(tool_calls=[ToolCall.from_tool(tool)])
+    (tool_response,) = await env.exec_tool_calls(tool_request)
+    msg_history.extend([tool_request, tool_response])
+
+    # Confirm multimodal tool response will work with the provider API
+    response = await litellm.acompletion(
+        model=model_name,
+        messages=MessagesAdapter.dump_python(
+            msg_history, exclude_none=True, by_alias=True
+        ),
+        tools=ToolsAdapter.dump_python([tool], exclude_none=True, by_alias=True),
+    )
+    assert "green" in response.choices[0].message.content.lower(), (
+        "Expected response to mention green"
+    )
