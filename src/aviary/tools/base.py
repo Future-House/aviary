@@ -14,9 +14,11 @@ from pydantic import (
     Field,
     FieldSerializationInfo,
     PlainSerializer,
+    SerializationInfo,
     TypeAdapter,
     create_model,
     field_serializer,
+    model_serializer,
     model_validator,
 )
 from pydantic.fields import FieldInfo
@@ -183,6 +185,19 @@ class ToolResponseMessage(Message):
             f"Tool response message {self.content!r} for tool call ID"
             f" {self.tool_call_id} of tool {self.name!r}"
         )
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler, info: SerializationInfo):
+        """Stateful serialization.
+
+        NOTE: as tool response content must always be a string for API compatibility,
+        we never deserialize JSON content back to a Python object
+        unlike the parent Message class which does so for multimodal content.
+        """
+        data = handler(self)
+        if (info.context or {}).get("include_info"):
+            data["info"] = self.info
+        return data
 
 
 def dict_serialize_exclude_none(

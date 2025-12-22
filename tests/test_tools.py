@@ -7,6 +7,8 @@ from enum import IntEnum, auto
 from typing import Any, cast
 from unittest.mock import patch
 
+import litellm
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, Field
@@ -23,6 +25,7 @@ from aviary.core import (
     Tool,
     ToolCall,
     ToolRequestMessage,
+    ToolSelector,
     argref_by_name,
 )
 from aviary.tools.server import make_tool_server
@@ -1006,4 +1009,65 @@ async def test_mixed_concurrency() -> None:
 
     assert at_least_one_parallel, (
         "Expected at least one safe tool call to run concurrently with another."
+    )
+
+
+@pytest.mark.vcr
+@pytest.mark.asyncio
+async def test_structured_tool_response() -> None:
+    """Verify structured tool responses work with Anthropic API."""
+
+    def _stub_list_dict_tool() -> list[dict]:
+        """Stub tool returning structured data."""
+        return [{"key": "value"}]
+
+    tool = Tool.from_function(_stub_list_dict_tool)
+    env = DummyEnv()
+    await env.reset()
+    env.tools = [tool]
+
+    msg_history = [Message(content="Call the stub tool")]
+    selector = ToolSelector("claude-sonnet-4-5-20250929")
+    tool_request1 = await selector(msg_history, [tool], tool_choice=tool)
+    (tool_response1,) = await env.exec_tool_calls(tool_request1)
+    msg_history.extend([tool_request1, tool_response1])
+
+    tool_request2 = await selector(msg_history, [tool], tool_choice=tool)
+    assert tool_request2.tool_calls, "Expected more tool calls to be made"
+
+
+@pytest.mark.parametrize(
+    "model_name", ["gpt-5-mini-2025-08-07", "claude-haiku-4-5-20251001"]
+)
+@pytest.mark.vcr
+@pytest.mark.asyncio
+async def test_multimodal_tool_response(model_name: str) -> None:
+    def capture_green_image() -> Message:
+        """Capture an image and return it with a description."""
+        green_image = np.zeros((32, 32, 3), dtype=np.uint8)
+        green_image[:, :, 1] = 255  # Set green channel to max
+        return Message.create_message(
+            images=[green_image], text="Here is the captured image."
+        )
+
+    tool = Tool.from_function(capture_green_image)
+    env = DummyEnv()
+    await env.reset()
+    env.tools = [tool]
+
+    msg_history: list[Message] = [
+        Message(content="Call the capture tool, then tell me what color the image is.")
+    ]
+    tool_request = ToolRequestMessage(tool_calls=[ToolCall.from_tool(tool)])
+    (tool_response,) = await env.exec_tool_calls(tool_request)
+    msg_history.extend([tool_request, tool_response])
+
+    # Confirm multimodal tool response will work with the provider API
+    response = await litellm.acompletion(
+        model=model_name,
+        messages=[m.model_dump(by_alias=True) for m in msg_history],
+        tools=[t.model_dump(by_alias=True) for t in env.tools],
+    )
+    assert "green" in response.choices[0].message.content.lower(), (
+        "Expected response to mention green"
     )
