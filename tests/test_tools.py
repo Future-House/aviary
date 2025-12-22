@@ -28,7 +28,6 @@ from aviary.core import (
     ToolSelector,
     argref_by_name,
 )
-from aviary.tools import MessagesAdapter, ToolsAdapter
 from aviary.tools.server import make_tool_server
 
 
@@ -1066,10 +1065,8 @@ async def test_multimodal_tool_response(model_name: str) -> None:
     # Confirm multimodal tool response will work with the provider API
     response = await litellm.acompletion(
         model=model_name,
-        messages=MessagesAdapter.dump_python(
-            msg_history, exclude_none=True, by_alias=True
-        ),
-        tools=ToolsAdapter.dump_python([tool], exclude_none=True, by_alias=True),
+        messages=[m.model_dump(by_alias=True) for m in msg_history],
+        tools=[t.model_dump(by_alias=True) for t in env.tools],
     )
     assert "green" in response.choices[0].message.content.lower(), (
         "Expected response to mention green"
