@@ -2,8 +2,9 @@ interactions:
   - request:
       body:
         '{"model":"claude-haiku-4-5-20251001","messages":[{"role":"user","content":[{"type":"text","text":"Call
-        the capture tool, then tell me what color the image is."}]},{"role":"assistant","content":[{"type":"tool_use","id":"77a7a6e13","name":"capture_green_image","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"77a7a6e13","content":[{"type":"image","source":{"type":"base64","media_type":"image/png","data":"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAANUlEQVR4nO3RQQ0AAAjDwIF/zyChr/16AkZSJpeq7c7HA8wfIBMhEyETIRMhEyETIRMhE4U8osUBP/btwKQAAAAASUVORK5CYII="}},{"type":"text","text":"Here
-        is the captured image.","cache_control":null}]}]}],"tools":[{"name":"capture_green_image","input_schema":{"type":"object","properties":{},"required":[]},"description":"Capture
+        the capture tool, then tell me what color the image is."}]},{"role":"assistant","content":[{"type":"tool_use","id":"e08089553","name":"capture_green_image","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"e08089553","content":"[{\"type\":
+        \"image_url\", \"image_url\": {\"url\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAANUlEQVR4nO3RQQ0AAAjDwIF/zyChr/16AkZSJpeq7c7HA8wfIBMhEyETIRMhEyETIRMhE4U8osUBP/btwKQAAAAASUVORK5CYII=\"}},
+        {\"type\": \"text\", \"text\": \"Here is the captured image.\"}]"}]}],"tools":[{"name":"capture_green_image","input_schema":{"type":"object","properties":{},"required":[]},"description":"Capture
         an image and return it with a description."}],"max_tokens":4096}'
       headers:
         accept:
@@ -15,7 +16,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "853"
+          - "847"
         content-type:
           - application/json
         host:
@@ -27,15 +28,15 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAA/3WQXUvDMBSG/0rIZWlHW1eVXovgnbJdKRKy9qw9LE265GQqo//d0+Hwi10lvM+T
-          85GjHFwLRtayMTq2kPUadzFbZlVW5mVV5HkhU4ktC0PoVF6sVlg+rkjHe3Q3++c1lE+uumOHPkaY
-          LQhBd8CBd2YOdAgYSFviqHGWgG/1y/HsE7zP5HTUct2DwIHfCwwiSToPYJNkIR5IhN69BaHFxmPX
-          UyoOuPFcVZwc0TjjvNiiMWg7QVxm6/UACzm9pjKQG5UHHZzlHmBbRdFb+QUC7CPYhoex0ZhUxtP8
-          9VGiHSMpcjuwQdbXy1teQDc9qIZrETqrfhv5mTNuL7Hz27kBjD0M4LVR1fDf/6ZF/5dOqXSRfkbl
-          Fa8D/oANKELwvOj86632rZymTylBhjbnAQAA
+          H4sIAAAAAAAA/3WRX2vDIBTFv4r4WJKS9A+leRyFPW/rw+gY4vSSSI1mXk1XSr77brKV/WNP6jk/
+          7/Hghbdeg+UVV1YmDXkjzTHlq3ydL4rFuiyKkmfcaAJarEVRbpfS73e7/vGwPPW3D3fnQ39/3hET
+          zx2MFCDKGkgI3o6CRDQYpYskKe8i0K56ulz5CG+jMy0Vv5EImnnHYgNMyS6mQGfT0sTsQ/PWB2aQ
+          zWZ1AHCz2ZztSZ8Qho0/IZMMvTWaTQB7kepYB5+cnvPhOeMYfScCSPSOAsFpQSGOfxoIrwmcope5
+          ZG3G01SmunDjuhRF9EdwyKvNZkttpGpAKJoVjXfiJ1FcfbL1f9717hgAXQMtBGnFuv3Lf7ll89sd
+          Mu5T/C4tVlQHQm8UiGggUNHxC7QMmg/DO80CW0v0AQAA
       headers:
         CF-RAY:
-          - 9b1916ff48df2a88-LAX
+          - 9b207c25bb6132b2-PHL
         Connection:
           - keep-alive
         Content-Encoding:
@@ -43,7 +44,7 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Sun, 21 Dec 2025 17:27:23 GMT
+          - Mon, 22 Dec 2025 14:59:46 GMT
         Server:
           - cloudflare
         Transfer-Encoding:
@@ -57,33 +58,33 @@ interactions:
         anthropic-ratelimit-input-tokens-remaining:
           - "4000000"
         anthropic-ratelimit-input-tokens-reset:
-          - "2025-12-21T17:27:23Z"
+          - "2025-12-22T14:59:46Z"
         anthropic-ratelimit-output-tokens-limit:
           - "800000"
         anthropic-ratelimit-output-tokens-remaining:
           - "800000"
         anthropic-ratelimit-output-tokens-reset:
-          - "2025-12-21T17:27:23Z"
+          - "2025-12-22T14:59:46Z"
         anthropic-ratelimit-requests-limit:
           - "4000"
         anthropic-ratelimit-requests-remaining:
           - "3999"
         anthropic-ratelimit-requests-reset:
-          - "2025-12-21T17:27:22Z"
+          - "2025-12-22T14:59:46Z"
         anthropic-ratelimit-tokens-limit:
           - "4800000"
         anthropic-ratelimit-tokens-remaining:
           - "4800000"
         anthropic-ratelimit-tokens-reset:
-          - "2025-12-21T17:27:23Z"
+          - "2025-12-22T14:59:46Z"
         cf-cache-status:
           - DYNAMIC
         request-id:
-          - req_011CWLE2VCeYSCALi8XpyXip
+          - req_011CWMvaYdKyQYyvcgqJVmTw
         strict-transport-security:
           - max-age=31536000; includeSubDomains; preload
         x-envoy-upstream-service-time:
-          - "773"
+          - "671"
       status:
         code: 200
         message: OK

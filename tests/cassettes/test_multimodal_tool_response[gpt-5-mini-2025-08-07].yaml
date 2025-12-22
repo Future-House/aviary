@@ -2,8 +2,9 @@ interactions:
   - request:
       body:
         '{"messages":[{"role":"user","content":"Call the capture tool, then tell
-        me what color the image is."},{"role":"assistant","tool_calls":[{"id":"643126229","type":"function","function":{"arguments":"{}","name":"capture_green_image"}}]},{"role":"tool","content":[{"type":"image_url","image_url":{"url":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAANUlEQVR4nO3RQQ0AAAjDwIF/zyChr/16AkZSJpeq7c7HA8wfIBMhEyETIRMhEyETIRMhE4U8osUBP/btwKQAAAAASUVORK5CYII="}},{"type":"text","text":"Here
-        is the captured image."}],"name":"capture_green_image","tool_call_id":"643126229"}],"model":"gpt-5-mini-2025-08-07","tools":[{"type":"function","function":{"name":"capture_green_image","description":"Capture
+        me what color the image is."},{"role":"assistant","tool_calls":[{"id":"d79fa2ae8","type":"function","function":{"arguments":"{}","name":"capture_green_image"}}]},{"role":"tool","content":"[{\"type\":
+        \"image_url\", \"image_url\": {\"url\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAANUlEQVR4nO3RQQ0AAAjDwIF/zyChr/16AkZSJpeq7c7HA8wfIBMhEyETIRMhEyETIRMhE4U8osUBP/btwKQAAAAASUVORK5CYII=\"}},
+        {\"type\": \"text\", \"text\": \"Here is the captured image.\"}]","name":"capture_green_image","tool_call_id":"d79fa2ae8"}],"model":"gpt-5-mini-2025-08-07","tools":[{"type":"function","function":{"name":"capture_green_image","description":"Capture
         an image and return it with a description.","parameters":{"type":"object","properties":{},"required":[]}}}]}'
       headers:
         accept:
@@ -13,7 +14,7 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "818"
+          - "846"
         content-type:
           - application/json
         host:
@@ -45,19 +46,20 @@ interactions:
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAAA3RSQW7bMBC86xULnqNAtpFY9bWXBAGKtIcWTREINLmWNqVIglwVTQMDfURf2JcU
-          pGVLRpoLD5yd4cxwXwoAQVpsQKhOsuq9Kd/7m89196Dvn7Yf7rYPX82vQHSPz19uP35icZEYbvuE
-          io+sS+V6b5DJ2QOsAkrGpLpYX1+vVnW1qjPQO40m0VrP5VXZk6VyWS2vyqouq/VI7hwpjGID3woA
-          gJd8JptW40+xgerieNNjjLJFsTkNAYjgTLoRMkaKLO3B8ggqZxltdn4LSnoeAmrgDoF62SL8/f0H
-          iEF6jzJEaAOivZwLBNwNUaYMdjBmBkhrHcvUQbb+OCL7k9kdWYpdE1BGZ5OByM6LjO4LgMccfjjL
-          I3xwveeG3XfMsov14qAnpsondLkYqxHsWJoJWNVH2plgo5ElmTjrTyipOtQTdSpbDprcDChm8V7b
-          +Z/2ITrZdhbo3fLNByZAKfSMuvEBNanz0NNYwLSUb42dis6WRcTwgxQ2TBjSZ2jcycGM6x2fI2Pf
-          7Mi2GHygvDDpv4t98Q8AAP//AwAQpvU3MgMAAA==
+          H4sIAAAAAAAAA3RSwWrbQBC96yuGPVvBdirb+NJDSw5tCRQKLZQgxrsjaZPVzrI7cusGQz+iX9gv
+          KZIdS6HJZQ/z5s2+92YeMwBljdqC0g2KboPL34Vd1d4Wv/DTXO/3N98sf6D31N76w2f5qGY9g3f3
+          pOWJdaW5DY7Esj/BOhIK9VMX69XqzaIo1psBaNmQ62l1kLzIW+ttvpwvi3y+yefrM7lhqympLXzP
+          AAAeh7eX6Q39VFuYz54qLaWENantpQlARXZ9RWFKNgl6UbMR1OyF/KD8S0OgMUgXyYBtsSawCepI
+          5OHv7z+AkNhZc65odhyv4Ct3zsCBO3D2gUAaOlMNCgJHQDD8wztGgztHUFlHb6cCIlVdwj4D3zk3
+          AdB7FuwzHKzfnZHjxWxlvU1NGQkT+95AEg5qQI8ZwN0QXvcsDxUit0FK4Qcaxi43xWmeGlc2otfF
+          4owKC7oRWF2vZi8MLA0JWpcm+SuNuiEzUsdlYWcsT4BsYu9/OS/NPlm3vp5IXr7+wQhoTUHIlCGS
+          sfq56bEtUn/Ur7Vdgh4kq0RxbzWVYin2yzBUYedOt6bSIQm1ZWV9TTFEOxxcv+/smP0DAAD//wMA
+          EoMYLXIDAAA=
       headers:
         Access-Control-Expose-Headers:
           - X-Request-ID
         CF-RAY:
-          - 9b1916e188481b45-LAX
+          - 9b207bef9da37aa6-EWR
         Connection:
           - keep-alive
         Content-Encoding:
@@ -65,14 +67,14 @@ interactions:
         Content-Type:
           - application/json
         Date:
-          - Sun, 21 Dec 2025 17:27:22 GMT
+          - Mon, 22 Dec 2025 14:59:46 GMT
         Server:
           - cloudflare
         Set-Cookie:
-          - __cf_bm=PRsdcRuE6aftSV9zuWhgMbHqt8YlEEwfXmZfMRH1d1M-1766338042-1.0.1.1-RNSeTGfGMmTwZbsPXGAW4smfj1bfuiA6i.m7V0t.JGhovDtgZB4aSa6s2V3rx5kuTUMOqQjd0NGDh0PMjxX02PH8iPzOgHvBs9WsPa4N31I;
-            path=/; expires=Sun, 21-Dec-25 17:57:22 GMT; domain=.api.openai.com; HttpOnly;
+          - __cf_bm=hKNGuUgnQIQPFxEbH5lL.jw3D1K8zPWkwE05XegQuhA-1766415586-1.0.1.1-hwF899btIz3VTRTMuDI5.BU3EdgyOKMDpt_wCpKZnHzbP2030HUZZZmLck9AdjHxF8i5kdz.ZYh3fAAN2eFtFopMP5a1iyI_Q7S._NnHHTQ;
+            path=/; expires=Mon, 22-Dec-25 15:29:46 GMT; domain=.api.openai.com; HttpOnly;
             Secure; SameSite=None
-          - _cfuvid=IiYKKstGT68x9mRFA8WM3moRYEIWlOSlxc7NpxZZ6Mg-1766338042418-0.0.1.1-604800000;
+          - _cfuvid=G96yU3PNl2bZoOsO6yF3vCZRuyRoMkRvAG_XKAycda4-1766415586120-0.0.1.1-604800000;
             path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
         Strict-Transport-Security:
           - max-age=31536000; includeSubDomains; preload
@@ -87,35 +89,29 @@ interactions:
         openai-organization:
           - future-house-xr4tdh
         openai-processing-ms:
-          - "3960"
+          - "8157"
         openai-project:
           - proj_RpeV6PrPclPHBb5GlExPXSBj
         openai-version:
           - "2020-10-01"
         x-envoy-upstream-service-time:
-          - "4030"
+          - "8224"
         x-openai-proxy-wasm:
           - v0.1
-        x-ratelimit-limit-input-images:
-          - "100000"
         x-ratelimit-limit-requests:
           - "180000"
         x-ratelimit-limit-tokens:
           - "500000000"
-        x-ratelimit-remaining-input-images:
-          - "99999"
         x-ratelimit-remaining-requests:
           - "179999"
         x-ratelimit-remaining-tokens:
-          - "499999208"
-        x-ratelimit-reset-input-images:
-          - 0s
+          - "499999916"
         x-ratelimit-reset-requests:
           - 0s
         x-ratelimit-reset-tokens:
           - 0s
         x-request-id:
-          - req_b28ed79f83474517b7db41b6f59b5683
+          - req_40e333c55e1a4c53899a04980f0e9383
       status:
         code: 200
         message: OK
