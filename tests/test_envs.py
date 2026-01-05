@@ -648,7 +648,12 @@ class TestParallelism:
         expected_tool_call_fn = ToolCall.from_tool(tools[-1]).function
         dummy_env.state = dummy_env.State(messages=obs)
 
-        selector = ToolSelector("gemini/gemini-1.5-flash")
+        # NOTE: originally this was Gemini 1.5 Flash,
+        # but as of 1/5/2026 it was deprecated from Google's API.
+        # Per https://github.com/BerriAI/litellm/issues/7634#issuecomment-2810321829
+        # this test isn't necessary anymore, but let's keep it around anyways
+        # as a regression test
+        selector = ToolSelector("gemini/gemini-2.5-flash")
 
         assert any(not t.info.get_properties() for t in tools), (
             "Test requires empty properties"
