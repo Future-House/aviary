@@ -71,11 +71,11 @@ repos:
     hooks:
       - id: pymarkdown
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.09.26
+    rev: 2026.01.02
     hooks:
       - id: validate-pyproject
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.18
+    rev: 0.9.21
     hooks:
       - id: uv-lock
   - repo: local # Use local to ensure we don't pull aviary from PyPI
