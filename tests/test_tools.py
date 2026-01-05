@@ -11,6 +11,7 @@ import litellm
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
@@ -1037,26 +1038,52 @@ async def test_structured_tool_response() -> None:
 
 
 @pytest.mark.parametrize(
-    "model_name", ["gpt-5-mini-2025-08-07", "claude-haiku-4-5-20251001"]
+    "model_name",
+    ["claude-haiku-4-5-20251001", "claude-sonnet-4-5-20250929"],
 )
 @pytest.mark.vcr
 @pytest.mark.asyncio
 async def test_multimodal_tool_response(model_name: str) -> None:
-    def capture_green_image() -> Message:
-        """Capture an image and return it with a description."""
-        green_image = np.zeros((32, 32, 3), dtype=np.uint8)
-        green_image[:, :, 1] = 255  # Set green channel to max
+    # LLMs are known to be able to read base64: https://florian.github.io/base64/
+    # This extends to images, LLMs can understand simple images in base64
+    # To avoid this, this test needs to use a sufficiently complicated image
+    # that the LLM must correctly "see" (and not just read base64) to interpret
+    secret_word = "PENGUIN"
+
+    def capture_image_with_text() -> Message:
+        """Capture an image containing text and return it with a description."""
+        # Draw the secret word in black atop a white background
+        img = Image.new("RGB", (200, 100), color="white")
+        try:
+            font: ImageFont.ImageFont | ImageFont.FreeTypeFont = ImageFont.truetype(
+                "DejaVuSans-Bold.ttf", size=36
+            )
+        except OSError:  # Fall back to default if not available
+            font = ImageFont.load_default(size=36)
+        ImageDraw.Draw(img).text(
+            (img.width / 2, img.height / 2),
+            secret_word,
+            fill="black",
+            font=font,
+            anchor="mm",
+        )
         return Message.create_message(
-            images=[green_image], text="Here is the captured image."
+            images=[np.array(img)], text="Here is the captured image containing text."
         )
 
-    tool = Tool.from_function(capture_green_image)
+    tool = Tool.from_function(capture_image_with_text)
     env = DummyEnv()
     await env.reset()
     env.tools = [tool]
 
     msg_history: list[Message] = [
-        Message(content="Call the capture tool, then tell me what color the image is.")
+        Message(
+            content=(
+                "Call the capture tool, then tell me what word is written in the image."
+                " Reply with only the word and nothing else."
+                " If you are unsure what is in the image, reply 'Unsure'."
+            )
+        )
     ]
     tool_request = ToolRequestMessage(tool_calls=[ToolCall.from_tool(tool)])
     (tool_response,) = await env.exec_tool_calls(tool_request)
@@ -1067,7 +1094,10 @@ async def test_multimodal_tool_response(model_name: str) -> None:
         model=model_name,
         messages=[m.model_dump(by_alias=True) for m in msg_history],
         tools=[t.model_dump(by_alias=True) for t in env.tools],
+        tool_choice="none",
     )
-    assert "green" in response.choices[0].message.content.lower(), (
-        "Expected response to mention green"
+    assert len(response.choices) == 1
+    assert secret_word.lower() in response.choices[0].message.content.lower(), (
+        f"Expected response to contain the word {secret_word!r}, instead got"
+        f" {response.choices[0].message.content!r}"
     )
