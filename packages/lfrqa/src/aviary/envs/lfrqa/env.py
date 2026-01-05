@@ -169,7 +169,7 @@ class LFRQAQuestion(MultipleChoiceQuestion):
                 processed_data["gt_doc_ids"].strip("[]").split(",")
             )
             processed_data["gt_doc_ids"] = [
-                int(_id) for _id in processed_data["gt_doc_ids"]
+                int(id_) for id_ in processed_data["gt_doc_ids"]
             ]
 
         return processed_data

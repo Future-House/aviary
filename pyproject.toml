@@ -112,6 +112,10 @@ check-filenames = true
 check-hidden = true
 ignore-words-list = "aadd,astroid,ser"
 
+[tool.markdown_toc_creator]
+horizontal-rule-style = "prettier"
+proactive = false
+
 [tool.mypy]
 # Type-checks the interior of functions without type annotations.
 check_untyped_defs = true
@@ -197,6 +201,12 @@ max-attributes = 12
 max-line-length = 88  # Match ruff line-length
 
 [tool.pylint.main]
+# Files or directories matching the regular expression patterns are skipped.
+# The regex matches against base names, not paths. The default value ignores
+# Emacs file locks
+ignore-patterns = [
+    "^version\\.py$",  # Version files made by setuptools_scm
+]
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
 # avoid hangs.
@@ -252,6 +262,7 @@ disable = [
     "raise-missing-from",  # Rely on ruff B904 for this
     "redefined-builtin",  # Rely on ruff A002 for this
     "redefined-outer-name",
+    "stop-iteration-return",  # Rely on ruff PLR1708 for this
     "super-init-not-called",  # Don't care to enforce this
     "too-few-public-methods",  # Don't care to enforce this
     "too-many-ancestors",  # Don't care to enforce this
@@ -275,6 +286,7 @@ disable = [
     "unused-argument",  # Rely on ruff ARG002 for this
     "unused-import",  # Rely on ruff F401 for this
     "unused-variable",  # Rely on ruff F841 for this
+    "use-sequence-for-iteration",  # Rely on ruff C0208 for this
     "wrong-import-order",  # Rely on ruff I001 for this
     "wrong-import-position",  # Rely on ruff E402 for this
 ]
@@ -348,11 +360,14 @@ preview = true
 explicit-preview-rules = true
 extend-select = [
     "ASYNC212",
+    "ASYNC240",
     "ASYNC250",
     "B901",
     "B903",
     "B909",
+    "B912",
     "CPY001",
+    "DOC102",
     "DOC201",
     "DOC202",
     "DOC402",
@@ -418,6 +433,7 @@ extend-select = [
     "FURB180",
     "FURB189",
     "FURB192",
+    "ISC004",
     "LOG004",
     "PLC0207",
     "PLC1901",
@@ -433,6 +449,7 @@ extend-select = [
     "PLR0916",
     "PLR0917",
     "PLR1702",
+    "PLR1708",
     "PLR6104",
     "PLR6201",
     "PLR6301",
@@ -458,6 +475,8 @@ extend-select = [
     "RUF061",
     "RUF063",
     "RUF064",
+    "RUF065",
+    "RUF066",
     "RUF102",
     "TC008",
     "UP042",
@@ -550,6 +569,7 @@ mypy-init-return = true
 "**/tests/*.py" = [
     "F841",  # Tests can have unused locals
     "N802",  # Tests function names can match class names
+    "PLC2701",  # Test can import private names if needed
     "PLR2004",  # Tests can have magic values
     "PLR6301",  # Test classes can ignore self
     "RUF059",  # Tests can have unused unpacks, for readability

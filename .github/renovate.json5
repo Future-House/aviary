@@ -26,7 +26,10 @@
     },
     {
       // Disable here since we don't have test coverage
-      matchFileNames: ["packages/notebook/docker/requirements.txt"],
+      matchFileNames: [
+        "packages/notebook/docker/Dockerfile.pinned",
+        "packages/notebook/docker/requirements.txt",
+      ],
       enabled: false,
     },
   ],
