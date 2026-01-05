@@ -1,5 +1,5 @@
 # DANGER: Beware of changing this dockerfile, orchestrating the versioning in these R/python packages was very challenging
-FROM continuumio/miniconda3:24.9.2-0
+FROM continuumio/miniconda3:24.11.1-0
 
 RUN mkdir /workspace && \
     mkdir /envs
