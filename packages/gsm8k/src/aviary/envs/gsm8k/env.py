@@ -289,7 +289,8 @@ class GSM8kDatasetSplit(StrEnum):
             kw["name"] = "main"  # as opposed to "socratic"
 
         src_df = (
-            datasets.load_dataset(hf_source, split=hf_split, **kw)
+            datasets
+            .load_dataset(hf_source, split=hf_split, **kw)
             .to_pandas()
             .reset_index(drop=True)
         )
