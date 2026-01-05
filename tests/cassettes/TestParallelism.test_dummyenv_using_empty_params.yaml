@@ -6,7 +6,7 @@ interactions:
         to print.","title":"Story","type":"string"}},"required":["story"]}},{"name":"cast_float","description":"Cast
         the input argument x to a float.","parameters":{"type":"object","properties":{"x":{"title":"X","type":"string"}},"required":["x"]}},{"name":"cast_int","description":"Cast
         the input argument x to an integer.","parameters":{"type":"object","properties":{"x":{"title":"X","type":"number"}},"required":["x"]}},{"name":"get_random_int","description":"Get
-        a random integer in 1 to 10.","parameters":{"type":"object","properties":{},"required":[]}}]}],"toolConfig":{"functionCallingConfig":{"mode":"ANY"}},"generationConfig":{}}'
+        a random integer in 1 to 10.","parameters":{}}]}],"toolConfig":{"functionCallingConfig":{"mode":"ANY"}},"generationConfig":{}}'
       headers:
         accept:
           - "*/*"
@@ -15,25 +15,29 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "872"
+          - "827"
         content-type:
           - application/json
         host:
           - generativelanguage.googleapis.com
         user-agent:
-          - litellm/1.70.4
+          - litellm/1.80.11
       method: POST
-      uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%3CFILTERED%3E
+      uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%3CFILTERED%3E
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAC/61RXU/CMBR9369Y+swITMbAN4OakIgQXIyJMeTCLqOxa2fbacjCf7f7gg5f3cPS
-          3nPuPb3nFI7rkh3wmMagUZFb991UXLeo/iUmuEauDdCWTDEDqS/c+iuss6Hsc77TVPAZMNZpbnAO
-          KZo6SVBvpNEX6YYamd41D2RSKhWnDmDfLuePSzeRglXzUxEjI0391BLInnKqDmsEJXhJe4mWq7M4
-          ge/kSSSZFNtS2xv1/elwMroZB/7AH4d+OEVvEDqteCVLcgUJLlCDMRLOGxMzJM10JD6Rz0ReGRkO
-          ayHL9w4eNLAWGli3c9z7M1XdG03K7DispMz6wKg+ljtGD2+RZbCZ33lU65FjWXn9xH8SC7paTpNM
-          HdYrSkXrVBJMTU7esB94ewbqUA0kElUmuMJ5XHKW6vEZVvnXYpsn6XS+Ogq+ntz9EOfk/ALwP/QS
-          3QIAAA==
+          H4sIAAAAAAAC/11SUXOiMBh891cwPN1Nr7ViUbw3RT2o0gJ6tuXmphMwQBQSLwlSdfzvF1ArlAeG
+          2d18+7HZQ0OS5ADgJVoCDpn8U/ojEEk6lO+CI5hDzAVxgQS4AZRftafnUPkWkjDDAUcE6yBJaofP
+          PAYpFLgcQf5OhT9J35Gw+fFVB2hUOB2ONeJY18k8JlkU8xmKMOAZLSfr1Bn0X6emgvPmNtd942aR
+          dluv484MOM+uprARG+RW9wWgNRjH+qPt7jN/hbd09atv7WBqtTM7Ta1YfXnik4k3cmnPeJsa2raj
+          tTiJyNSIdoY77qnb0QBymE5yLdeQ/+Co27eBgzNvHGjh/XqHfaiiYW/lqs19Nhh6mDYnJPf+IcXp
+          pDfhqG9E5ou2e+h6Hd7VHz+aRM1MQ7HWXSPU1z1MwsGTv1LNfTZproNRazGfWOm4P/S8ztCze/Hv
+          HbPbWDejXAvkSizXxP5e05IpScp0UrKEyUX+GaccIoxY7ELACC5ks/mz/XkpMsJL+CHg+y96CzIG
+          onKuVcyVIoghFYVaSpceSIEowjf2/e7kWSxXriVnxUkLciAKCD6bIm8oSTd8TtYQ6yQrC9jqtE++
+          lcLWBcqZ54SDpEYprfPO1cFsKGxRUm1ypeQiIZAgviv+aj56nVe6KQzqe11ybFTivpSyvmNbbZzz
+          Pl3BAlKGTllHMBVp3ip36m2YABaXhjKFbEMwg+ay0Bh27AMPo6n9/LGyAnsPffPBIXLj2PgP5567
+          zssDAAA=
       headers:
         Alt-Svc:
           - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
@@ -42,11 +46,11 @@ interactions:
         Content-Type:
           - application/json; charset=UTF-8
         Date:
-          - Sat, 14 Jun 2025 18:36:43 GMT
+          - Mon, 05 Jan 2026 17:42:52 GMT
         Server:
           - scaffolding on HTTPServer2
         Server-Timing:
-          - gfet4t7; dur=472
+          - gfet4t7; dur=747
         Transfer-Encoding:
           - chunked
         Vary:

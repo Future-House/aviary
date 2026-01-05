@@ -118,6 +118,12 @@ jobs:
           path: ~/.cache/huggingface/datasets
           key: ${{ runner.os }}-datasets-${{ hashFiles('packages/gsm8k') }}-${{ hashFiles('packages/hotpotqa') }}-${{ hashFiles('packages/labbench') }}-${{ hashFiles('packages/lfrqa') }}-${{ hashFiles('packages/notebook') }}
           restore-keys: ${{ runner.os }}-datasets-
+      # As of litellm version 1.80.11 from https://github.com/BerriAI/litellm/pull/18070,
+      # tiktoken encodings are lazily loaded. This breaks our VCR cassette caching
+      # in fresh CI environments, so for backwards compatibility,
+      # we download tiktoken encodings before running tests
+      - name: Pre-download tiktoken encoding
+        run: uv run python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
       - run: uv run pytest -n 16 --dist=loadfile # auto only launches 8 workers in CI, despite runners have 16 cores
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
