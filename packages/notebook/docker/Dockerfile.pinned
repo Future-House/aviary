@@ -43,18 +43,22 @@ RUN mamba install -c conda-forge -y \
     r-viridis=0.6.5 \
     udocker=1.3.17 \
     imbalanced-learn=0.13.0 \
-    ipykernel=6.29.5 \
-    sqlite=3.47.2
+    ipykernel=6.29.5
 
 RUN python -m ipykernel install --user --name python3 --display-name "Python 3 (ipykernel)"
 RUN R -e 'IRkernel::installspec(name = "R", displayname = "R (4.3.3)")'
 
 # I separate these because not all packages need both channels, additionally,
 # creating multiple layers makes caching easier
+# NOTE: sqlite>=3.49.1 is required here because blast=2.16.0 needs libsqlite>=3.49.1,
+# and sqlite must match libsqlite. Without this, the solver may pick sqlite=3.32.3
+# which predates the sqlite/libsqlite package split and lacks sqlite3_deserialize
+# (added in SQLite 3.36.0), needed by Python 3.12.
 RUN mamba install -c conda-forge -c bioconda -y \
     biokit=0.5.0 \
     gseapy=1.1.4 \
     blast=2.16.0 \
+    sqlite>=3.49.1 \
     clipkit=2.3.0 \
     fastqc=0.12.1 \
     iqtree=2.3.6 \
