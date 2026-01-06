@@ -1,0 +1,85 @@
+interactions:
+  - request:
+      body:
+        '{"model":"claude-sonnet-4-5-20250929","messages":[{"role":"user","content":[{"type":"text","text":"Call
+        the capture tool, then tell me what word is written in the image. Reply with
+        only the word and nothing else. If you are unsure what is in the image, reply
+        ''Unsure''."}]},{"role":"assistant","content":[{"type":"tool_use","id":"6265cf572","name":"capture_image_with_text","input":{}}]},{"role":"user","content":[{"type":"tool_result","tool_use_id":"6265cf572","content":[{"type":"image","source":{"type":"base64","media_type":"image/png","data":"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"}},{"type":"text","text":"Here
+        is the captured image containing text.","cache_control":null}]}]}],"tools":[{"name":"capture_image_with_text","input_schema":{"type":"object","properties":{},"required":[]},"description":"Capture
+        an image containing text and return it with a description."}],"tool_choice":{"type":"none"},"max_tokens":64000}'
+      headers:
+        accept:
+          - application/json
+        accept-encoding:
+          - gzip, deflate
+        anthropic-version:
+          - "2023-06-01"
+        connection:
+          - keep-alive
+        content-length:
+          - "3774"
+        content-type:
+          - application/json
+        host:
+          - api.anthropic.com
+        user-agent:
+          - litellm/1.80.11
+      method: POST
+      uri: https://api.anthropic.com/v1/messages
+    response:
+      body:
+        string: !!binary |
+          H4sIAAAAAAAA/3WQ3UrEMBBG32WuW2i7dmV7J7KKCIuKeyUSQjK0wTSpyURWS9/d6WLxj71K+M7J
+          TGZG6L1GCw0oK5PGPHrnkPKzvM6roqqLTbWBDIxmo4+tKMpVqfZpW/fdg+vax8PF1f364/aSHXof
+          cLYwRtkiB8HbOZAxmkjSEUfKO0K+NU/j4hMeZnI8Grjb7q73NzuYnjOI5AcRUPKXmKDTglJw8AUi
+          viZ0iku4ZG0G6di1GcG4IZEg/4IuQnNerritVB0KxbXIeCd+G8XCGetTbHk7N8Chwx6DtKLu//vf
+          tOz+0ikDn+hntOZpMLwZhYIMBp5zXpWWQcM0fQKBPql6nQEAAA==
+      headers:
+        CF-RAY:
+          - 9b95da132cc6e612-SJC
+        Connection:
+          - keep-alive
+        Content-Encoding:
+          - gzip
+        Content-Type:
+          - application/json
+        Date:
+          - Mon, 05 Jan 2026 20:51:09 GMT
+        Server:
+          - cloudflare
+        Transfer-Encoding:
+          - chunked
+        X-Robots-Tag:
+          - none
+        anthropic-organization-id:
+          - f2c99ed9-038a-406f-9cb5-1f840b758a20
+        anthropic-ratelimit-input-tokens-limit:
+          - "50000000"
+        anthropic-ratelimit-input-tokens-remaining:
+          - "50000000"
+        anthropic-ratelimit-input-tokens-reset:
+          - "2026-01-05T20:51:09Z"
+        anthropic-ratelimit-output-tokens-limit:
+          - "10000000"
+        anthropic-ratelimit-output-tokens-remaining:
+          - "10000000"
+        anthropic-ratelimit-output-tokens-reset:
+          - "2026-01-05T20:51:09Z"
+        anthropic-ratelimit-tokens-limit:
+          - "60000000"
+        anthropic-ratelimit-tokens-remaining:
+          - "60000000"
+        anthropic-ratelimit-tokens-reset:
+          - "2026-01-05T20:51:09Z"
+        cf-cache-status:
+          - DYNAMIC
+        request-id:
+          - req_011CWpthMRT2MXAdJwcBsCJz
+        strict-transport-security:
+          - max-age=31536000; includeSubDomains; preload
+        x-envoy-upstream-service-time:
+          - "2470"
+      status:
+        code: 200
+        message: OK
+version: 1

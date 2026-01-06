@@ -7,8 +7,11 @@ from enum import IntEnum, auto
 from typing import Any, cast
 from unittest.mock import patch
 
+import litellm
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel, Field
 from pytest_subtests import SubTests
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
@@ -23,6 +26,7 @@ from aviary.core import (
     Tool,
     ToolCall,
     ToolRequestMessage,
+    ToolSelector,
     argref_by_name,
 )
 from aviary.tools.server import make_tool_server
@@ -1006,4 +1010,94 @@ async def test_mixed_concurrency() -> None:
 
     assert at_least_one_parallel, (
         "Expected at least one safe tool call to run concurrently with another."
+    )
+
+
+@pytest.mark.vcr
+@pytest.mark.asyncio
+async def test_structured_tool_response() -> None:
+    """Verify structured tool responses work with Anthropic API."""
+
+    def _stub_list_dict_tool() -> list[dict]:
+        """Stub tool returning structured data."""
+        return [{"key": "value"}]
+
+    tool = Tool.from_function(_stub_list_dict_tool)
+    env = DummyEnv()
+    await env.reset()
+    env.tools = [tool]
+
+    msg_history = [Message(content="Call the stub tool")]
+    selector = ToolSelector("claude-sonnet-4-5-20250929")
+    tool_request1 = await selector(msg_history, [tool], tool_choice=tool)
+    (tool_response1,) = await env.exec_tool_calls(tool_request1)
+    msg_history.extend([tool_request1, tool_response1])
+
+    tool_request2 = await selector(msg_history, [tool], tool_choice=tool)
+    assert tool_request2.tool_calls, "Expected more tool calls to be made"
+
+
+@pytest.mark.parametrize(
+    "model_name",
+    ["claude-haiku-4-5-20251001", "claude-sonnet-4-5-20250929"],
+)
+@pytest.mark.vcr
+@pytest.mark.asyncio
+async def test_multimodal_tool_response(model_name: str) -> None:
+    # LLMs are known to be able to read base64: https://florian.github.io/base64/
+    # This extends to images, LLMs can understand simple images in base64
+    # To avoid this, this test needs to use a sufficiently complicated image
+    # that the LLM must correctly "see" (and not just read base64) to interpret
+    secret_word = "PENGUIN"
+
+    def capture_image_with_text() -> Message:
+        """Capture an image containing text and return it with a description."""
+        # Draw the secret word in black atop a white background
+        img = Image.new("RGB", (200, 100), color="white")
+        try:
+            font: ImageFont.ImageFont | ImageFont.FreeTypeFont = ImageFont.truetype(
+                "DejaVuSans-Bold.ttf", size=36
+            )
+        except OSError:  # Fall back to default if not available
+            font = ImageFont.load_default(size=36)
+        ImageDraw.Draw(img).text(
+            (img.width / 2, img.height / 2),
+            secret_word,
+            fill="black",
+            font=font,
+            anchor="mm",
+        )
+        return Message.create_message(
+            images=[np.array(img)], text="Here is the captured image containing text."
+        )
+
+    tool = Tool.from_function(capture_image_with_text)
+    env = DummyEnv()
+    await env.reset()
+    env.tools = [tool]
+
+    msg_history: list[Message] = [
+        Message(
+            content=(
+                "Call the capture tool, then tell me what word is written in the image."
+                " Reply with only the word and nothing else."
+                " If you are unsure what is in the image, reply 'Unsure'."
+            )
+        )
+    ]
+    tool_request = ToolRequestMessage(tool_calls=[ToolCall.from_tool(tool)])
+    (tool_response,) = await env.exec_tool_calls(tool_request)
+    msg_history.extend([tool_request, tool_response])
+
+    # Confirm multimodal tool response will work with the provider API
+    response = await litellm.acompletion(
+        model=model_name,
+        messages=[m.model_dump(by_alias=True) for m in msg_history],
+        tools=[t.model_dump(by_alias=True) for t in env.tools],
+        tool_choice="none",
+    )
+    assert len(response.choices) == 1
+    assert secret_word.lower() in response.choices[0].message.content.lower(), (
+        f"Expected response to contain the word {secret_word!r}, instead got"
+        f" {response.choices[0].message.content!r}"
     )

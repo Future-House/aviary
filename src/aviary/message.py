@@ -91,10 +91,16 @@ class Message(BaseModel):
 
         This overrides Field-level exclusion to allow us to call:
         `model_dump(context={"include_info": True})`.
+
+        For content:
+        - Multimodal content gets deserialized to a list,
+          as LLM APIs expect multimodal content as structured blocks.
+        - Other structured content stays as a JSON string,
+          as tool response content must be a string for LLM API compatibility.
         """
         data = handler(self)
         if (
-            self.content_is_json_str
+            self.is_multimodal
             and "content" in data
             and (info.context or {}).get("deserialize_content", True)
         ):
@@ -105,6 +111,22 @@ class Message(BaseModel):
 
     def __str__(self) -> str:
         return self.content or ""
+
+    @property
+    def is_multimodal(self) -> bool:
+        """Check if content is encoded multimodal data."""
+        if not self.content_is_json_str:
+            return False
+        # content_is_json_str=True guarantees content is a valid JSON string
+        parsed = json.loads(self.content)  # type: ignore[arg-type]
+        # Check the content is multimodal content following
+        # the OpenAI/Anthropic format of list[dict] containing text or image URLs
+        if not isinstance(parsed, list) or not parsed:
+            return False
+        return all(
+            isinstance(item, dict) and item.get("type") in {"text", "image_url"}
+            for item in parsed
+        )
 
     def append_text(self, text: str, delim: str = "\n", inplace: bool = True) -> Self:
         """Append text to the content.

@@ -111,6 +111,12 @@ preview = true
 check-filenames = true
 check-hidden = true
 ignore-words-list = "aadd,astroid,ser"
+skip = [
+    "packages/labbench/tests/stub_data/*",
+    "tests/cassettes/*",
+    "tests/fixtures/test_images/*",
+    "tests/stub_data/*",
+]
 
 [tool.markdown_toc_creator]
 horizontal-rule-style = "prettier"
