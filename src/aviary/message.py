@@ -163,7 +163,7 @@ class Message(BaseModel):
         cls,
         role: str = DEFAULT_ROLE,
         text: str | None = None,
-        images: "list[np.ndarray | str] | str | np.ndarray | None" = None,
+        images: "list[np.ndarray | str | bytes] | str | np.ndarray | bytes | None" = None,
         **kwargs,
     ) -> Self:
         """Create a message with optional multimodal (just images so far) support.
@@ -174,7 +174,7 @@ class Message(BaseModel):
             images: Optional image(s) to include in the message,
                 making the message a multimodal message.
                 This can be a standalone single image or multiple images in a list.
-                Images can be a numpy array or a base64-encoded image string.
+                Images can be a numpy array, raw bytes, or a base64-encoded image string.
             kwargs: Additional keyword arguments to pass to the message constructor.
 
         Returns:

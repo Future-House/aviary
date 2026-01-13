@@ -496,7 +496,7 @@ def test_partial_format(value: str, formats: dict[str, Any], expected: str) -> N
         ("sample_image.jpeg", "sample_jpeg_image.b64", "JPEG"),
     ],
 )
-def test_encode_image_to_base64_pil(
+def test_encode_image_to_base64(
     subtests: SubTests,
     raw_image_file: str,
     b64_image_file: str,
@@ -516,3 +516,9 @@ def test_encode_image_to_base64_pil(
             encode_image_to_base64(np.array(image), format=format)[:40]
             == expected_image_str[:40]
         ), "Expected header (MIME type, base64) to match"
+
+    with subtests.test(msg="bytes"):
+        image_bytes = (TEST_IMAGES_DIR / raw_image_file).read_bytes()
+        assert encode_image_to_base64(image_bytes)[:40] == expected_image_str[:40], (
+            "Expected header (MIME type, base64) to match"
+        )

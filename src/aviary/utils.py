@@ -107,7 +107,7 @@ def partial_format(value: str, **formats) -> str:
 
 
 def encode_image_to_base64(
-    img: "np.ndarray | Image.Image",
+    img: "np.ndarray | Image.Image | bytes",
     format: str | None = None,  # noqa: A002
 ) -> str:
     """Encode an image to a base64 string, to be included as an image_url in a Message."""
@@ -119,7 +119,12 @@ def encode_image_to_base64(
             " `pip install aviary[image]`."
         ) from e
 
-    image = Image.fromarray(img) if not isinstance(img, Image.Image) else img
+    if isinstance(img, bytes):
+        image = Image.open(io.BytesIO(img))
+    elif isinstance(img, Image.Image):
+        image = img
+    else:
+        image = Image.fromarray(img)
     if format is None:
         if image.format is None:
             raise ValueError(
