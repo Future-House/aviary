@@ -340,7 +340,7 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
                 "Markdown representation of notebook contents"
                 f" ({nb_path}):\n\n{md_notebook}"
             ),
-            images=cast(list[NDArray[Any] | str], notebook_images),
+            images=cast(list[NDArray[Any] | str | bytes], notebook_images),
         )
 
     async def close(self):

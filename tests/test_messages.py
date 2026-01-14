@@ -203,17 +203,24 @@ class TestMessage:
                 None,
                 2,  # 1 image + 1 text
             ),
+            # Case 6: A bytes image should be converted to a base64 encoded image
+            (
+                (TEST_IMAGES_DIR / "sample_image.png").read_bytes(),
+                "What is this image of?",
+                None,
+                2,  # 1 image + 1 text
+            ),
         ],
     )
     def test_image_message(
         self,
-        images: list[np.ndarray | str] | np.ndarray | str,
+        images: list[np.ndarray | str | bytes] | np.ndarray | str | bytes,
         message_text: str,
         expected_error: str | None,
         expected_content_length: int | None,
     ) -> None:
         # Set red color for numpy array if present
-        for img in images:
+        for img in images if isinstance(images, list) else [images]:
             if isinstance(img, np.ndarray):
                 img[:] = [255, 0, 0]  # (255 red, 0 green, 0 blue) is maximum red in RGB
 
