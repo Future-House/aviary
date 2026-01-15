@@ -158,6 +158,37 @@ class Message(BaseModel):
             return self
         return self.model_copy(update={"content": new_content}, deep=True)
 
+    def prepend_text(self, text: str, delim: str = "\n", inplace: bool = True) -> Self:
+        """Prepend text to the content.
+
+        Args:
+            text: The text to prepend.
+            delim: The delimiter to use when concatenating strings.
+            inplace: Whether to modify the message in place.
+
+        Returns:
+            The modified message. Note that the original message is modified and returned
+            if `inplace=True` and a new message is returned otherwise.
+        """
+        if not self.content:
+            new_content = text
+        elif self.content_is_json_str:
+            try:
+                content_list = json.loads(self.content)
+                if not isinstance(content_list, list):
+                    raise TypeError("JSON content is not a list.")
+                content_list.insert(0, {"type": "text", "text": text})
+                new_content = json.dumps(content_list)
+            except json.JSONDecodeError as e:
+                raise ValueError("Content is not valid JSON.") from e
+        else:
+            new_content = f"{text}{delim}{self.content}"
+
+        if inplace:
+            self.content = new_content
+            return self
+        return self.model_copy(update={"content": new_content}, deep=True)
+
     @classmethod
     def create_message(
         cls,

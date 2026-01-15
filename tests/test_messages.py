@@ -280,17 +280,95 @@ class TestToolRequestMessage:
             ToolResponseMessage(content="stub2", name="name2", tool_call_id="2"),
         ]
 
-    def test_append_text(self) -> None:
-        trm = ToolRequestMessage(
-            content="stub", tool_calls=[ToolCall.from_name("stub_name")]
-        )
-        trm_inplace = trm.append_text("text")
-        assert trm.content == trm_inplace.content == "stub\ntext"
-        # Check append performs an in-place change by default
-        assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
+    def test_append_text(self, subtests) -> None:
+        with subtests.test("text-only content"):
+            trm = ToolRequestMessage(
+                content="stub", tool_calls=[ToolCall.from_name("stub_name")]
+            )
+            trm_inplace = trm.append_text("text")
+            assert trm.content == trm_inplace.content == "stub\ntext"
+            # Check append performs an in-place change by default
+            assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
 
-        trm_copy = trm.append_text("text", inplace=False)
-        assert trm_copy.content == "stub\ntext\ntext"
-        # Check append performs a deep copy when not inplace
-        assert trm.content == "stub\ntext"
-        assert trm.tool_calls[0] is not trm_copy.tool_calls[0]
+            trm_copy = trm.append_text("text", inplace=False)
+            assert trm_copy.content == "stub\ntext\ntext"
+            # Check append performs a deep copy when not inplace
+            assert trm.content == "stub\ntext"
+            assert trm.tool_calls[0] is not trm_copy.tool_calls[0]
+
+        with subtests.test("multimodal content with image"):
+            trm = ToolRequestMessage(
+                content=[
+                    {"type": "text", "text": "stub"},
+                    {"type": "image_url", "image_url": {"url": "stub_url"}},
+                ],
+                tool_calls=[ToolCall.from_name("stub_name")],
+            )
+            trm_inplace = trm.append_text("text")
+
+            # For multimodal content, verify the text was added to the JSON list
+            assert trm.content is not None
+            content_list = json.loads(trm.content)
+            assert len(content_list) == 3  # original text + image + new text
+            assert content_list[0] == {"type": "text", "text": "stub"}
+            assert content_list[1]["type"] == "image_url"
+            assert content_list[2] == {"type": "text", "text": "text"}
+            assert trm_inplace.content == trm.content
+            # Check append performs an in-place change by default
+            assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
+
+            trm_copy = trm.append_text("text", inplace=False)
+
+            # For multimodal content, verify another text was added
+            assert trm_copy.content is not None
+            content_list_copy = json.loads(trm_copy.content)
+            assert len(content_list_copy) == 4  # original text + image + 2 new texts
+            assert trm.content is not None
+            content_list_original = json.loads(trm.content)
+            assert len(content_list_original) == 3  # unchanged original
+            # Check append performs a deep copy when not inplace
+            assert trm.tool_calls[0] is not trm_copy.tool_calls[0]
+
+    def test_prepend_text(self, subtests) -> None:
+        with subtests.test("text-only content"):
+            trm = ToolRequestMessage(
+                content="stub", tool_calls=[ToolCall.from_name("stub_name")]
+            )
+            trm_inplace = trm.prepend_text("text")
+            assert trm.content == trm_inplace.content == "text\nstub"
+            assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
+
+            trm_copy = trm.prepend_text("text", inplace=False)
+            assert trm_copy.content == "text\ntext\nstub"
+            assert trm.content == "text\nstub"
+
+        with subtests.test("multimodal content with image"):
+            trm = ToolRequestMessage(
+                content=[
+                    {"type": "text", "text": "stub"},
+                    {"type": "image_url", "image_url": {"url": "stub_url"}},
+                ],
+                tool_calls=[ToolCall.from_name("stub_name")],
+            )
+            trm_inplace = trm.prepend_text("prepended text")
+
+            # For multimodal content, verify the text was prepended to the JSON list
+            assert trm.content is not None  # Ensure typing is correct for mypy
+            content_list = json.loads(trm.content)
+            assert len(content_list) == 3  # new text + original text + image
+            assert content_list[0] == {"type": "text", "text": "prepended text"}
+            assert content_list[1] == {"type": "text", "text": "stub"}
+            assert content_list[2]["type"] == "image_url"
+            assert trm_inplace.content == trm.content
+            assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
+
+            trm_copy = trm.prepend_text("prepended text", inplace=False)
+
+            # For multimodal content, verify another text was prepended
+            assert trm_copy.content is not None
+            content_list_copy = json.loads(trm_copy.content)
+            assert len(content_list_copy) == 4
+            assert content_list_copy[0] == {"type": "text", "text": "prepended text"}
+            assert trm.content is not None
+            content_list_original = json.loads(trm.content)
+            assert len(content_list_original) == 3
