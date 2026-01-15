@@ -2,6 +2,9 @@ import json
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
+import logging
+logger = logging.getLogger(__name__)
+
 from pydantic import (
     BaseModel,
     Field,
@@ -70,6 +73,7 @@ class Message(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def serialize_content(cls, data):
+        logger.error("SERIALIZE CONTENT CALLED WITH DATA: " + repr(data))
         if not (isinstance(data, dict) and "content" in data):
             return data
 
@@ -111,8 +115,6 @@ class Message(BaseModel):
                     data["content"] = json.loads(data["content"])
                 except (json.JSONDecodeError, TypeError) as e:
                     # Debug: log what failed
-                    import logging
-                    logger = logging.getLogger(__name__)
                     logger.error(f"DEBUG _serialize json.loads FAILED: data['content']={repr(data.get('content'))}, self.content={repr(self.content)}, error={e}")
                     # Don't crash, just leave content as-is
                     pass
@@ -126,11 +128,11 @@ class Message(BaseModel):
     @property
     def is_multimodal(self) -> bool:
         """Check if content is encoded multimodal data."""
+        logger.error("ISMULTIMODAL CONTENT IS JSON STR: " + str(self.content_is_json_str))
+        logger.error("ISMULTIMODAL CONTENT: " + repr(self.content))
         if not self.content_is_json_str or not self.content:
             return False
         # Debug logging to understand what's causing the crash
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"DEBUG is_multimodal: content_is_json_str={self.content_is_json_str}, content={repr(self.content)}, content_type={type(self.content)}, len={len(self.content) if self.content else 0}")
         # content_is_json_str=True guarantees content is a valid JSON string
         try:
