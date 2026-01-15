@@ -115,7 +115,7 @@ class Message(BaseModel):
     @property
     def is_multimodal(self) -> bool:
         """Check if content is encoded multimodal data."""
-        if not self.content_is_json_str:
+        if not self.content_is_json_str or not self.content:
             return False
         # content_is_json_str=True guarantees content is a valid JSON string
         parsed = json.loads(self.content)  # type: ignore[arg-type]
