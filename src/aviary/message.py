@@ -120,6 +120,10 @@ class Message(BaseModel):
         """Check if content is encoded multimodal data."""
         if not self.content_is_json_str or not self.content:
             return False
+        # Debug logging to understand what's causing the crash
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"DEBUG is_multimodal: content_is_json_str={self.content_is_json_str}, content={repr(self.content)}, content_type={type(self.content)}, len={len(self.content) if self.content else 0}")
         # content_is_json_str=True guarantees content is a valid JSON string
         parsed = json.loads(self.content)  # type: ignore[arg-type]
         # Check the content is multimodal content following
