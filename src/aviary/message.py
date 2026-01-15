@@ -128,7 +128,7 @@ class Message(BaseModel):
             for item in parsed
         )
 
-    def append_text(self, text: str, delim: str = "\n", inplace: bool = True,) -> Self:
+    def append_text(self, text: str, delim: str = "\n", inplace: bool = True) -> Self:
         """Append text to the content.
 
         Args:
