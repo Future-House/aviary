@@ -104,7 +104,10 @@ class Message(BaseModel):
             and "content" in data
             and (info.context or {}).get("deserialize_content", True)
         ):
-            data["content"] = json.loads(data["content"])
+            # is_multimodal already validated it's parseable JSON, but we still need
+            # to check data["content"] is not empty since handler may have modified it
+            if data["content"]:
+                data["content"] = json.loads(data["content"])
         if (info.context or {}).get("include_info"):
             data["info"] = self.info
         return data
