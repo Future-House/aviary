@@ -181,7 +181,7 @@ class Message(BaseModel):
                 new_content = json.dumps(content_list)
             except json.JSONDecodeError as e:
                 raise ValueError("Content is not valid JSON.") from e
-        else: 
+        else:
             new_content = f"{text}{delim}{self.content}"
 
         if inplace:
