@@ -78,6 +78,7 @@ class Message(BaseModel):
             return data
 
         content = data["content"]
+        logger.error("SERIALIZE CONTENT VALUE: " + repr(content), type(content))
         if not content or isinstance(content, str):
             return data
 
