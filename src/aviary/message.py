@@ -107,7 +107,15 @@ class Message(BaseModel):
             # is_multimodal already validated it's parseable JSON, but we still need
             # to check data["content"] is not empty since handler may have modified it
             if data["content"]:
-                data["content"] = json.loads(data["content"])
+                try:
+                    data["content"] = json.loads(data["content"])
+                except (json.JSONDecodeError, TypeError) as e:
+                    # Debug: log what failed
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"DEBUG _serialize json.loads FAILED: data['content']={repr(data.get('content'))}, self.content={repr(self.content)}, error={e}")
+                    # Don't crash, just leave content as-is
+                    pass
         if (info.context or {}).get("include_info"):
             data["info"] = self.info
         return data
@@ -125,7 +133,11 @@ class Message(BaseModel):
         logger = logging.getLogger(__name__)
         logger.error(f"DEBUG is_multimodal: content_is_json_str={self.content_is_json_str}, content={repr(self.content)}, content_type={type(self.content)}, len={len(self.content) if self.content else 0}")
         # content_is_json_str=True guarantees content is a valid JSON string
-        parsed = json.loads(self.content)  # type: ignore[arg-type]
+        try:
+            parsed = json.loads(self.content)  # type: ignore[arg-type]
+        except (json.JSONDecodeError, TypeError) as e:
+            logger.error(f"DEBUG is_multimodal json.loads FAILED: content={repr(self.content)}, error={e}")
+            return False
         # Check the content is multimodal content following
         # the OpenAI/Anthropic format of list[dict] containing text or image URLs
         if not isinstance(parsed, list) or not parsed:
