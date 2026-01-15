@@ -294,3 +294,15 @@ class TestToolRequestMessage:
         # Check append performs a deep copy when not inplace
         assert trm.content == "stub\ntext"
         assert trm.tool_calls[0] is not trm_copy.tool_calls[0]
+
+    def test_prepend_text(self) -> None:
+        trm = ToolRequestMessage(
+            content="stub", tool_calls=[ToolCall.from_name("stub_name")]
+        )
+        trm_inplace = trm.prepend_text("text")
+        assert trm.content == trm_inplace.content == "text\nstub"
+        assert trm.tool_calls[0] is trm_inplace.tool_calls[0]
+
+        trm_copy = trm.prepend_text("text", inplace=False)
+        assert trm_copy.content == "text\ntext\nstub"
+        assert trm.content == "text\nstub"
