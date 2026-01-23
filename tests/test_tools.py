@@ -762,6 +762,7 @@ def test_argref_by_name_error_handling() -> None:
 
 @pytest.mark.asyncio
 async def test_argref_by_name_async_functions() -> None:
+    # pylint: disable=unexpected-keyword-arg
     class MyState:
         def __init__(self):
             self.refs = {"foo": 1, "bar": 7}
@@ -809,6 +810,7 @@ async def test_argref_by_name_async_functions() -> None:
 
 @pytest.mark.asyncio
 async def test_argref_by_name_advanced_features() -> None:
+    # pylint: disable=unexpected-keyword-arg
     class MyState:
         def __init__(self):
             self.refs = {"foo": 1}
@@ -817,9 +819,9 @@ async def test_argref_by_name_advanced_features() -> None:
 
     # Define and test dereference via no state value found with return_direct
     @argref_by_name(return_direct=True)
-    def skip_deref_test(foo: float, a: str) -> str:
+    def skip_deref_test(ref_key: float, a: str) -> str:
         """Some docstring."""
-        return f"{foo} {a}"
+        return f"{ref_key} {a}"
 
     assert skip_deref_test("foo", "not in state", state=s) == "1 not in state"
     assert skip_deref_test("foo", "foo", state=s) == "1 1"
@@ -940,7 +942,7 @@ async def test_make_tool_server():
         async def step(self, action):
             return await self.exec_tool_calls(action), False, 0, 0
 
-        async def export_frame(self):
+        def export_frame(self):
             pass
 
     with suppress_type_checks():
