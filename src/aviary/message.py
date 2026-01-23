@@ -60,6 +60,14 @@ class Message(BaseModel):
         repr=False,
     )
 
+    cache_breakpoint: bool = Field(
+        default=False,
+        description="Mark this message as a cache breakpoint for prompt caching. "
+        "When True, adds cache_control to the content during serialization.",
+        exclude=True,
+        repr=False,
+    )
+
     @field_validator("role")
     @classmethod
     def check_role(cls, v: str) -> str:
@@ -97,6 +105,11 @@ class Message(BaseModel):
           as LLM APIs expect multimodal content as structured blocks.
         - Other structured content stays as a JSON string,
           as tool response content must be a string for LLM API compatibility.
+
+        For cache_breakpoint:
+        - When True, adds cache_control to the content for prompt caching.
+        - String content is converted to content block format.
+        - Multimodal content has cache_control added to the last block.
         """
         data = handler(self)
         if (
@@ -105,6 +118,20 @@ class Message(BaseModel):
             and (info.context or {}).get("deserialize_content", True)
         ):
             data["content"] = json.loads(data["content"])
+
+        # Handle cache_breakpoint - add cache_control to content
+        if self.cache_breakpoint and "content" in data and data["content"] is not None:
+            cache_control = {"type": "ephemeral"}
+            if isinstance(data["content"], list):
+                # Multimodal: add cache_control to last block
+                if data["content"]:
+                    data["content"][-1]["cache_control"] = cache_control
+            else:
+                # String content: convert to content block format with cache_control
+                data["content"] = [
+                    {"type": "text", "text": data["content"], "cache_control": cache_control}
+                ]
+
         if (info.context or {}).get("include_info"):
             data["info"] = self.info
         return data
@@ -233,6 +260,21 @@ class Message(BaseModel):
             if text is not None:
                 content.append({"type": "text", "text": text})
         return cls(role=role, content=content, **kwargs)
+
+    def set_cache_breakpoint(self, enabled: bool = True) -> Self:
+        """Set or clear the cache breakpoint on this message.
+
+        When enabled, the message's content will include cache_control during
+        serialization, enabling prompt caching with providers like Anthropic.
+
+        Args:
+            enabled: Whether to enable the cache breakpoint.
+
+        Returns:
+            The modified message (self) for method chaining.
+        """
+        self.cache_breakpoint = enabled
+        return self
 
 
 def join(

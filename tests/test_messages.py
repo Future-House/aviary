@@ -372,3 +372,132 @@ class TestToolRequestMessage:
             assert trm.content is not None
             content_list_original = json.loads(trm.content)
             assert len(content_list_original) == 3
+
+
+class TestCacheBreakpoint:
+    def test_default_is_false(self) -> None:
+        msg = Message(content="test")
+        assert msg.cache_breakpoint is False
+
+    def test_set_cache_breakpoint_returns_self(self) -> None:
+        msg = Message(content="test")
+        result = msg.set_cache_breakpoint()
+        assert result is msg
+        assert msg.cache_breakpoint is True
+
+    def test_set_cache_breakpoint_can_disable(self) -> None:
+        msg = Message(content="test")
+        msg.set_cache_breakpoint()
+        msg.set_cache_breakpoint(False)
+        assert msg.cache_breakpoint is False
+
+    def test_serialization_without_cache_breakpoint(self) -> None:
+        msg = Message(content="test")
+        data = msg.model_dump(exclude_none=True)
+        assert data == {"role": "user", "content": "test"}
+
+    def test_serialization_with_cache_breakpoint_string_content(self) -> None:
+        msg = Message(content="test")
+        msg.set_cache_breakpoint()
+        data = msg.model_dump(exclude_none=True)
+        assert data == {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "test", "cache_control": {"type": "ephemeral"}}
+            ],
+        }
+
+    def test_serialization_with_cache_breakpoint_multimodal_content(self) -> None:
+        msg = Message(
+            content=[
+                {"type": "text", "text": "first"},
+                {"type": "text", "text": "second"},
+            ]
+        )
+        msg.set_cache_breakpoint()
+        data = msg.model_dump(exclude_none=True)
+        # cache_control should be on the last block
+        assert data["content"][0] == {"type": "text", "text": "first"}
+        assert data["content"][1] == {
+            "type": "text",
+            "text": "second",
+            "cache_control": {"type": "ephemeral"},
+        }
+
+    def test_serialization_with_cache_breakpoint_empty_content(self) -> None:
+        msg = Message(content=None)
+        msg.set_cache_breakpoint()
+        data = msg.model_dump(exclude_none=True)
+        # Should not crash, content stays None
+        assert data == {"role": "user"}
+
+    def test_cache_breakpoint_excluded_from_dump(self) -> None:
+        msg = Message(content="test")
+        msg.set_cache_breakpoint()
+        data = msg.model_dump()
+        assert "cache_breakpoint" not in data
+
+    def test_cache_breakpoint_with_image_content(self) -> None:
+        msg = Message.create_message(
+            text="Describe this image",
+            images=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="],
+        )
+        msg.set_cache_breakpoint()
+        data = msg.model_dump(exclude_none=True)
+        # cache_control should be on the last block (the text block)
+        assert len(data["content"]) == 2
+        assert data["content"][0]["type"] == "image_url"
+        assert "cache_control" not in data["content"][0]
+        assert data["content"][1]["type"] == "text"
+        assert data["content"][1]["cache_control"] == {"type": "ephemeral"}
+
+
+def _make_long_content(prefix: str, num_items: int = 300) -> str:
+    """Generate long content for cache testing (>1024 tokens for Anthropic)."""
+    return prefix + " ".join(f"item_{i}" for i in range(num_items))
+
+
+@pytest.mark.asyncio
+async def test_cache_breakpoint_live() -> None:
+    """Verify cache breakpoint causes upstream content to be cached.
+
+    When cache_breakpoint is set on a user message, all content up to and
+    including that message should be cached, even content in prior messages
+    that don't have cache_breakpoint set.
+    """
+    from lmi import LiteLLMModel
+
+    # System message - NOT marked for caching, but will be cached
+    # because it's upstream of the breakpoint
+    system_msg = Message(role="system", content=_make_long_content("System: "))
+
+    # User context message - marked for caching
+    # This caches everything up to and including this message
+    user_context = Message(role="user", content=_make_long_content("Context: "))
+    user_context.set_cache_breakpoint()
+
+    # Simulated assistant acknowledgment
+    assistant_msg = Message(role="assistant", content="Acknowledged.")
+
+    # New user question (not cached)
+    user_question = Message(role="user", content="Summarize.")
+
+    messages = [system_msg, user_context, assistant_msg, user_question]
+
+    llm = LiteLLMModel(name="claude-3-5-haiku-20241022")
+
+    # First request - may create cache or hit existing cache
+    result1 = await llm.call_single(messages)
+    cache_active = (
+        (result1.cache_creation_tokens or 0) > 0
+        or (result1.cache_read_tokens or 0) > 0
+    )
+    assert cache_active, "Expected cache creation or cache read on first request"
+
+    # Second request - should hit cache
+    result2 = await llm.call_single(messages)
+    assert (result2.cache_read_tokens or 0) > 0, "Expected cache hit on second request"
+    # Cached content includes both system and user context (~600 items = ~1200+ tokens)
+    assert (result2.cache_read_tokens or 0) > 500, (
+        f"Expected >500 cached tokens, got {result2.cache_read_tokens}"
+    )
