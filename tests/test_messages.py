@@ -377,29 +377,26 @@ class TestToolRequestMessage:
 class TestCacheBreakpoint:
     def test_default_is_false(self) -> None:
         msg = Message(content="test")
-        assert msg.cache_breakpoint is False
+        assert not msg.cache_breakpoint
 
     def test_set_cache_breakpoint_returns_self(self) -> None:
         msg = Message(content="test")
         result = msg.set_cache_breakpoint()
         assert result is msg
-        assert msg.cache_breakpoint is True
+        assert msg.cache_breakpoint
 
     def test_set_cache_breakpoint_can_disable(self) -> None:
-        msg = Message(content="test")
-        msg.set_cache_breakpoint()
-        msg.set_cache_breakpoint(False)
-        assert msg.cache_breakpoint is False
+        msg = Message(content="test").set_cache_breakpoint().set_cache_breakpoint(False)
+        assert not msg.cache_breakpoint
 
     def test_serialization_without_cache_breakpoint(self) -> None:
-        msg = Message(content="test")
-        data = msg.model_dump(exclude_none=True)
+        data = Message(content="test").model_dump(exclude_none=True)
         assert data == {"role": "user", "content": "test"}
 
     def test_serialization_with_cache_breakpoint_string_content(self) -> None:
-        msg = Message(content="test")
-        msg.set_cache_breakpoint()
-        data = msg.model_dump(exclude_none=True)
+        data = (
+            Message(content="test").set_cache_breakpoint().model_dump(exclude_none=True)
+        )
         assert data == {
             "role": "user",
             "content": [
@@ -408,14 +405,16 @@ class TestCacheBreakpoint:
         }
 
     def test_serialization_with_cache_breakpoint_multimodal_content(self) -> None:
-        msg = Message(
-            content=[
-                {"type": "text", "text": "first"},
-                {"type": "text", "text": "second"},
-            ]
+        data = (
+            Message(
+                content=[
+                    {"type": "text", "text": "first"},
+                    {"type": "text", "text": "second"},
+                ]
+            )
+            .set_cache_breakpoint()
+            .model_dump(exclude_none=True)
         )
-        msg.set_cache_breakpoint()
-        data = msg.model_dump(exclude_none=True)
         # cache_control should be on the last block
         assert data["content"][0] == {"type": "text", "text": "first"}
         assert data["content"][1] == {
@@ -425,25 +424,28 @@ class TestCacheBreakpoint:
         }
 
     def test_serialization_with_cache_breakpoint_empty_content(self) -> None:
-        msg = Message(content=None)
-        msg.set_cache_breakpoint()
-        data = msg.model_dump(exclude_none=True)
+        data = (
+            Message(content=None).set_cache_breakpoint().model_dump(exclude_none=True)
+        )
         # Should not crash, content stays None
         assert data == {"role": "user"}
 
     def test_cache_breakpoint_excluded_from_dump(self) -> None:
-        msg = Message(content="test")
-        msg.set_cache_breakpoint()
-        data = msg.model_dump()
+        data = Message(content="test").set_cache_breakpoint().model_dump()
         assert "cache_breakpoint" not in data
 
     def test_cache_breakpoint_with_image_content(self) -> None:
-        msg = Message.create_message(
-            text="Describe this image",
-            images=["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="],
+        data = (
+            Message
+            .create_message(
+                text="Describe this image",
+                images=[
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                ],
+            )
+            .set_cache_breakpoint()
+            .model_dump(exclude_none=True)
         )
-        msg.set_cache_breakpoint()
-        data = msg.model_dump(exclude_none=True)
         # cache_control should be on the last block (the text block)
         assert len(data["content"]) == 2
         assert data["content"][0]["type"] == "image_url"
@@ -488,10 +490,9 @@ async def test_cache_breakpoint_live() -> None:
 
     # First request - may create cache or hit existing cache
     result1 = await llm.call_single(messages)
-    cache_active = (
-        (result1.cache_creation_tokens or 0) > 0
-        or (result1.cache_read_tokens or 0) > 0
-    )
+    cache_active = (result1.cache_creation_tokens or 0) > 0 or (
+        result1.cache_read_tokens or 0
+    ) > 0
     assert cache_active, "Expected cache creation or cache read on first request"
 
     # Second request - should hit cache

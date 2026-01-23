@@ -129,7 +129,11 @@ class Message(BaseModel):
             else:
                 # String content: convert to content block format with cache_control
                 data["content"] = [
-                    {"type": "text", "text": data["content"], "cache_control": cache_control}
+                    {
+                        "type": "text",
+                        "text": data["content"],
+                        "cache_control": cache_control,
+                    }
                 ]
 
         if (info.context or {}).get("include_info"):
