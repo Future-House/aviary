@@ -84,3 +84,13 @@ repos:
         entry: mypy
         language: system
         types_or: [python, pyi]
+      - id: refurb
+        name: refurb
+        entry: refurb
+        language: system
+        types: [python]
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
