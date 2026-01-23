@@ -453,6 +453,23 @@ class TestCacheBreakpoint:
         assert data["content"][1]["type"] == "text"
         assert data["content"][1]["cache_control"] == {"type": "ephemeral"}
 
+    def test_cache_breakpoint_skipped_when_deserialize_content_false(self) -> None:
+        data = (
+            Message(content="test")
+            .set_cache_breakpoint()
+            .model_dump(context={"deserialize_content": False})
+        )
+        # Content should remain a string, cache_breakpoint not applied
+        assert data["content"] == "test"
+
+    def test_cache_breakpoint_logs_warning_when_skipped(self, caplog) -> None:
+        import logging
+
+        msg = Message(content="test").set_cache_breakpoint()
+        with caplog.at_level(logging.WARNING):
+            msg.model_dump(context={"deserialize_content": False})
+        assert "cache_breakpoint ignored" in caplog.text
+
 
 def _make_long_content(prefix: str, num_items: int = 300) -> str:
     """Generate long content for cache testing (>1024 tokens for Anthropic)."""

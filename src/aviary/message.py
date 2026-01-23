@@ -1,4 +1,5 @@
 import json
+import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
     from logging import LogRecord
 
     import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class Message(BaseModel):
@@ -112,15 +115,20 @@ class Message(BaseModel):
         - Multimodal content has cache_control added to the last block.
         """
         data = handler(self)
-        if (
-            self.is_multimodal
-            and "content" in data
-            and (info.context or {}).get("deserialize_content", True)
-        ):
+        deserialize_content = (info.context or {}).get("deserialize_content", True)
+        if self.is_multimodal and "content" in data and deserialize_content:
             data["content"] = json.loads(data["content"])
 
         # Handle cache_breakpoint - add cache_control to content
-        if self.cache_breakpoint and "content" in data and data["content"] is not None:
+        # Skip when deserialize_content=False as it would convert string to list,
+        # breaking call sites that require string content (e.g., ToolResponseMessage)
+        if self.cache_breakpoint and not deserialize_content:
+            logger.warning(
+                "cache_breakpoint ignored: deserialize_content=False requires string content"
+            )
+        elif (
+            self.cache_breakpoint and "content" in data and data["content"] is not None
+        ):
             cache_control = {"type": "ephemeral"}
             if isinstance(data["content"], list):
                 # Multimodal: add cache_control to last block
