@@ -111,7 +111,9 @@ class Message(BaseModel):
 
         For cache_breakpoint:
         - When True, adds cache_control to the content for prompt caching.
-        - String content is converted to content block format.
+        - String content is converted to content block format, the list-of-dicts
+          representation that LLM APIs use for structured content, e.g.
+          [{"type": "text", "text": "hello", "cache_control": {"type": "ephemeral"}}].
         - Multimodal content has cache_control added to the last block.
         """
         data = handler(self)
@@ -272,21 +274,6 @@ class Message(BaseModel):
             if text is not None:
                 content.append({"type": "text", "text": text})
         return cls(role=role, content=content, **kwargs)
-
-    def set_cache_breakpoint(self, enabled: bool = True) -> Self:
-        """Set or clear the cache breakpoint on this message.
-
-        When enabled, the message's content will include cache_control during
-        serialization, enabling prompt caching with providers like Anthropic.
-
-        Args:
-            enabled: Whether to enable the cache breakpoint.
-
-        Returns:
-            The modified message (self) for method chaining.
-        """
-        self.cache_breakpoint = enabled
-        return self
 
 
 def join(
