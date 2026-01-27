@@ -155,14 +155,13 @@ def test_random_annotation() -> None:
         assert isinstance(gauss_next, float | None)
 
     # 2. Check deserialized RNG behaves as original RNG
-    for i, deserialized_model in enumerate((
-        SomeModel.model_validate_json(model.model_dump_json()),  # JSON str
-        SomeModel.model_validate(model.model_dump(mode="json")),  # JSON dict
-    )):
-        if i == 0:
-            # Sample original model once so RNG aligns for both deserialized
-            # models in the `for` loop
-            sampled_original = model.rng.sample(list(range(10)), k=6)
+    json_str = model.model_dump_json()
+    json_dict = model.model_dump(mode="json")
+    sampled_original = model.rng.sample(list(range(10)), k=6)
+    for deserialized_model in (
+        SomeModel.model_validate_json(json_str),
+        SomeModel.model_validate(json_dict),
+    ):
         assert isinstance(deserialized_model.rng, random.Random)
         sampled_deserialized = deserialized_model.rng.sample(list(range(10)), k=6)
         assert sampled_original == sampled_deserialized, (

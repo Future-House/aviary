@@ -372,3 +372,173 @@ class TestToolRequestMessage:
             assert trm.content is not None
             content_list_original = json.loads(trm.content)
             assert len(content_list_original) == 3
+
+
+class TestCacheBreakpoint:
+    def test_default_is_false(self) -> None:
+        msg = Message(content="test")
+        assert not msg.cache_breakpoint
+
+    def test_serialization_without_cache_breakpoint(self) -> None:
+        data = Message(content="test").model_dump(exclude_none=True)
+        assert data == {"role": "user", "content": "test"}
+
+    def test_serialization_with_cache_breakpoint_string_content(self) -> None:
+        data = Message(content="test", cache_breakpoint=True).model_dump(
+            exclude_none=True
+        )
+        assert data == {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "test", "cache_control": {"type": "ephemeral"}}
+            ],
+        }
+
+    def test_serialization_with_cache_breakpoint_multimodal_content(self) -> None:
+        data = Message(
+            content=[
+                {"type": "text", "text": "first"},
+                {"type": "text", "text": "second"},
+            ],
+            cache_breakpoint=True,
+        ).model_dump(exclude_none=True)
+        # cache_control should be on the last block
+        assert data["content"][0] == {"type": "text", "text": "first"}
+        assert data["content"][1] == {
+            "type": "text",
+            "text": "second",
+            "cache_control": {"type": "ephemeral"},
+        }
+
+    def test_serialization_with_cache_breakpoint_empty_content(self) -> None:
+        data = Message(content=None, cache_breakpoint=True).model_dump(
+            exclude_none=True
+        )
+        # Should not crash, content stays None
+        assert data == {"role": "user"}
+
+    def test_cache_breakpoint_excluded_from_dump(self) -> None:
+        data = Message(content="test", cache_breakpoint=True).model_dump()
+        assert "cache_breakpoint" not in data
+
+    def test_cache_breakpoint_with_image_content(self) -> None:
+        data = Message.create_message(
+            text="Describe this image",
+            images=[
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            ],
+            cache_breakpoint=True,
+        ).model_dump(exclude_none=True)
+        # cache_control should be on the last block (the text block)
+        assert len(data["content"]) == 2
+        assert data["content"][0]["type"] == "image_url"
+        assert "cache_control" not in data["content"][0]
+        assert data["content"][1]["type"] == "text"
+        assert data["content"][1]["cache_control"] == {"type": "ephemeral"}
+
+    def test_cache_breakpoint_skipped_when_deserialize_content_false(self) -> None:
+        data = Message(content="test", cache_breakpoint=True).model_dump(
+            context={"deserialize_content": False}
+        )
+        # Content should remain a string, cache_breakpoint not applied
+        assert data["content"] == "test"
+
+    def test_cache_breakpoint_logs_warning_when_skipped(self, caplog) -> None:
+        import logging
+
+        msg = Message(content="test", cache_breakpoint=True)
+        with caplog.at_level(logging.WARNING):
+            msg.model_dump(context={"deserialize_content": False})
+        assert "cache_breakpoint ignored" in caplog.text
+
+
+def _make_long_content(prefix: str, num_items: int = 300) -> str:
+    """Generate long content for cache testing (>1024 tokens for Anthropic)."""
+    return prefix + " ".join(f"item_{i}" for i in range(num_items))
+
+
+@pytest.mark.asyncio
+async def test_cache_breakpoint_live() -> None:
+    """Verify cache breakpoint causes upstream content to be cached.
+
+    When cache_breakpoint is set on a user message, all content up to and
+    including that message should be cached, even content in prior messages
+    that don't have cache_breakpoint set.
+    """
+    from lmi import LiteLLMModel
+
+    # System message - NOT marked for caching, but will be cached
+    # because it's upstream of the breakpoint
+    system_msg = Message(role="system", content=_make_long_content("System: "))
+
+    # User context message - marked for caching
+    # This caches everything up to and including this message
+    user_context = Message(role="user", content=_make_long_content("Context: "))
+    user_context.cache_breakpoint = True
+
+    # Simulated assistant acknowledgment
+    assistant_msg = Message(role="assistant", content="Acknowledged.")
+
+    # New user question (not cached)
+    user_question = Message(role="user", content="Summarize.")
+
+    messages = [system_msg, user_context, assistant_msg, user_question]
+
+    llm = LiteLLMModel(name="claude-3-5-haiku-20241022")
+
+    # First request - may create cache or hit existing cache
+    result1 = await llm.call_single(messages)
+    cache_active = (result1.cache_creation_tokens or 0) > 0 or (
+        result1.cache_read_tokens or 0
+    ) > 0
+    assert cache_active, "Expected cache creation or cache read on first request"
+
+    # Second request - should hit cache
+    result2 = await llm.call_single(messages)
+    assert (result2.cache_read_tokens or 0) > 0, "Expected cache hit on second request"
+    # Cached content includes both system and user context (~600 items = ~1200+ tokens)
+    assert (result2.cache_read_tokens or 0) > 500, (
+        f"Expected >500 cached tokens, got {result2.cache_read_tokens}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_cache_breakpoint_openai_live() -> None:
+    """Verify cache_breakpoint doesn't interfere with OpenAI's automatic caching.
+
+    OpenAI uses automatic prefix-based caching (no explicit breakpoints).
+    LiteLLM strips cache_control from content blocks before sending to OpenAI.
+    This test verifies that setting cache_breakpoint doesn't break anything
+    and OpenAI's native caching still works.
+    """
+    from lmi import LiteLLMModel
+
+    # Long content to exceed OpenAI's 1024 token caching threshold
+    system_msg = Message(role="system", content=_make_long_content("System: "))
+
+    # Setting cache_breakpoint - LiteLLM will strip cache_control for OpenAI
+    user_context = Message(role="user", content=_make_long_content("Context: "))
+    user_context.cache_breakpoint = True
+
+    assistant_msg = Message(role="assistant", content="Acknowledged.")
+    user_question = Message(role="user", content="Summarize.")
+
+    messages = [system_msg, user_context, assistant_msg, user_question]
+
+    llm = LiteLLMModel(name="gpt-4o-mini")
+
+    # First request
+    result1 = await llm.call_single(messages)
+    assert result1.text is not None
+
+    # Second request - OpenAI's automatic caching may hit
+    result2 = await llm.call_single(messages)
+    assert result2.text is not None
+
+    # OpenAI's caching is automatic and not guaranteed, but if it works,
+    # cache_read_tokens should be populated. At minimum, verify no errors
+    # occurred from the cache_breakpoint serialization.
+    if result2.cache_read_tokens is not None and result2.cache_read_tokens > 0:
+        assert result2.cache_read_tokens > 500, (
+            f"Expected >500 cached tokens if cache hit, got {result2.cache_read_tokens}"
+        )
