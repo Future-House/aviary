@@ -263,6 +263,7 @@ def read_ds_from_hub(
     hf_split: str,
     randomize: bool = True,
     seed: int | None = None,
+    **load_ds_kwargs,
 ) -> "pd.DataFrame":
     """
     Read in a train or test DataFrame.
@@ -274,6 +275,7 @@ def read_ds_from_hub(
         hf_split: Hugging Face Hub dataset's split, e.g. "train" or "test".
         randomize: Opt-out flag to shuffle the dataset after loading in by question.
         seed: Random seed to use for the shuffling.
+        load_ds_kwargs: Keyword arguments to pass to the internal load_dataset call.
 
     Raises:
         DatasetNotFoundError: If any of the datasets are not found, or the
@@ -289,7 +291,7 @@ def read_ds_from_hub(
 
     if isinstance(hf_name, LABBenchDatasets):
         hf_name = hf_name.value
-    ds = load_dataset(hf_path, hf_name, split=hf_split).to_pandas()
+    ds = load_dataset(hf_path, hf_name, split=hf_split, **load_ds_kwargs).to_pandas()
     if "distractors" in ds.columns:
         # Convert to list so it's not unexpectedly a numpy array
         ds["distractors"] = ds["distractors"].apply(list)
