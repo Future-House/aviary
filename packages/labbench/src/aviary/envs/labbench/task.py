@@ -291,7 +291,9 @@ def read_ds_from_hub(
 
     if isinstance(hf_name, LABBenchDatasets):
         hf_name = hf_name.value
-    ds = load_dataset(hf_path, hf_name, split=hf_split, **load_ds_kwargs).to_pandas()
+    ds = load_dataset(
+        **(load_ds_kwargs | {"path": hf_path, "name": hf_name, "split": hf_split})
+    ).to_pandas()
     if "distractors" in ds.columns:
         # Convert to list so it's not unexpectedly a numpy array
         ds["distractors"] = ds["distractors"].apply(list)
