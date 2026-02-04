@@ -550,7 +550,13 @@ class DummyEnv(Environment[DummyEnvState]):
     ) -> tuple[Messages, float, bool, bool]:
         msgs: Messages = await self.exec_tool_calls(  # type: ignore[assignment]
             action, state=self.state, concurrency=self.concurrent_tool_calls
-        ) or [Message(content=f"No tool calls input in tool request {action}.")]
+        ) or [
+            ToolResponseMessage(
+                content=f"No tool calls input in tool request {action}.",
+                name="",
+                tool_call_id="",
+            )
+        ]
         self.state.messages.extend(msgs)
         return msgs, self.state.reward, self.state.done, False
 

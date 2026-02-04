@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pytest
+from lmi import LiteLLMModel
 
 from aviary.core import (
     Message,
@@ -372,3 +373,145 @@ class TestToolRequestMessage:
             assert trm.content is not None
             content_list_original = json.loads(trm.content)
             assert len(content_list_original) == 3
+
+
+class TestCacheBreakpoint:
+    def test_default_is_false(self) -> None:
+        msg = Message(content="test")
+        assert not msg.cache_breakpoint
+
+    def test_serialization_without_cache_breakpoint(self) -> None:
+        data = Message(content="test").model_dump(exclude_none=True)
+        assert data == {"role": "user", "content": "test"}
+
+    @pytest.mark.parametrize(
+        ("content", "expected_content"),
+        [
+            (
+                "test",
+                [
+                    {
+                        "type": "text",
+                        "text": "test",
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ],
+            ),
+            (
+                [{"type": "text", "text": "first"}, {"type": "text", "text": "second"}],
+                [
+                    {"type": "text", "text": "first"},
+                    {
+                        "type": "text",
+                        "text": "second",
+                        "cache_control": {"type": "ephemeral"},
+                    },
+                ],
+            ),
+        ],
+    )
+    def test_serialization_with_cache_breakpoint(
+        self, content, expected_content
+    ) -> None:
+        data = Message(content=content, cache_breakpoint=True).model_dump(
+            exclude_none=True
+        )
+        assert data == {"role": "user", "content": expected_content}
+
+    def test_serialization_with_cache_breakpoint_empty_content(self) -> None:
+        data = Message(content=None, cache_breakpoint=True).model_dump(
+            exclude_none=True
+        )
+        # Should not crash, content stays None
+        assert data == {"role": "user"}
+
+    def test_cache_breakpoint_excluded_from_dump(self) -> None:
+        data = Message(content="test", cache_breakpoint=True).model_dump()
+        assert "cache_breakpoint" not in data
+
+    def test_cache_breakpoint_with_image_content(self) -> None:
+        data = Message.create_message(
+            text="Describe this image",
+            images=[
+                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            ],
+            cache_breakpoint=True,
+        ).model_dump(exclude_none=True)
+        # cache_control should be on the last block (the text block)
+        assert len(data["content"]) == 2
+        assert data["content"][0]["type"] == "image_url"
+        assert "cache_control" not in data["content"][0]
+        assert data["content"][1]["type"] == "text"
+        assert data["content"][1]["cache_control"] == {"type": "ephemeral"}
+
+    def test_cache_breakpoint_skipped_when_deserialize_content_false(self) -> None:
+        data = Message(content="test", cache_breakpoint=True).model_dump(
+            context={"deserialize_content": False}
+        )
+        # Content should remain a string, cache_breakpoint not applied
+        assert data["content"] == "test"
+
+    def test_cache_breakpoint_logs_warning_when_skipped(self, caplog) -> None:
+        import logging
+
+        msg = Message(content="test", cache_breakpoint=True)
+        with caplog.at_level(logging.WARNING):
+            msg.model_dump(context={"deserialize_content": False})
+        assert "cache_breakpoint ignored" in caplog.text
+
+
+def _make_long_content(prefix: str, num_items: int = 300) -> str:
+    """Generate long content for cache testing (>1024 tokens for Anthropic)."""
+    return prefix + " ".join(f"item_{i}" for i in range(num_items))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("model_name", "require_cache_hit"),
+    [
+        ("claude-3-5-haiku-20241022", True),
+        ("gpt-4o-mini", False),
+    ],
+)
+async def test_cache_breakpoint_live(model_name: str, require_cache_hit: bool) -> None:
+    """Verify cache breakpoint behavior with different providers.
+
+    For Anthropic: cache_breakpoint causes upstream content to be cached.
+    For OpenAI: LiteLLM correctly strips cache_control, and OpenAI's automatic
+    prefix caching may or may not activate.
+    """
+    system_msg = Message(role="system", content=_make_long_content("System: "))
+    user_context = Message(role="user", content=_make_long_content("Context: "))
+    user_context.cache_breakpoint = True
+    assistant_msg = Message(role="assistant", content="Acknowledged.")
+    user_question = Message(role="user", content="Summarize.")
+
+    messages = [system_msg, user_context, assistant_msg, user_question]
+    llm = LiteLLMModel(name=model_name)
+
+    # First request - may create cache or hit existing cache
+    result1 = await llm.call_single(messages)
+    if require_cache_hit:
+        cache_active = (result1.cache_creation_tokens or 0) > 0 or (
+            result1.cache_read_tokens or 0
+        ) > 0
+        assert cache_active, "Expected cache creation or cache read on first request"
+    else:
+        assert result1.text is not None
+
+    # Second request - should hit cache (for Anthropic) or may hit (for OpenAI)
+    result2 = await llm.call_single(messages)
+    if require_cache_hit:
+        assert (result2.cache_read_tokens or 0) > 0, (
+            "Expected cache hit on second request"
+        )
+        assert (result2.cache_read_tokens or 0) > 500, (
+            f"Expected >500 cached tokens, got {result2.cache_read_tokens}"
+        )
+    else:
+        assert result2.text is not None
+        # OpenAI's caching is automatic and not guaranteed
+        if result2.cache_read_tokens is not None and result2.cache_read_tokens > 0:
+            assert result2.cache_read_tokens > 500, (
+                f"Expected >500 cached tokens if cache hit, got {result2.cache_read_tokens}"
+            )

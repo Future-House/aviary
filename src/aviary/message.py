@@ -1,4 +1,5 @@
 import json
+import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, ClassVar, Self
 
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
     from logging import LogRecord
 
     import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class Message(BaseModel):
@@ -60,6 +63,14 @@ class Message(BaseModel):
         repr=False,
     )
 
+    cache_breakpoint: bool = Field(
+        default=False,
+        description="Mark this message as a cache breakpoint for prompt caching. "
+        "When True, adds cache_control to the content during serialization.",
+        exclude=True,
+        repr=False,
+    )
+
     @field_validator("role")
     @classmethod
     def check_role(cls, v: str) -> str:
@@ -97,14 +108,44 @@ class Message(BaseModel):
           as LLM APIs expect multimodal content as structured blocks.
         - Other structured content stays as a JSON string,
           as tool response content must be a string for LLM API compatibility.
+
+        For cache_breakpoint:
+        - When True, adds cache_control to the content for prompt caching.
+        - String content is converted to content block format, the list-of-dicts
+          representation that LLM APIs use for structured content, e.g.
+          [{"type": "text", "text": "hello", "cache_control": {"type": "ephemeral"}}].
+        - Multimodal content has cache_control added to the last block.
         """
         data = handler(self)
-        if (
-            self.is_multimodal
-            and "content" in data
-            and (info.context or {}).get("deserialize_content", True)
-        ):
+        deserialize_content = (info.context or {}).get("deserialize_content", True)
+        if self.is_multimodal and "content" in data and deserialize_content:
             data["content"] = json.loads(data["content"])
+
+        # Handle cache_breakpoint - add cache_control to content
+        # Skip when deserialize_content=False as it would convert string to list,
+        # breaking call sites that require string content (e.g., ToolResponseMessage)
+        if self.cache_breakpoint and not deserialize_content:
+            logger.warning(
+                "cache_breakpoint ignored: deserialize_content=False requires string content"
+            )
+        elif (
+            self.cache_breakpoint and "content" in data and data["content"] is not None
+        ):
+            cache_control = {"type": "ephemeral"}
+            if isinstance(data["content"], list):
+                # Multimodal: add cache_control to last block
+                if data["content"]:
+                    data["content"][-1]["cache_control"] = cache_control
+            else:
+                # String content: convert to content block format with cache_control
+                data["content"] = [
+                    {
+                        "type": "text",
+                        "text": data["content"],
+                        "cache_control": cache_control,
+                    }
+                ]
+
         if (info.context or {}).get("include_info"):
             data["info"] = self.info
         return data

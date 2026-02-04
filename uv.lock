@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -1255,7 +1255,7 @@ dev = [{ name = "fhaviary", extras = ["dev"], editable = "." }]
 
 [[package]]
 name = "fhlmi"
-version = "0.42.1"
+version = "0.43.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coredis" },
@@ -1266,9 +1266,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "typing-extensions", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/f8/b043da9814d5bc77fa7bc6721b49dcf72391e23f73a09986d32a18b92665/fhlmi-0.42.1.tar.gz", hash = "sha256:d192a026e49ab28b95947a04ee0b1199a4f97da76aea29bfec4ac5e6d4683384", size = 423804, upload-time = "2026-01-03T22:32:13.744Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/0c/a72e96bad0a79edb79bcb9c4f17501fef511870d7dfab4ce3af989ea3673/fhlmi-0.43.1.tar.gz", hash = "sha256:63b7f6f8dc55eb082b79bc28600dfe2e6c9721f198ec76b2474aeadb8c413369", size = 424137, upload-time = "2026-01-28T20:00:01.502Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/61/83518e72bfa0ca36d78b39bff08e96524b4d3a04db51ba54256d1876ce1f/fhlmi-0.42.1-py3-none-any.whl", hash = "sha256:7a22bc73576b3c2788fc0ba45abe41166f726562fa6f169d0ad633a90284f0e9", size = 44755, upload-time = "2026-01-03T22:32:12.708Z" },
+    { url = "https://files.pythonhosted.org/packages/48/96/fc11bd5d2b7112fb0327fa86e81bea6810b1a908f3f207321f2e80918c21/fhlmi-0.43.1-py3-none-any.whl", hash = "sha256:8675bb1b5a0cc317febdb3db9b36f6562ee6d2dbef2d084649e121a451d3a45b", size = 44908, upload-time = "2026-01-28T19:59:59.743Z" },
 ]
 
 [[package]]
