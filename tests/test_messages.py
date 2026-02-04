@@ -492,9 +492,9 @@ async def test_cache_breakpoint_live(model_name: str, require_cache_hit: bool) -
     # First request - may create cache or hit existing cache
     result1 = await llm.call_single(messages)
     if require_cache_hit:
-        cache_active = (
-            result1.cache_creation_tokens or 0  # type: ignore[attr-defined]
-        ) > 0 or (result1.cache_read_tokens or 0) > 0  # type: ignore[attr-defined]
+        cache_active = (result1.cache_creation_tokens or 0) > 0 or (
+            result1.cache_read_tokens or 0
+        ) > 0
         assert cache_active, "Expected cache creation or cache read on first request"
     else:
         assert result1.text is not None
@@ -502,17 +502,16 @@ async def test_cache_breakpoint_live(model_name: str, require_cache_hit: bool) -
     # Second request - should hit cache (for Anthropic) or may hit (for OpenAI)
     result2 = await llm.call_single(messages)
     if require_cache_hit:
-        assert (
-            result2.cache_read_tokens or 0  # type: ignore[attr-defined]
-        ) > 0, "Expected cache hit on second request"
-        assert (
-            result2.cache_read_tokens or 0  # type: ignore[attr-defined]
-        ) > 500, f"Expected >500 cached tokens, got {result2.cache_read_tokens}"  # type: ignore[attr-defined]
+        assert (result2.cache_read_tokens or 0) > 0, (
+            "Expected cache hit on second request"
+        )
+        assert (result2.cache_read_tokens or 0) > 500, (
+            f"Expected >500 cached tokens, got {result2.cache_read_tokens}"
+        )
     else:
         assert result2.text is not None
         # OpenAI's caching is automatic and not guaranteed
-        cache_read = result2.cache_read_tokens  # type: ignore[attr-defined]
-        if cache_read is not None and cache_read > 0:
-            assert cache_read > 500, (
-                f"Expected >500 cached tokens if cache hit, got {cache_read}"
+        if result2.cache_read_tokens is not None and result2.cache_read_tokens > 0:
+            assert result2.cache_read_tokens > 500, (
+                f"Expected >500 cached tokens if cache hit, got {result2.cache_read_tokens}"
             )
