@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 try:
     SeedTypes: TypeAlias = "int | random.Random | np.random.Generator | None"
 except ImportError:  # NumPy isn't installed
-    SeedTypes = int | random.Random | None  # type: ignore[misc,assignment]
+    SeedTypes = int | random.Random | None  # type: ignore[misc]
 
 
 DEFAULT_EVAL_MODEL_NAME = "gpt-4o-mini"
