@@ -416,33 +416,37 @@ class TestTextQATaskDataset:
                 TextQATaskSplit.TRAIN,
                 [
                     (
-                        "Q: In a study looking at the performance of single-cell"
-                        " foundation models, using the scGPT model, which dataset had"
-                        " the highest average BIO score?"
+                        "Q: A paper described how new granule cells (GCs) in the"
+                        " dentate gyrus gradually recruit GABAergic feedback inhibition"
+                        " that limits the activity of neighboring GCs, supporting"
+                        " sparse coding. They found that this inhibitory control is"
+                        " weak in young GCs, and computational modeling suggested that"
+                        " the delayed coupling to feedback inhibition may be essential"
+                        " for creating detailed representations of new inputs. In this"
+                        " paper, in how many paired experiments between MTR and young"
+                        " cells did the granule cell IPSC charge increase?"
                     ),
                     (
-                        "Q: In a study investigating the long-term effects of"
-                        " pregabalin (PGB), researchers also noted a broader impact on"
-                        " dentate gyrus network function. By altering both the"
-                        " excitability of mature neurons and the development of new"
-                        " ones, PGB may shift the balance of inhibition and excitation"
-                        " within this brain region. This suggests a potential mechanism"
-                        " by which PGB could influence cognitive or emotional"
-                        " processing linked to hippocampal activity. In this study,"
-                        " what is the fold-change in the number of Brdu+Cells% in the"
-                        " Neun-/DCX+ condition when comparing control and PGB"
-                        " treatment? Round to the nearest single decimal place."
+                        "Q: Inspired by the capacity for zebrafish Müller glia (MG) to"
+                        " contribute stem cells that can regenerate damaged neurons in"
+                        " the retina, a study used a mouse model to investigate the"
+                        " regenerative capacity of MG across different retinal regions."
+                        " In this study, using Gnat1rd17Gnat2cpfl3 mice, which quadrant"
+                        " of the retina exhibited the highest density of MG-derived"
+                        " rods per mm^2?"
                     ),
                     (
-                        "Q: The researchers made a Drosophila SCENIC database to study"
-                        " how genes control brain cell types. They found how brain"
-                        " cells change as flies age and used machine learning to guess"
-                        " a cell's age from its gene activity. The study includes"
-                        " 157,000 single cell profiles from two fly strains, shared"
-                        " through the SCope tool. In this study which type of non"
-                        " neuronal cell had the second-lowest enrichment of the"
-                        " oxidative phosphorlyation pathway based on single-cell"
-                        " analysis?"
+                        "Q: In a study using vesicular glutamate transporter-3"
+                        " knock-out (Vglut3 KO) mice, researchers found that the"
+                        " effects of noise exposure were different from those in"
+                        " wild-type animals. Instead of showing potentiation, the KO"
+                        " mice displayed reduced exocytosis and calcium influx, and the"
+                        " calcium dependence of release stayed unchanged. These results"
+                        " indicate that the noise-induced increase in exocytosis"
+                        " depends on glutamate release through Vglut3. In this study,"
+                        " what is the change in capacitance measurements (DCm) at -20"
+                        " mV when comparing unexposed and 1 day after exposure"
+                        " condition? Round to the closest integer."
                     ),
                 ],
             ),
@@ -452,27 +456,27 @@ class TestTextQATaskDataset:
                 TextQATaskSplit.TRAIN,
                 [
                     (
-                        "Q: In the ABIS 20-year prospective birth cohort study that"
-                        " used multi-omics analysis to investigate neurodevelopmental"
-                        " disorders, what was the odds ratio for neurodevelopmental"
-                        " disorders when comparing children who had gastroenteritis 3"
-                        " or more times versus those who never had gastroenteritis"
-                        " between 12 months and 2.5 years of age?"
+                        "Q: In a study introducing a toolset for efficient"
+                        " semi-automated analysis of large-scale 3D electron microscopy"
+                        " datasets for reconstruction of neural circuits, what was the"
+                        " depth parameter used for whole-cell segmentations in the"
+                        " cortex dataset?"
                     ),
                     (
-                        "Q: A study analyzed sample and health data from the ABIS"
-                        " cohort to identify early microbiome and metabolite patterns"
-                        " associated to neurodevelopmental disorder risks. In this"
-                        " paper, what is the difference in odds ratio between"
-                        ' "citrobacter 1" and "coprococcus 0" when comparing the'
-                        " propensity match category?"
+                        "Q: In a recent study, researchers generated large-scale"
+                        " datasets of lysine crotonylation and succinylation in"
+                        " phytoplasma-infected jujube, revealing that Kcr modification"
+                        " of ZjPHGPX2 enhances its activity. In this study, how many"
+                        " whole proteins were upregulated when comparing diseased"
+                        " versus healthy conditions?"
                     ),
                     (
-                        "Q: Which researcher was funded by the Horizon 2020 Framework"
-                        " Programme for a study developing an open-source simulator for"
-                        " prosthetic vision that incorporates quantitative models of"
-                        " cortical stimulation in V1 based on psychophysical and"
-                        " neuroanatomical research?"
+                        "Q: In research developing covalent KRAS^G12C inhibitors"
+                        " through structure-activity relationship studies, beginning"
+                        " with compound 1 and employing iterative chemical optimization"
+                        " to identify MRTX849 as a clinical candidate for KRAS^G12C"
+                        " targeting, what was the Tmax (hours) observed for compound 7"
+                        " after oral administration of 10 mg/kg in CD-1 mice?"
                     ),
                 ],
             ),
@@ -507,7 +511,7 @@ class TestTextQATaskDataset:
             (LABBenchDatasets.FIG_QA, 181),
             (LABBenchDatasets.TABLE_QA, 244),
             (LABBenchDatasets.LIT_QA2, 199),
-            (LABBenchDatasets.FIG_QA2, 100),
+            (LABBenchDatasets.FIG_QA2, 101),
             (LABBenchDatasets.TABLE_QA2, 100),
         ],
     )

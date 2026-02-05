@@ -49,7 +49,7 @@ TGradableEnv = TypeVar(
 )
 
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
-DEFAULT_LITQA3_HF_HUB_NAME = "futurehouse/litqa3"
+DEFAULT_LABBENCH2_HF_HUB_NAME = "futurehouse/labbench2"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
 DEFAULT_AVIARY_PAPER_HF_HUB_NAME = "futurehouse/aviary-paper-data"
 
@@ -209,13 +209,13 @@ class LABBenchDatasets(StrEnum):
         self, split: "str | TextQATaskSplit" = "train", **kwargs
     ) -> "pd.DataFrame":
         split = TextQATaskSplit(split)
-        hf_name: LABBenchDatasets | None = self
+        hf_name: str | LABBenchDatasets | None = self
         if split == TextQATaskSplit.TRAIN:
             if self not in {LABBenchDatasets.FIG_QA2, LABBenchDatasets.TABLE_QA2}:
                 hf_path: str = DEFAULT_LABBENCH_HF_HUB_NAME
             else:
-                hf_path = DEFAULT_LITQA3_HF_HUB_NAME
-                hf_name = None
+                hf_path = DEFAULT_LABBENCH2_HF_HUB_NAME
+                hf_name = "all"
         elif self == LABBenchDatasets.LIT_QA2:
             hf_path = DEFAULT_AVIARY_PAPER_HF_HUB_NAME
         else:
@@ -270,7 +270,7 @@ def read_ds_from_hub(
 
     Args:
         hf_name: Hugging Face Hub dataset's name.
-            E.g. "LitQA2" for LitQA v2 or None for FigQA v2.
+            E.g. "LitQA2" for LitQA v2 or "figqa2" for FigQA v2.
         hf_path: Hugging Face Hub dataset's path.
         hf_split: Hugging Face Hub dataset's split, e.g. "train" or "test".
         randomize: Opt-out flag to shuffle the dataset after loading in by question.
