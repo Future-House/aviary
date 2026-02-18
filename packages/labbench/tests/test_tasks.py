@@ -416,37 +416,40 @@ class TestTextQATaskDataset:
                 TextQATaskSplit.TRAIN,
                 [
                     (
-                        "Q: A paper described how new granule cells (GCs) in the"
-                        " dentate gyrus gradually recruit GABAergic feedback inhibition"
-                        " that limits the activity of neighboring GCs, supporting"
-                        " sparse coding. They found that this inhibitory control is"
-                        " weak in young GCs, and computational modeling suggested that"
-                        " the delayed coupling to feedback inhibition may be essential"
-                        " for creating detailed representations of new inputs. In this"
-                        " paper, in how many paired experiments between MTR and young"
-                        " cells did the granule cell IPSC charge increase?"
+                        "Q: A recent study shows that Substance P reduces gain in the"
+                        " zebrafish retina and suppresses the transient pathway."
+                        " According to this paper, what was the information rate (in"
+                        " bits/s) transmitted by bipolar cell synapses in the afternoon"
+                        " following Substance P administration? Round the value to the"
+                        " nearest multiple of 0.25."
                     ),
                     (
-                        "Q: Inspired by the capacity for zebrafish Müller glia (MG) to"
-                        " contribute stem cells that can regenerate damaged neurons in"
-                        " the retina, a study used a mouse model to investigate the"
-                        " regenerative capacity of MG across different retinal regions."
-                        " In this study, using Gnat1rd17Gnat2cpfl3 mice, which quadrant"
-                        " of the retina exhibited the highest density of MG-derived"
-                        " rods per mm^2?"
+                        "Q: In a study investigating the long-term effects of"
+                        " pregabalin (PGB), researchers found that chronic in vivo"
+                        " treatment led to reduced excitability of dentate gyrus"
+                        " granule cells (DGGCs). This reduction in neuronal activity"
+                        " suggests that PGB dampens overall excitatory signaling in the"
+                        " hippocampal dentate gyrus. Such modulation may contribute to"
+                        " altered patterns of brain plasticity. In this study what is"
+                        " the difference in the number of spikes elicited by a current"
+                        " step of 40 pA when comparing GFP+ and GFP- cells? Round to"
+                        " the nearest integer."
                     ),
                     (
-                        "Q: In a study using vesicular glutamate transporter-3"
-                        " knock-out (Vglut3 KO) mice, researchers found that the"
-                        " effects of noise exposure were different from those in"
-                        " wild-type animals. Instead of showing potentiation, the KO"
-                        " mice displayed reduced exocytosis and calcium influx, and the"
-                        " calcium dependence of release stayed unchanged. These results"
-                        " indicate that the noise-induced increase in exocytosis"
-                        " depends on glutamate release through Vglut3. In this study,"
-                        " what is the change in capacitance measurements (DCm) at -20"
-                        " mV when comparing unexposed and 1 day after exposure"
-                        " condition? Round to the closest integer."
+                        "Q: In a study investigating the role of cortical F-actin in"
+                        " synaptic vesicle endocytosis and replenishment, researchers"
+                        " found that disrupting the cortical F-actin cytoskeleton with"
+                        " cytochalasin D slowed both rapid replenishment and fast"
+                        " endocytosis. Using rhodamine-phalloidin imaging, they also"
+                        " showed that raising Ca2+ concentrations from 10 to 1000 nM"
+                        " reduced cortical F-actin density. These findings indicate"
+                        " that stable F-actin is essential to sustain fast endocytosis"
+                        " and vesicle replenishment, while low Ca2+ levels preserve"
+                        " synaptic efficiency by stabilizing actin. In this synaptic"
+                        " vesicle endocytosis study using capacitance measurements,"
+                        " what was the difference between the two recovery time"
+                        " constants (Tr1 and Tr2, in seconds)? Provide the value to"
+                        " the first decimal place."
                     ),
                 ],
             ),
@@ -456,27 +459,20 @@ class TestTextQATaskDataset:
                 TextQATaskSplit.TRAIN,
                 [
                     (
-                        "Q: In a study introducing a toolset for efficient"
-                        " semi-automated analysis of large-scale 3D electron microscopy"
-                        " datasets for reconstruction of neural circuits, what was the"
-                        " depth parameter used for whole-cell segmentations in the"
-                        " cortex dataset?"
+                        "Q: In a study investigating cardiovascular and cancer risk"
+                        " with tofacitinib in rheumatoid arthritis, which treatment arm"
+                        " had the greatest ratio of patients with a history of"
+                        " hypertension to diabetes mellitus?"
                     ),
                     (
-                        "Q: In a recent study, researchers generated large-scale"
-                        " datasets of lysine crotonylation and succinylation in"
-                        " phytoplasma-infected jujube, revealing that Kcr modification"
-                        " of ZjPHGPX2 enhances its activity. In this study, how many"
-                        " whole proteins were upregulated when comparing diseased"
-                        " versus healthy conditions?"
+                        "Q: In an article using multimodal multi-view weakly supervised"
+                        " deep clustering to identify disease subtypes, which of the"
+                        " included study cohorts had the highest mean participant age?"
                     ),
                     (
-                        "Q: In research developing covalent KRAS^G12C inhibitors"
-                        " through structure-activity relationship studies, beginning"
-                        " with compound 1 and employing iterative chemical optimization"
-                        " to identify MRTX849 as a clinical candidate for KRAS^G12C"
-                        " targeting, what was the Tmax (hours) observed for compound 7"
-                        " after oral administration of 10 mg/kg in CD-1 mice?"
+                        "Q: In a study using MERFISH for spatial transcriptomics to"
+                        " image RNA species in single cells, which primer 2 sequence"
+                        " corresponds to the 1001-gene experiment?"
                     ),
                 ],
             ),
