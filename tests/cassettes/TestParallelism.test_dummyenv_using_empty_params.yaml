@@ -6,7 +6,7 @@ interactions:
         to print.","title":"Story","type":"string"}},"required":["story"]}},{"name":"cast_float","description":"Cast
         the input argument x to a float.","parameters":{"type":"object","properties":{"x":{"title":"X","type":"string"}},"required":["x"]}},{"name":"cast_int","description":"Cast
         the input argument x to an integer.","parameters":{"type":"object","properties":{"x":{"title":"X","type":"number"}},"required":["x"]}},{"name":"get_random_int","description":"Get
-        a random integer in 1 to 10.","parameters":{}}]}],"toolConfig":{"functionCallingConfig":{"mode":"ANY"}},"generationConfig":{}}'
+        a random integer in 1 to 10.","parameters":{"type":"object"}}]}],"toolConfig":{"functionCallingConfig":{"mode":"ANY"}}}'
       headers:
         accept:
           - "*/*"
@@ -15,29 +15,30 @@ interactions:
         connection:
           - keep-alive
         content-length:
-          - "827"
+          - "820"
         content-type:
           - application/json
         host:
           - generativelanguage.googleapis.com
         user-agent:
-          - litellm/1.80.11
+          - litellm/1.81.13
       method: POST
       uri: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%3CFILTERED%3E
     response:
       body:
         string: !!binary |
-          H4sIAAAAAAAC/11SUXOiMBh891cwPN1Nr7ViUbw3RT2o0gJ6tuXmphMwQBQSLwlSdfzvF1ArlAeG
-          2d18+7HZQ0OS5ADgJVoCDpn8U/ojEEk6lO+CI5hDzAVxgQS4AZRftafnUPkWkjDDAUcE6yBJaofP
-          PAYpFLgcQf5OhT9J35Gw+fFVB2hUOB2ONeJY18k8JlkU8xmKMOAZLSfr1Bn0X6emgvPmNtd942aR
-          dluv484MOM+uprARG+RW9wWgNRjH+qPt7jN/hbd09atv7WBqtTM7Ta1YfXnik4k3cmnPeJsa2raj
-          tTiJyNSIdoY77qnb0QBymE5yLdeQ/+Co27eBgzNvHGjh/XqHfaiiYW/lqs19Nhh6mDYnJPf+IcXp
-          pDfhqG9E5ou2e+h6Hd7VHz+aRM1MQ7HWXSPU1z1MwsGTv1LNfTZproNRazGfWOm4P/S8ztCze/Hv
-          HbPbWDejXAvkSizXxP5e05IpScp0UrKEyUX+GaccIoxY7ELACC5ks/mz/XkpMsJL+CHg+y96CzIG
-          onKuVcyVIoghFYVaSpceSIEowjf2/e7kWSxXriVnxUkLciAKCD6bIm8oSTd8TtYQ6yQrC9jqtE++
-          lcLWBcqZ54SDpEYprfPO1cFsKGxRUm1ypeQiIZAgviv+aj56nVe6KQzqe11ybFTivpSyvmNbbZzz
-          Pl3BAlKGTllHMBVp3ip36m2YABaXhjKFbEMwg+ay0Bh27AMPo6n9/LGyAnsPffPBIXLj2PgP5567
-          zssDAAA=
+          H4sIAAAAAAAC/2VTXXOiMBR991cwPO2O26KoqDuzDyp+1wY/QHFnpxMhQBQTlgTEOv3vG7S22uWB
+          Ye45uedy7smpIEmyA4mLXcgRk39Kv0VFkk7nd45RwhHhAriWRDGCMf/kXp7TzbegeAlxOKakA8Pw
+          7vA7TuAeibrsI/4SC326f8FC5sdXHoz9XOn0dge83fNkHtDED/gc+wTyJD537iS7dmtTLTZTpnZS
+          WC1WzXDkYM00NVwfYwNEwNLDg330y6iib7IDTNS6sdUdp6rgJDJZcRk+t4E3Btw2DtTeBRMV2OXp
+          cM09rKw7zv5VmfWzmtZvgZ3J0+lqPZ1002yklDx9Y3UH5tAt2rOMaO31DNDIUNpNgyu2VpmXZo61
+          Q8ZoNz3EfBBl9QhttKflfrFZABtYW3KIB6btJPMKbT03VLsXzXvN8O+WqQGuNvp6g75mdQ66B9wb
+          pN46eDpqTS9tVgInHnE9Tcbd7ZJVejU3QsU0DVuryVwFU3XynAYKsOt9B/Jj3bKMcseapy2QLZxx
+          v6WM+8gvP4HRcfhLvrH30/k/n67LMQ3PLu+pi8Ir/WMtsocJZsEMQUZJTpsvgPGxXBkTF2WiXPrC
+          nyDGoH/uO8n7Sj4iKBbBdKVrniRHBOob+/540cyHO48lJ/nJCeJQBBl+JE6OYrqP+ILuEOnQ5Bzk
+          sla56N4E/56gvuOcchjeQaqq/fivMdOFLA5vb8TNZREOwRDzY/5Xi+5qcZNxIXA/19XHwo3d13Df
+          z1grF979vqzAQjHDF699tBduPqiPtQcvhCw4C8oxYhElDA3dnFMyl0vorDr9ml59aNhG5i5jbdqV
+          C2+FfyiZTh4TBAAA
       headers:
         Alt-Svc:
           - h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
@@ -46,11 +47,11 @@ interactions:
         Content-Type:
           - application/json; charset=UTF-8
         Date:
-          - Mon, 05 Jan 2026 17:42:52 GMT
+          - Wed, 18 Feb 2026 23:05:54 GMT
         Server:
           - scaffolding on HTTPServer2
         Server-Timing:
-          - gfet4t7; dur=747
+          - gfet4t7; dur=720
         Transfer-Encoding:
           - chunked
         Vary:
