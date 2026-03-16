@@ -118,7 +118,11 @@ class ToolSelector:
             selection = ToolRequestMessage(
                 **choice.message.model_dump(),
                 info={
-                    "usage": (usage.prompt_tokens, usage.completion_tokens),
+                    "usage": (
+                        (usage.prompt_tokens, usage.completion_tokens)
+                        if usage is not None
+                        else (0, 0)
+                    ),
                     "model": self._model_name,
                 },
             )
