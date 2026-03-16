@@ -52,6 +52,7 @@ repos:
     rev: v0.24.3
     hooks:
       - id: toml-sort-fix
+        exclude: ^uv\.lock$
   - repo: https://github.com/jsh9/markdown-toc-creator
     rev: 0.1.3
     hooks:
