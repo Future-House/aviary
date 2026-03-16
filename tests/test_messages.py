@@ -11,7 +11,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolResponseMessage,
 )
-from tests import TEST_IMAGES_DIR
+from tests import TEST_IMAGES_DIR, CILLMModelNames
 
 
 def load_base64_image(filename: str) -> str:
@@ -469,7 +469,7 @@ def _make_long_content(prefix: str, num_items: int = 300) -> str:
 @pytest.mark.parametrize(
     ("model_name", "require_cache_hit"),
     [
-        ("claude-3-5-haiku-20241022", True),
+        (CILLMModelNames.ANTHROPIC.value, True),
         ("gpt-4o-mini", False),
     ],
 )
