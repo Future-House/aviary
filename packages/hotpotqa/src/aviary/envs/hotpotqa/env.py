@@ -33,7 +33,6 @@ from aviary.core import (
     Messages,
     TaskDataset,
     Tool,
-    ToolRequestMessage,
     eval_answer,
 )
 from bs4 import BeautifulSoup
@@ -275,9 +274,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
         self.state = self.State()
         return [Message(content=f"Question: {self.question}")], self.tools
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         """Take a step in the environment. Assume only one tool at a time can be called for HotpotQA.
 
         This method processes an action message, which can be a tool request, a finish request, or an error message.
@@ -308,6 +305,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             >>> print(obs, done)
             [ToolResponseMessage(name='Search', tool_call_id='tool_call_id', content='...')], False
         """
+        action = self.check_action_is_tool_request(action)
         self.state.steps += 1
         if not action.tool_calls:
             return (

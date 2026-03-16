@@ -15,7 +15,6 @@ from aviary.core import (
     Messages,
     TaskDataset,
     Tool,
-    ToolRequestMessage,
     ToolResponseMessage,
 )
 from pydantic import BaseModel, ConfigDict
@@ -141,9 +140,8 @@ class CalculatorEnv(Environment[None]):
         ]
         return [Message(content=self.problem)], self.tools
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+        action = self.check_action_is_tool_request(action)
         if not action.tool_calls:
             return (
                 [

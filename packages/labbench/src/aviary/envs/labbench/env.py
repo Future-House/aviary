@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING, Any, Generic, Self, cast
 from uuid import UUID
 
 from aviary.core import (
+    Message,
     Messages,
     MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
-    ToolRequestMessage,
 )
 from aviary.env import ENV_REGISTRY
 from ldp.utils import discounted_returns
@@ -140,10 +140,9 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
         ).grade(self.state.session.answer)
         return evaluation  # type: ignore[return-value]
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
-        messages, reward, done, truncated = await super().step(action)
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+        tool_request = self.check_action_is_tool_request(action)
+        messages, reward, done, truncated = await super().step(tool_request)
         if not done or not isinstance(self._query, MultipleChoiceQuestion):
             return messages, reward, done, truncated
         evaluation = await self._evaluate_answer()

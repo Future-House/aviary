@@ -30,7 +30,7 @@ from aviary.core import (
     ToolSelector,
     ToolSelectorLedger,
 )
-from aviary.dataset_server import TaskDatasetServer
+from aviary.dataset_server import StepRequest, TaskDatasetServer
 from aviary.env import EnvsTaskDataset
 from aviary.message import MalformedMessageError
 from aviary.tools import FunctionInfo, Messages
@@ -352,10 +352,9 @@ class SlowEnv(Environment[None]):
         self.tools = [Tool.from_function(slow_tool), Tool.from_function(aslow_tool)]
         return [], self.tools
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
-        await self.exec_tool_calls(action, exec_timeout=0.0001)
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+        tool_request = self.check_action_is_tool_request(action)
+        await self.exec_tool_calls(tool_request, exec_timeout=0.0001)
 
         return [], 0.0, False, False
 
@@ -744,3 +743,59 @@ class TestTaskDatasetServer:
             "dataset_size": None,
             "running_env_ids": [],
         }
+
+    @pytest.mark.asyncio
+    async def test_step_with_plain_message(self, server_async_client: AsyncClient):
+        start_resp = await server_async_client.post("/start", json={})
+        env_id = start_resp.json()["env_id"]
+        await server_async_client.post("/reset", json={"env_id": env_id})
+
+        action = Message(content="hello")
+        response = await server_async_client.post(
+            "/step", json={"env_id": env_id, "action": action.model_dump()}
+        )
+        assert response.status_code == 500, (
+            "Plain Message should fail check_action_is_tool_request"
+        )
+
+    @pytest.mark.asyncio
+    async def test_step_with_tool_response_message(
+        self, server_async_client: AsyncClient
+    ):
+        start_resp = await server_async_client.post("/start", json={})
+        env_id = start_resp.json()["env_id"]
+        await server_async_client.post("/reset", json={"env_id": env_id})
+
+        action = ToolResponseMessage(
+            content="some result", name="some_tool", tool_call_id="abc123"
+        )
+        response = await server_async_client.post(
+            "/step", json={"env_id": env_id, "action": action.model_dump()}
+        )
+        assert response.status_code == 500, (
+            "ToolResponseMessage should fail check_action_is_tool_request"
+        )
+
+
+class TestStepRequestDeserialization:
+    def test_tool_request_message(self):
+        trm = ToolRequestMessage(tool_calls=[ToolCall.from_name("test", x=1)])
+        req = StepRequest(env_id="e1", action=trm.model_dump())
+        assert isinstance(req.action, ToolRequestMessage)
+        assert len(req.action.tool_calls) == 1
+        assert req.action.tool_calls[0].function.name == "test"
+
+    def test_tool_response_message(self):
+        resp = ToolResponseMessage(
+            content="result", name="my_tool", tool_call_id="abc123"
+        )
+        req = StepRequest(env_id="e1", action=resp.model_dump())
+        assert isinstance(req.action, ToolResponseMessage)
+        assert req.action.name == "my_tool"
+        assert req.action.tool_call_id == "abc123"
+
+    def test_plain_message(self):
+        msg = Message(content="hello")
+        req = StepRequest(env_id="e1", action=msg.model_dump())
+        assert type(req.action) is Message
+        assert req.action.content == "hello"

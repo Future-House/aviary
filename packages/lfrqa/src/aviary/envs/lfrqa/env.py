@@ -14,7 +14,6 @@ from aviary.core import (
     Message,
     Messages,
     MultipleChoiceQuestion,
-    ToolRequestMessage,
 )
 from aviary.env import ENV_REGISTRY
 from aviary.envs.labbench import GradablePaperQAEnvironment
@@ -270,12 +269,11 @@ class LFRQAPairwiseEvalEnv(GradablePaperQAEnvironment[dict]):
 
         return evaluation
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+        tool_request = self.check_action_is_tool_request(action)
         messages, reward, done, truncated = await super(
             GradablePaperQAEnvironment, self
-        ).step(action)
+        ).step(tool_request)
         if not done:
             return messages, reward, done, truncated
         evaluation = await self._evaluate_answer()
