@@ -460,8 +460,8 @@ class TestCacheBreakpoint:
         assert "cache_breakpoint ignored" in caplog.text
 
 
-def _make_long_content(prefix: str, num_items: int = 300) -> str:
-    """Generate long content for cache testing (>1024 tokens for Anthropic)."""
+def _make_long_content(prefix: str, num_items: int = 1500) -> str:
+    """Generate long content for cache testing (>2048 tokens for Anthropic)."""
     return prefix + " ".join(f"item_{i}" for i in range(num_items))
 
 
