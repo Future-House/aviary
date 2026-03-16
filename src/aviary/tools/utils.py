@@ -113,7 +113,7 @@ class ToolSelector:
                 f" model response, got finish reason {choice.finish_reason!r}, full"
                 f" response was {model_response} and tool choice was {tool_choice!r}."
             )
-        usage = model_response.usage
+        usage = getattr(model_response, "usage", None)
         try:
             selection = ToolRequestMessage(
                 **choice.message.model_dump(),
