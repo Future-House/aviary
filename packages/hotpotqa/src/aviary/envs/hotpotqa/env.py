@@ -277,16 +277,11 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         """Take a step in the environment. Assume only one tool at a time can be called for HotpotQA.
 
-        This method processes an action message, which can be a tool request, a finish request, or an error message.
-        It updates the environment state accordingly and returns the observation and done status.
-
         Args:
-            action: Action to take.
+            action: A ToolRequestMessage containing tool calls to execute.
 
         Returns:
-            Tuple[Messages, bool]: A tuple containing:
-                - Messages: The response message(s) from the executed tool.
-                - bool: The done status indicating whether the episode is finished.
+            Four-tuple of observations, reward, done flag, and truncated flag.
 
         Example:
             >>> from aviary.core import ToolCall
