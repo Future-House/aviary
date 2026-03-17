@@ -49,7 +49,7 @@ TGradableEnv = TypeVar(
 )
 
 DEFAULT_LABBENCH_HF_HUB_NAME = "futurehouse/lab-bench"
-DEFAULT_LABBENCH2_HF_HUB_NAME = "futurehouse/labbench2"
+DEFAULT_LABBENCH2_HF_HUB_NAME = "EdisonScientific/labbench2"
 # Test split from Aviary paper's section 4.3: https://doi.org/10.48550/arXiv.2412.21154
 DEFAULT_AVIARY_PAPER_HF_HUB_NAME = "futurehouse/aviary-paper-data"
 
