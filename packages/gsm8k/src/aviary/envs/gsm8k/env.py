@@ -143,7 +143,7 @@ class CalculatorEnv(Environment[None]):
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         if not isinstance(action, ToolRequestMessage):
-            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
+            return self.default_no_tool_calls_response
         if not action.tool_calls:
             return (
                 [

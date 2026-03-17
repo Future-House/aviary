@@ -143,7 +143,7 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         if not isinstance(action, ToolRequestMessage):
-            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
+            return self.default_no_tool_calls_response
         messages, reward, done, truncated = await super().step(action)
         if not done or not isinstance(self._query, MultipleChoiceQuestion):
             return messages, reward, done, truncated

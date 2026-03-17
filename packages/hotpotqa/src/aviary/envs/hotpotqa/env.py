@@ -302,7 +302,7 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             [ToolResponseMessage(name='Search', tool_call_id='tool_call_id', content='...')], False
         """
         if not isinstance(action, ToolRequestMessage):
-            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
+            return self.default_no_tool_calls_response
         self.state.steps += 1
         if not action.tool_calls:
             return (

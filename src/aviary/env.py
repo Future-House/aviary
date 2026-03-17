@@ -103,16 +103,18 @@ class Environment(ABC, Generic[TEnvState]):
     tools: list[Tool]
     state: TEnvState
 
-    DEFAULT_NO_TOOL_CALLS_RESPONSE: ClassVar[tuple[Messages, float, bool, bool]] = (
-        [
-            Message(
-                content="No tool calls received. Please call one or more tools to proceed."
-            )
-        ],
-        0.0,
-        False,
-        False,
-    )
+    @property
+    def default_no_tool_calls_response(self) -> tuple[Messages, float, bool, bool]:
+        return (
+            [
+                Message(
+                    content="No tool calls received. Please call one or more tools to proceed."
+                )
+            ],
+            0.0,
+            False,
+            False,
+        )
 
     @abstractmethod
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
@@ -556,7 +558,7 @@ class DummyEnv(Environment[DummyEnvState]):
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         if not isinstance(action, ToolRequestMessage):
-            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
+            return self.default_no_tool_calls_response
         msgs: Messages = await self.exec_tool_calls(  # type: ignore[assignment]
             action, state=self.state, concurrency=self.concurrent_tool_calls
         ) or [

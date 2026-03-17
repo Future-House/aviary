@@ -185,7 +185,7 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         if not isinstance(action, ToolRequestMessage):
-            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
+            return self.default_no_tool_calls_response
         prev_reward = self.state.total_reward
 
         obs = cast(
