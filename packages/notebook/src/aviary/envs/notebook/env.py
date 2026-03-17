@@ -11,7 +11,7 @@ from typing import Any, ClassVar, Generic, Self, TypeAlias, cast
 
 import aiodocker
 import nbformat
-from aviary.core import Environment, Message, Messages, Tool
+from aviary.core import Environment, Message, Messages, Tool, ToolRequestMessage
 from aviary.message import EnvStateMessage
 from jupyter_client.manager import AsyncKernelManager
 from nbformat import NotebookNode
@@ -184,14 +184,13 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
         return init_obs, self.tools
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
-        tool_request = self.check_action_is_tool_request(action)
+        if not isinstance(action, ToolRequestMessage):
+            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
         prev_reward = self.state.total_reward
 
         obs = cast(
             Messages,
-            await self.exec_tool_calls(
-                tool_request, concurrency=False, handle_tool_exc=True
-            ),
+            await self.exec_tool_calls(action, concurrency=False, handle_tool_exc=True),
         )
         reward = self.state.total_reward - prev_reward
 
