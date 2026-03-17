@@ -759,8 +759,8 @@ class TestTaskDatasetServer:
         obs, reward, done, truncated = response.json()
         assert any("No tool calls" in m["content"] for m in obs)
         assert reward == 0.0
-        assert done is False
-        assert truncated is False
+        assert not done
+        assert not truncated
 
     @pytest.mark.asyncio
     async def test_step_with_tool_response_message(
@@ -780,8 +780,8 @@ class TestTaskDatasetServer:
         obs, reward, done, truncated = response.json()
         assert any("No tool calls" in m["content"] for m in obs)
         assert reward == 0.0
-        assert done is False
-        assert truncated is False
+        assert not done
+        assert not truncated
 
 
 class TestDefaultNoToolCallsResponse:
@@ -791,8 +791,8 @@ class TestDefaultNoToolCallsResponse:
         obs, reward, done, truncated = await dummy_env.step(Message(content="hello"))
         assert obs == Environment.DEFAULT_NO_TOOL_CALLS_RESPONSE[0]
         assert reward == 0.0
-        assert done is False
-        assert truncated is False
+        assert not done
+        assert not truncated
 
     @pytest.mark.asyncio
     async def test_tool_response_message_returns_default(self, dummy_env: DummyEnv):
@@ -801,8 +801,8 @@ class TestDefaultNoToolCallsResponse:
         obs, reward, done, truncated = await dummy_env.step(action)
         assert obs == Environment.DEFAULT_NO_TOOL_CALLS_RESPONSE[0]
         assert reward == 0.0
-        assert done is False
-        assert truncated is False
+        assert not done
+        assert not truncated
 
 
 class TestStepRequestDeserialization:
