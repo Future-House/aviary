@@ -12,6 +12,7 @@ from aviary.core import (
     Messages,
     MultipleChoiceEvaluation,
     MultipleChoiceQuestion,
+    ToolRequestMessage,
 )
 from aviary.env import ENV_REGISTRY
 from ldp.utils import discounted_returns
@@ -141,8 +142,9 @@ class GradablePaperQAEnvironment(PaperQAEnvironment, Generic[TEvaluation]):
         return evaluation  # type: ignore[return-value]
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
-        tool_request = self.check_action_is_tool_request(action)
-        messages, reward, done, truncated = await super().step(tool_request)
+        if not isinstance(action, ToolRequestMessage):
+            return self.default_no_tool_calls_response
+        messages, reward, done, truncated = await super().step(action)
         if not done or not isinstance(self._query, MultipleChoiceQuestion):
             return messages, reward, done, truncated
         evaluation = await self._evaluate_answer()

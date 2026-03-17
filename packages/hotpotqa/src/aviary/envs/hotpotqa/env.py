@@ -33,6 +33,7 @@ from aviary.core import (
     Messages,
     TaskDataset,
     Tool,
+    ToolRequestMessage,
     eval_answer,
 )
 from bs4 import BeautifulSoup
@@ -300,7 +301,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
             >>> print(obs, done)
             [ToolResponseMessage(name='Search', tool_call_id='tool_call_id', content='...')], False
         """
-        action = self.check_action_is_tool_request(action)
+        if not isinstance(action, ToolRequestMessage):
+            return self.default_no_tool_calls_response
         self.state.steps += 1
         if not action.tool_calls:
             return (

@@ -103,13 +103,18 @@ class Environment(ABC, Generic[TEnvState]):
     tools: list[Tool]
     state: TEnvState
 
-    @staticmethod
-    def check_action_is_tool_request(action: Message) -> ToolRequestMessage:
-        if not isinstance(action, ToolRequestMessage):
-            raise TypeError(
-                f"Expected a ToolRequestMessage, but got {type(action).__name__}."
-            )
-        return action
+    @property
+    def default_no_tool_calls_response(self) -> tuple[Messages, float, bool, bool]:
+        return (
+            [
+                Message(
+                    content="No tool calls received. Please call one or more tools to proceed."
+                )
+            ],
+            0.0,
+            False,
+            False,
+        )
 
     @abstractmethod
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
@@ -552,9 +557,10 @@ class DummyEnv(Environment[DummyEnvState]):
         return cls(task=task)
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
-        tool_request = self.check_action_is_tool_request(action)
+        if not isinstance(action, ToolRequestMessage):
+            return self.default_no_tool_calls_response
         msgs: Messages = await self.exec_tool_calls(  # type: ignore[assignment]
-            tool_request, state=self.state, concurrency=self.concurrent_tool_calls
+            action, state=self.state, concurrency=self.concurrent_tool_calls
         ) or [
             ToolResponseMessage(
                 content=f"No tool calls input in tool request {action}.",
