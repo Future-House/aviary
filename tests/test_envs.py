@@ -354,7 +354,7 @@ class SlowEnv(Environment[None]):
 
     async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         if not isinstance(action, ToolRequestMessage):
-            return self.DEFAULT_NO_TOOL_CALLS_RESPONSE
+            return self.default_no_tool_calls_response
         await self.exec_tool_calls(action, exec_timeout=0.0001)
 
         return [], 0.0, False, False
@@ -785,21 +785,22 @@ class TestTaskDatasetServer:
 
 
 class TestDefaultNoToolCallsResponse:
+    @pytest.mark.parametrize(
+        "action",
+        [
+            Message(content="hello"),
+            ToolResponseMessage(content="result", name="tool", tool_call_id="abc"),
+        ],
+    )
     @pytest.mark.asyncio
-    async def test_plain_message_returns_default(self, dummy_env: DummyEnv):
+    async def test_non_tool_request_returns_default(
+        self, dummy_env: DummyEnv, action: Message
+    ):
         await dummy_env.reset()
-        obs, reward, done, truncated = await dummy_env.step(Message(content="hello"))
-        assert obs == Environment.DEFAULT_NO_TOOL_CALLS_RESPONSE[0]
-        assert reward == 0.0
-        assert not done
-        assert not truncated
-
-    @pytest.mark.asyncio
-    async def test_tool_response_message_returns_default(self, dummy_env: DummyEnv):
-        await dummy_env.reset()
-        action = ToolResponseMessage(content="result", name="tool", tool_call_id="abc")
         obs, reward, done, truncated = await dummy_env.step(action)
-        assert obs == Environment.DEFAULT_NO_TOOL_CALLS_RESPONSE[0]
+        assert len(obs) == 1
+        assert obs[0].content
+        assert "No tool calls" in obs[0].content
         assert reward == 0.0
         assert not done
         assert not truncated
