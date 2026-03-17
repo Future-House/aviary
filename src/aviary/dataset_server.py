@@ -11,7 +11,13 @@ from typing import Generic, TypeVar
 from pydantic import BaseModel, Field
 
 from aviary.env import Environment, TaskDataset
-from aviary.tools import MessagesAdapter, ToolRequestMessage, ToolsAdapter
+from aviary.message import Message
+from aviary.tools import (
+    MessagesAdapter,
+    ToolRequestMessage,
+    ToolResponseMessage,
+    ToolsAdapter,
+)
 
 try:
     import uvicorn
@@ -43,7 +49,7 @@ class EnvRequest(BaseModel):
 
 class StepRequest(BaseModel):
     env_id: str = Field(description="Maps to a running env ID")
-    action: ToolRequestMessage
+    action: ToolRequestMessage | ToolResponseMessage | Message
 
 
 class FlushRequest(BaseModel):

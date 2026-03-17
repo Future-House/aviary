@@ -103,10 +103,16 @@ class Environment(ABC, Generic[TEnvState]):
     tools: list[Tool]
     state: TEnvState
 
+    @staticmethod
+    def check_action_is_tool_request(action: Message) -> ToolRequestMessage:
+        if not isinstance(action, ToolRequestMessage):
+            raise TypeError(
+                f"Expected a ToolRequestMessage, but got {type(action).__name__}."
+            )
+        return action
+
     @abstractmethod
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         """Take a step in the environment.
 
         Args:
@@ -545,11 +551,10 @@ class DummyEnv(Environment[DummyEnvState]):
     def from_task(cls, task: str) -> "DummyEnv":
         return cls(task=task)
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+        tool_request = self.check_action_is_tool_request(action)
         msgs: Messages = await self.exec_tool_calls(  # type: ignore[assignment]
-            action, state=self.state, concurrency=self.concurrent_tool_calls
+            tool_request, state=self.state, concurrency=self.concurrent_tool_calls
         ) or [
             ToolResponseMessage(
                 content=f"No tool calls input in tool request {action}.",

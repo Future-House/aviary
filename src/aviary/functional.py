@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from aviary.env import Environment, Frame
 from aviary.message import Message
-from aviary.tools import Messages, Tool, ToolRequestMessage
+from aviary.tools import Messages, Tool
 from aviary.utils import is_coroutine_callable
 
 
@@ -71,11 +71,10 @@ class FunctionalEnvironment(Environment[DynamicState]):
         obs, self.state = await self._call_start_fn()
         return [Message(content=obs)], self.tools
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[Messages, float, bool, bool]:
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+        tool_request = self.check_action_is_tool_request(action)
         msgs = await self.exec_tool_calls(
-            action,
+            tool_request,
             state=self.state,
             concurrency=self.allow_concurrency,
             handle_tool_exc=True,

@@ -102,9 +102,7 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
             ToolsAdapter.validate_python(tools),
         )
 
-    async def step(
-        self, action: ToolRequestMessage
-    ) -> tuple[list[Message], float, bool, bool]:
+    async def step(self, action: Message) -> tuple[list[Message], float, bool, bool]:
         try:
             response = await self._post(
                 self._step_request_url,
@@ -115,10 +113,13 @@ class EnvironmentClient(Environment[TEnvState], ABC, Generic[TEnvState]):
             messages, reward, done, truncated = response.json()
         except CATCHABLE_REQUEST_EXCEPTIONS as e:
             if self._catch_http_errors:
-                messages = [
-                    ToolResponseMessage.from_call(tool_call, content=repr(e))
-                    for tool_call in action.tool_calls
-                ]
+                if isinstance(action, ToolRequestMessage):
+                    messages = [
+                        ToolResponseMessage.from_call(tool_call, content=repr(e))
+                        for tool_call in action.tool_calls
+                    ]
+                else:
+                    messages = [Message(content=repr(e))]
                 return messages, 0.0, True, False
             raise
         return MessagesAdapter.validate_python(messages), reward, done, truncated
