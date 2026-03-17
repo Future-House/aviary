@@ -1,4 +1,5 @@
 import asyncio
+import os
 from collections.abc import Iterable
 from copy import deepcopy
 from typing import ClassVar, cast
@@ -30,6 +31,12 @@ from aviary.envs.labbench import (
     PaperQATaskDataset,
     TextQATaskDataset,
     TextQATaskSplit,
+)
+
+IN_GITHUB_ACTIONS: bool = os.getenv("GITHUB_ACTIONS") == "true"
+SKIP_LABBENCH2_IN_CI = pytest.mark.skipif(
+    IN_GITHUB_ACTIONS,
+    reason="futurehouse/labbench2 is 403ing in CI and we plan to deprecate",
 )
 
 
@@ -411,7 +418,7 @@ class TestTextQATaskDataset:
                 ],
             ),
             (LABBenchDatasets.TABLE_QA, TextQATaskSplit.TEST, None),
-            (
+            pytest.param(
                 LABBenchDatasets.FIG_QA2,
                 TextQATaskSplit.TRAIN,
                 [
@@ -452,9 +459,15 @@ class TestTextQATaskDataset:
                         " the first decimal place."
                     ),
                 ],
+                marks=SKIP_LABBENCH2_IN_CI,
             ),
-            (LABBenchDatasets.FIG_QA2, TextQATaskSplit.TEST, None),
-            (
+            pytest.param(
+                LABBenchDatasets.FIG_QA2,
+                TextQATaskSplit.TEST,
+                None,
+                marks=SKIP_LABBENCH2_IN_CI,
+            ),
+            pytest.param(
                 LABBenchDatasets.TABLE_QA2,
                 TextQATaskSplit.TRAIN,
                 [
@@ -475,6 +488,7 @@ class TestTextQATaskDataset:
                         " corresponds to the 1001-gene experiment?"
                     ),
                 ],
+                marks=SKIP_LABBENCH2_IN_CI,
             ),
             (LABBenchDatasets.TABLE_QA2, TextQATaskSplit.TEST, None),
         ],
@@ -507,8 +521,8 @@ class TestTextQATaskDataset:
             (LABBenchDatasets.FIG_QA, 181),
             (LABBenchDatasets.TABLE_QA, 244),
             (LABBenchDatasets.LIT_QA2, 199),
-            (LABBenchDatasets.FIG_QA2, 101),
-            (LABBenchDatasets.TABLE_QA2, 100),
+            pytest.param(LABBenchDatasets.FIG_QA2, 101, marks=SKIP_LABBENCH2_IN_CI),
+            pytest.param(LABBenchDatasets.TABLE_QA2, 100, marks=SKIP_LABBENCH2_IN_CI),
         ],
     )
     @pytest.mark.asyncio
@@ -614,6 +628,7 @@ class TestImageQATaskDataset:
             assert isinstance(added_media.data, bytes)
             assert added_media.info["suffix"] == ".png"
 
+    @SKIP_LABBENCH2_IN_CI
     @pytest.mark.asyncio
     async def test_figqa2(self) -> None:
         with pytest.raises(ValueError, match="not supported"):
@@ -623,6 +638,7 @@ class TestImageQATaskDataset:
                 read_data_kwargs={"seed": 42},
             )
 
+    @SKIP_LABBENCH2_IN_CI
     @pytest.mark.asyncio
     async def test_tableqa2(self) -> None:
         with pytest.raises(ValueError, match="not supported"):
