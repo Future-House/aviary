@@ -608,7 +608,7 @@ PARAMETERS:
             tool._tool_fn(**call.function.arguments)
 
     @pytest.mark.asyncio
-    async def test_tool_serialization(
+    async def test_tool_serialization(  # noqa: PLR0915
         self, dummy_env: DummyEnv, subtests: SubTests
     ) -> None:
         def get_todo_list(n: int):
@@ -661,6 +661,15 @@ PARAMETERS:
             action = ToolRequestMessage(tool_calls=[tool_call])
             new_messages = await dummy_env.exec_tool_calls(action)
             assert new_messages[0].content == "Go for a walk\nRead a book"
+
+        with subtests.test("tool call from name with custom id"):
+            custom_id = "custom123"
+            tool_call = ToolCall.from_name("get_todo_list", id=custom_id, n=2)
+            assert tool_call.id == custom_id
+            action = ToolRequestMessage(tool_calls=[tool_call])
+            new_messages = await dummy_env.exec_tool_calls(action)
+            assert new_messages[0].content == "Go for a walk\nRead a book"
+            assert new_messages[0].tool_call_id == custom_id
 
         with subtests.test("tool call from tool"):
             tool_call = ToolCall.from_tool(tool, n=2)

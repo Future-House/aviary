@@ -111,9 +111,9 @@ class ToolCall(BaseModel):
         )
 
     @classmethod
-    def from_name(cls, function_name: str, **kwargs) -> Self:
+    def from_name(cls, function_name: str, id: str | None = None, **kwargs) -> Self:  # noqa: A002
         return cls(
-            id=cls.generate_id(),
+            id=id or cls.generate_id(),
             function=ToolCallFunction(name=function_name, arguments=kwargs),
         )
 
