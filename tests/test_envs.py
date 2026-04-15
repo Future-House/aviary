@@ -4,12 +4,16 @@ import pathlib
 import re
 import tempfile
 import time
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
+from contextlib import asynccontextmanager
 from typing import Any, ClassVar
+from unittest import mock
 
 import litellm
 import numpy as np
 import pytest
+import pytest_asyncio
+from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel, ValidationError
 from pytest_subtests import SubTests
@@ -664,14 +668,22 @@ class TestParallelism:
         ]
 
 
-@pytest.fixture
-def server_async_client() -> AsyncClient:
-    dataset = TaskDataset.from_name("dummy")
-    server = TaskDatasetServer[DummyEnv](dataset)
+@asynccontextmanager
+async def _make_test_client(app: FastAPI) -> AsyncIterator[AsyncClient]:
     # Use httpx.AsyncClient over httpx_aiohttp.HttpxAiohttpClient in tests here,
     # as httpx_aiohttp.AiohttpTransport doesn't support an app argument
     # as of httpx-aiohttp==0.1.8
-    return AsyncClient(transport=ASGITransport(app=server.app), base_url="http://test")
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        yield client
+
+
+@pytest_asyncio.fixture
+async def server_async_client() -> AsyncIterator[AsyncClient]:
+    server = TaskDatasetServer[DummyEnv](dataset=TaskDataset.from_name("dummy"))
+    async with _make_test_client(app=server.app) as client:
+        yield client
 
 
 class TestTaskDatasetServer:
@@ -734,6 +746,55 @@ class TestTaskDatasetServer:
         )
         assert response.status_code == 200
         assert "closed_env_ids" in response.json()
+
+    @pytest.mark.asyncio
+    async def test_close_old_envs_does_not_block_other_requests(self) -> None:
+        """Concurrent endpoints must not be blocked while env.close() awaits."""
+        server = TaskDatasetServer[DummyEnv](dataset=TaskDataset.from_name("dummy"))
+
+        # Seed an env whose close() hangs until we explicitly release it
+        started_event = asyncio.Event()
+        release_event = asyncio.Event()
+
+        async def slow_close(*_) -> None:
+            started_event.set()
+            await release_event.wait()
+
+        stale_env = DummyEnv()
+        # last_used=0 guarantees it's stale for any req.last_used >= 0
+        server.envs["stale"] = (stale_env, 0.0)
+
+        async with _make_test_client(app=server.app) as client:
+            with mock.patch.object(DummyEnv, "close", slow_close):
+                # Kick off /close_old_envs; env.close() will await release_event
+                close_task = asyncio.create_task(
+                    client.post("/close_old_envs", json={"last_used": 0})
+                )
+                # Wait until slow_close is actually suspended on release_event
+                await asyncio.wait_for(started_event.wait(), timeout=1.0)
+                assert not close_task.done(), (
+                    "test setup bug: slow_close did not actually suspend"
+                )
+
+                start_resp = await asyncio.wait_for(
+                    client.post("/start", json={}), timeout=1.0
+                )
+                assert start_resp.status_code == 200, (
+                    "Lock was held across the slow env.close(); concurrent /start"
+                    " could not acquire it"
+                )
+
+                # Stale env should also already be popped from self.envs under the lock,
+                # before the slow close() runs
+                info_resp = await client.get("/info")
+                assert info_resp.status_code == 200
+                assert "stale" not in info_resp.json()["running_env_ids"]
+
+                # Release slow_close and confirm /close_old_envs finishes cleanly
+                release_event.set()
+                close_resp = await asyncio.wait_for(close_task, timeout=1.0)
+                assert close_resp.status_code == 200
+                assert close_resp.json()["closed_env_ids"] == ["stale"]
 
     @pytest.mark.asyncio
     async def test_info(self, server_async_client: AsyncClient):
