@@ -119,6 +119,25 @@ class TestMessage:
                 {"context": {"include_info": True}},
                 {"role": "user", "content": "stub", "info": {"foo": "bar"}},
             ),
+            (
+                Message(
+                    content=[
+                        {"type": "text", "text": "stub"},
+                        {"type": "image_url", "image_url": {"url": "stub_url"}},
+                    ],
+                    info={"k": "v"},
+                ),
+                {"context": {"include_info": True}},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "stub"},
+                        {"type": "image_url", "image_url": {"url": "stub_url"}},
+                    ],
+                    "info": {"k": "v"},
+                    "content_is_json_str": True,
+                },
+            ),
         ],
     )
     def test_dump(self, message: Message, dump_kwargs: dict, expected: dict) -> None:
@@ -159,6 +178,41 @@ class TestMessage:
             json.loads(message.model_dump_json(exclude_none=True, **dump_kwargs))
             == expected
         )
+
+    def test_multimodal_roundtrip_via_include_info(self) -> None:
+        """Multimodal content_is_json_str survives dump→validate when include_info is set."""
+        original = Message(
+            content=[
+                {"type": "text", "text": "Look at this"},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64,abc"}},
+            ],
+        )
+        assert original.content_is_json_str is True
+        assert original.is_multimodal is True
+
+        dumped = original.model_dump(
+            mode="json", context={"include_info": True}
+        )
+        assert dumped["content_is_json_str"] is True
+
+        recovered = Message.model_validate(dumped)
+        assert recovered.content_is_json_str is True
+        assert recovered.is_multimodal is True
+
+    def test_multimodal_roundtrip_via_string_content(self) -> None:
+        """Multimodal content survives when stored dict has content as a list."""
+        original = Message(
+            content=[
+                {"type": "text", "text": "Look at this"},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64,abc"}},
+            ],
+        )
+        dumped = original.model_dump(mode="json")
+        assert isinstance(dumped["content"], list)
+
+        recovered = Message.model_validate(dumped)
+        assert recovered.content_is_json_str is True
+        assert recovered.is_multimodal is True
 
     @pytest.mark.parametrize(
         ("images", "message_text", "expected_error", "expected_content_length"),
