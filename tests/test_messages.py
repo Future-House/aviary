@@ -190,15 +190,15 @@ class TestMessage:
                 },
             ],
         )
-        assert original.content_is_json_str is True
-        assert original.is_multimodal is True
+        assert original.content_is_json_str
+        assert original.is_multimodal
 
         dumped = original.model_dump(mode="json", context={"include_info": True})
         assert dumped["content_is_json_str"] is True
 
         recovered = Message.model_validate(dumped)
-        assert recovered.content_is_json_str is True
-        assert recovered.is_multimodal is True
+        assert recovered.content_is_json_str
+        assert recovered.is_multimodal
 
     def test_multimodal_roundtrip_via_string_content(self) -> None:
         """Multimodal content survives when stored dict has content as a list."""
@@ -215,8 +215,8 @@ class TestMessage:
         assert isinstance(dumped["content"], list)
 
         recovered = Message.model_validate(dumped)
-        assert recovered.content_is_json_str is True
-        assert recovered.is_multimodal is True
+        assert recovered.content_is_json_str
+        assert recovered.is_multimodal
 
     @pytest.mark.parametrize(
         ("images", "message_text", "expected_error", "expected_content_length"),
