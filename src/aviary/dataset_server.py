@@ -6,11 +6,11 @@ import traceback
 import uuid
 from contextlib import contextmanager
 from itertools import starmap
-from typing import Generic, TypeVar
+from typing import Generic
 
 from pydantic import BaseModel, Field
 
-from aviary.env import Environment, TaskDataset
+from aviary.env import TaskDataset, TEnvironment
 from aviary.message import Message
 from aviary.tools import (
     MessagesAdapter,
@@ -58,10 +58,6 @@ class FlushRequest(BaseModel):
 
 DEFAULT_SERVER_PORT = 8041
 BIND_ALL_HOST = "0.0.0.0"  # noqa: S104
-
-
-# Not sure why, but mypy complains if we use the TEnvironment in aviary.env, so redefine here
-TEnvironment = TypeVar("TEnvironment", bound=Environment)
 
 
 class TaskDatasetServer(Generic[TEnvironment]):
