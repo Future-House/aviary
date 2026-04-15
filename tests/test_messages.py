@@ -184,15 +184,16 @@ class TestMessage:
         original = Message(
             content=[
                 {"type": "text", "text": "Look at this"},
-                {"type": "image_url", "image_url": {"url": "data:image/png;base64,abc"}},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "data:image/png;base64,abc"},
+                },
             ],
         )
         assert original.content_is_json_str is True
         assert original.is_multimodal is True
 
-        dumped = original.model_dump(
-            mode="json", context={"include_info": True}
-        )
+        dumped = original.model_dump(mode="json", context={"include_info": True})
         assert dumped["content_is_json_str"] is True
 
         recovered = Message.model_validate(dumped)
@@ -204,7 +205,10 @@ class TestMessage:
         original = Message(
             content=[
                 {"type": "text", "text": "Look at this"},
-                {"type": "image_url", "image_url": {"url": "data:image/png;base64,abc"}},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "data:image/png;base64,abc"},
+                },
             ],
         )
         dumped = original.model_dump(mode="json")
