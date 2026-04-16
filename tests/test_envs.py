@@ -897,25 +897,15 @@ class TestTaskDatasetServer:
         assert tools
 
     @pytest.mark.asyncio
-    async def test_task_kwargs_takes_precedence_over_task_idx(
+    async def test_start_rejects_both_task_idx_and_task_kwargs(
         self, args_async_client: AsyncClient
     ) -> None:
-        assert "get_new_env_by_idx" not in StubArgsTaskDataset.__dict__, (
-            "Test expects no get_new_env_by_idx for assertions to make sense"
-        )
-        # StubArgsTaskDataset has no get_new_env_by_idx, so if task_idx were used
-        # this would 500. The fact that it succeeds proves task_kwargs took precedence
+        # Specifying both is ambiguous; server should reject at request validation
         start_resp = await args_async_client.post(
             "/start", json={"task_idx": 42, "task_kwargs": {"task": "kwargs-won"}}
         )
-        assert start_resp.status_code == 200
-        env_id = start_resp.json()["env_id"]
-
-        # Reset and confirm the task made it into the initial observation.
-        reset_resp = await args_async_client.post("/reset", json={"env_id": env_id})
-        (obs,), tools = reset_resp.json()
-        assert "kwargs-won" in obs["content"]
-        assert tools
+        assert start_resp.status_code == 422
+        assert "mutually exclusive" in start_resp.text
 
     @pytest.mark.asyncio
     async def test_start_reset_step_through_prefix(

@@ -8,7 +8,7 @@ from contextlib import contextmanager
 from itertools import starmap
 from typing import Any, Generic
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from aviary.env import TaskDataset, TEnvironment
 from aviary.message import Message
@@ -36,18 +36,26 @@ class StartRequest(BaseModel):
     task_idx: int | None = Field(
         default=None,
         description=(
-            "Optional index of the dataset to start. If provided (and task_kwargs is"
-            " left as default of None), will call TaskDataset.get_new_env_by_idx();"
-            " otherwise, TaskDataset.get_new_env()."
+            "Optional index of the dataset to start. If provided, will call"
+            " TaskDataset.get_new_env_by_idx(); otherwise, TaskDataset.get_new_env()."
+            " Mutually exclusive with task_kwargs."
         ),
     )
     task_kwargs: dict[str, Any] | None = Field(
         default=None,
         description=(
             "Optional keyword arguments passed to TaskDataset.get_new_env_by_args()."
-            " Takes precedence over task_idx when set."
+            " Mutually exclusive with task_idx."
         ),
     )
+
+    @model_validator(mode="after")
+    def _check_mutually_exclusive(self) -> "StartRequest":
+        if self.task_idx is not None and self.task_kwargs is not None:
+            raise ValueError(
+                "task_idx and task_kwargs are mutually exclusive; specify at most one."
+            )
+        return self
 
     def make_env(self, dataset: TaskDataset[TEnvironment]) -> TEnvironment:
         if self.task_kwargs is not None:
