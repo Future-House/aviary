@@ -16,7 +16,6 @@ import pytest_asyncio
 from fastapi import APIRouter, FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel, ValidationError
-from pytest_subtests import SubTests
 
 from aviary.core import (
     DummyEnv,
@@ -407,7 +406,7 @@ class TestRendering:
         mutable_state[0].append("bar")
         assert deep_copy.model_dump()["state"] == [["foo"]]
 
-    def test_rendering(self, dummy_env: DummyEnv, subtests: SubTests) -> None:
+    def test_rendering(self, dummy_env: DummyEnv, subtests: pytest.Subtests) -> None:
         # Reset to add state
         asyncio.run(dummy_env.reset())
         frame_after_reset = dummy_env.export_frame()
@@ -592,7 +591,7 @@ class TestParallelism:
     @pytest.mark.parametrize("model_name", [CILLMModelNames.OPENAI.value])
     @pytest.mark.asyncio
     async def test_tool_selector_from_model_name(
-        self, subtests: SubTests, model_name: str
+        self, subtests: pytest.Subtests, model_name: str
     ) -> None:
         env = ParallelizedDummyEnv()
         obs, tools = await env.reset()

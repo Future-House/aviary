@@ -88,7 +88,6 @@ __all__ = [
     "argref_by_name",
     "encode_image_to_base64",
     "eval_answer",
-    "eval_answer",
     "extract_answer",
     "fenv",
     "is_coroutine_callable",

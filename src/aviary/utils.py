@@ -486,12 +486,12 @@ class MultipleChoiceEvaluation(StrEnum):
         """
         Calculate QA-specific accuracy and precision metrics upon evaluations.
 
-        Raises:
-            ZeroDivisionError: if an empty input.
-
         Returns:
             Two-tuple of accuracy = (num correct) / (num questions) and
                 precision = (num correct) / ((num questions) - (num unsure)).
+
+        Raises:
+            ZeroDivisionError: if an empty input.
         """  # noqa: DOC502
         evaluations = [e if isinstance(e, cls) else cls(e) for e in evaluations]
         num_correct = sum(e == cls.CORRECT for e in evaluations)

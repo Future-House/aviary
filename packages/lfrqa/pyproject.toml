@@ -33,7 +33,22 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 csv = ["pandas"]
-dev = ["aviary.lfrqa[csv]"]
+dev = [
+    "aviary.lfrqa[csv]",
+    "pytest",
+    "pytest-asyncio",
+]
+
+[tool.deptry]
+# Work around https://github.com/osprey-oss/deptry/issues/302: un-exclude tests
+exclude = ["\\.direnv", "\\.git", "\\.venv", "setup\\.py", "venv"]
+known_first_party = ["aviary"]
+optional_dependencies_dev_groups = ["dev"]
+
+[tool.deptry.per_rule_ignores]
+# Work around https://github.com/osprey-oss/deptry/issues/1533
+DEP003 = ["ldp"]
+DEP004 = ["pytest"]
 
 [tool.ruff]
 extend = "../../pyproject.toml"

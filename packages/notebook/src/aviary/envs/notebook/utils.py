@@ -200,11 +200,11 @@ async def nbformat_run_notebook(  # noqa: D417
         cells: Notebook cell dictionaries to execute sequentially
         client: KernelClient instance to use for code execution
 
-    Raises:
-        ValueError: If there is an error executing a cell
-
     Returns:
         List of error messages from cells that raised an error
+
+    Raises:
+        ValueError: If there is an error executing a cell
     """  # noqa: DOC502
     error_messages = []
     logger.debug(f"Running notebook with cell_idx: {cell_idx}")

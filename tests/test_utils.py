@@ -8,7 +8,6 @@ import numpy as np
 import pytest
 from PIL import Image
 from pydantic import BaseModel
-from pytest_subtests import SubTests
 
 from aviary.core import (
     MultipleChoiceEvaluation,
@@ -496,7 +495,7 @@ def test_partial_format(value: str, formats: dict[str, Any], expected: str) -> N
     ],
 )
 def test_encode_image_to_base64(
-    subtests: SubTests,
+    subtests: pytest.Subtests,
     raw_image_file: str,
     b64_image_file: str,
     format: str,  # noqa: A002

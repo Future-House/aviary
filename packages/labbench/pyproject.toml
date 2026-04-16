@@ -23,8 +23,6 @@ dependencies = [
     "fhlmi",
     "ldp>=0.25.2",  # Pin for lmi migration
     "paper-qa[pymupdf]>=2025",  # Pin for multimodal
-    "pydantic~=2.0",
-    "tenacity",
     "typing-extensions; python_version <= '3.12'",  # For TypeVar default
 ]
 description = "LAB-Bench environments implemented with aviary"
@@ -41,9 +39,21 @@ dev = [
     "aviary.labbench[datasets,typing]",
     "pandas",
     "paper-qa>=5.29.1",  # Pin for gen_answer's EmptyDocsError, with fix
+    "pytest-asyncio",
+    "pytest>=9",  # For pytest-subtests upstreaming
     "tantivy>=0.25.0; python_version >= '3.14'",  # For Python 3.14 support
 ]
 typing = ["pillow"]
+
+[tool.deptry]
+# Work around https://github.com/osprey-oss/deptry/issues/302: un-exclude tests
+exclude = ["\\.direnv", "\\.git", "\\.venv", "setup\\.py", "venv"]
+known_first_party = ["aviary"]
+optional_dependencies_dev_groups = ["dev", "typing"]
+
+[tool.deptry.per_rule_ignores]
+# Work around https://github.com/osprey-oss/deptry/issues/1533
+DEP004 = ["pandas", "pytest"]
 
 [tool.ruff]
 extend = "../../pyproject.toml"
