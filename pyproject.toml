@@ -278,6 +278,7 @@ disable = [
     "too-many-instance-attributes",  # Don't care to enforce this
     "too-many-lines",  # Don't care to enforce this
     "too-many-locals",  # Rely on ruff PLR0914 for this
+    "too-many-nested-blocks",  # Rely on ruff PLR1702 for this
     "too-many-positional-arguments",  # Rely on ruff PLR0917 for this
     "too-many-public-methods",  # Rely on ruff PLR0904 for this
     "too-many-return-statements",  # Rely on ruff PLR0911 for this
@@ -365,14 +366,16 @@ preview = true
 [tool.ruff.lint]
 explicit-preview-rules = true
 extend-select = [
-    "ASYNC212",
-    "ASYNC240",
-    "ASYNC250",
+    "AIR003",
+    "AIR303",
+    "AIR304",
+    "AIR321",
+    "B043",
     "B901",
     "B903",
     "B909",
-    "B912",
     "CPY001",
+    "D420",
     "DOC102",
     "DOC201",
     "DOC202",
@@ -423,7 +426,6 @@ extend-select = [
     "E502",
     "FURB101",
     "FURB103",
-    "FURB110",
     "FURB113",
     "FURB118",
     "FURB131",
@@ -435,13 +437,11 @@ extend-select = [
     "FURB154",
     "FURB156",
     "FURB164",
-    "FURB171",
     "FURB180",
     "FURB189",
     "FURB192",
     "ISC004",
     "LOG004",
-    "PLC0207",
     "PLC1901",
     "PLC2701",
     "PLC2801",
@@ -456,10 +456,10 @@ extend-select = [
     "PLR0917",
     "PLR1702",
     "PLR1708",
+    "PLR1712",
     "PLR6104",
     "PLR6201",
     "PLR6301",
-    "PLW0108",
     "PLW0244",
     "PLW1514",
     "PLW3201",
@@ -468,24 +468,27 @@ extend-select = [
     "RUF029",
     "RUF031",
     "RUF036",
-    "RUF037",
     "RUF038",
     "RUF039",
     "RUF045",
     "RUF047",
+    "RUF050",
     "RUF052",
     "RUF054",
     "RUF055",
     "RUF056",
-    "RUF060",
-    "RUF061",
     "RUF063",
-    "RUF064",
     "RUF065",
     "RUF066",
-    "RUF102",
+    "RUF067",
+    "RUF068",
+    "RUF069",
+    "RUF070",
+    "RUF071",
+    "RUF072",
+    "RUF073",
     "TC008",
-    "UP042",
+    "TID254",
     "W391",
 ]
 external = [
@@ -541,6 +544,7 @@ ignore = [
     "PLW2901",  # Allow modifying loop variables
     "PTH",  # Overly pedantic
     "RUF027",  # Prompt templates may not be f-strings
+    "RUF067",  # Don't care to disallow code in __init__.py
     "S101",  # Don't care to prevent asserts
     "S105",  # Duplicates Yelp/detect-secrets in pre-commit
     "S311",  # Ok to use python random
@@ -576,9 +580,11 @@ mypy-init-return = true
     "F841",  # Tests can have unused locals
     "N802",  # Tests function names can match class names
     "PLC2701",  # Test can import private names if needed
+    "PLR0904",  # Test classes can have many cases
     "PLR2004",  # Tests can have magic values
     "PLR6301",  # Test classes can ignore self
     "RUF059",  # Tests can have unused unpacks, for readability
+    "RUF069",  # Tests can have float equality
     "S101",  # Tests can have assertions
 ]
 "docs/**.ipynb" = [
