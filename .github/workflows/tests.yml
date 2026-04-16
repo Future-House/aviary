@@ -93,6 +93,12 @@ jobs:
         run: rm -r ${{ steps.build-lfrqa.outputs.dist }}
       - run: uv sync
       - run: uv run refurb .
+      - name: Run deptry
+        run: |
+          uv run deptry .
+          for pkg in packages/*/; do
+            uv run --directory "$pkg" deptry .
+          done
       - run: uv run pylint src packages
       - if: matrix.python-version == '3.11' # Only need to run this on one version
         uses: suzuki-shunsuke/github-action-renovate-config-validator@v2.1.0

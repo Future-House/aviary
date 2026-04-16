@@ -43,6 +43,19 @@ dev = [
     "pytest-asyncio",
 ]
 
+[tool.deptry]
+# Work around https://github.com/osprey-oss/deptry/issues/302: un-exclude tests
+exclude = ["\\.direnv", "\\.git", "\\.venv", "setup\\.py", "venv"]
+known_first_party = ["aviary"]
+optional_dependencies_dev_groups = ["dev"]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = [
+    "ipykernel",  # Launched indirectly by jupyter-client's python kernelspec
+]
+# Work around https://github.com/osprey-oss/deptry/issues/1533
+DEP004 = ["pytest"]
+
 [tool.ruff]
 extend = "../../pyproject.toml"
 

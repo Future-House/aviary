@@ -46,6 +46,7 @@ dev = [
     "aviary.labbench[dev]",
     "aviary.lfrqa[dev]",
     "aviary.notebook[dev]",
+    "deptry",
     "fhaviary[image,llm,server,typing,xml]",
     "ipython>=8",  # Pin to keep recent
     "jupyter>=1.0.0",  # For running notebooks
@@ -117,6 +118,17 @@ skip = [
     "tests/fixtures/test_images/*",
     "tests/stub_data/*",
 ]
+
+[tool.deptry]
+# Work around https://github.com/osprey-oss/deptry/issues/302: un-exclude tests
+exclude = ["\\.direnv", "\\.git", "\\.venv", "setup\\.py", "venv"]
+extend_exclude = ["packages", "tutorials"]
+known_first_party = ["aviary"]
+optional_dependencies_dev_groups = ["dev", "typing"]
+
+[tool.deptry.per_rule_ignores]
+# Work around https://github.com/osprey-oss/deptry/issues/1533
+DEP004 = ["numpy", "pytest", "pytest_asyncio", "tenacity", "typeguard", "vcr"]
 
 [tool.markdown_toc_creator]
 horizontal-rule-style = "prettier"
