@@ -319,18 +319,26 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+dev = [
+    { name = "pandas-stubs" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
 typing = [
     { name = "pandas-stubs" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "datasets", specifier = ">=2.15" },
     { name = "fhaviary", editable = "." },
     { name = "pandas-stubs", marker = "extra == 'typing'" },
     { name = "pydantic", specifier = "~=2.0" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
 ]
-provides-extras = ["typing"]
+provides-extras = ["dev", "typing"]
 
 [[package]]
 name = "aviary-hotpotqa"
@@ -345,6 +353,12 @@ dependencies = [
     { name = "tenacity" },
 ]
 
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4" },
@@ -353,8 +367,11 @@ requires-dist = [
     { name = "httpx" },
     { name = "httpx-aiohttp" },
     { name = "pydantic", specifier = "~=2.0" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "tenacity" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "aviary-labbench"
@@ -364,8 +381,6 @@ dependencies = [
     { name = "fhlmi" },
     { name = "ldp" },
     { name = "paper-qa", extra = ["pymupdf"] },
-    { name = "pydantic" },
-    { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 
@@ -378,6 +393,8 @@ dev = [
     { name = "pandas" },
     { name = "paper-qa" },
     { name = "pillow" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
     { name = "tantivy", marker = "python_full_version >= '3.14'" },
 ]
 typing = [
@@ -395,9 +412,9 @@ requires-dist = [
     { name = "paper-qa", marker = "extra == 'dev'", specifier = ">=5.29.1" },
     { name = "paper-qa", extras = ["pymupdf"], specifier = ">=2025" },
     { name = "pillow", marker = "extra == 'typing'" },
-    { name = "pydantic", specifier = "~=2.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "tantivy", marker = "python_full_version >= '3.14' and extra == 'dev'", specifier = ">=0.25.0" },
-    { name = "tenacity" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 provides-extras = ["datasets", "dev", "typing"]
@@ -419,6 +436,8 @@ csv = [
 ]
 dev = [
     { name = "pandas" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
 ]
 
 [package.metadata]
@@ -430,6 +449,8 @@ requires-dist = [
     { name = "pandas", marker = "extra == 'csv'" },
     { name = "paper-qa", specifier = ">=5.14.0" },
     { name = "pydantic", specifier = "~=2.0" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
 ]
 provides-extras = ["csv", "dev"]
 
@@ -446,11 +467,14 @@ dependencies = [
     { name = "numpy" },
     { name = "pillow" },
     { name = "pydantic" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 
 [package.optional-dependencies]
 dev = [
     { name = "matplotlib" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
 ]
 
 [package.metadata]
@@ -465,6 +489,9 @@ requires-dist = [
     { name = "numpy" },
     { name = "pillow" },
     { name = "pydantic", specifier = "~=2.0" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 provides-extras = ["dev"]
 
@@ -1129,6 +1156,7 @@ dependencies = [
     { name = "httpx" },
     { name = "httpx-aiohttp" },
     { name = "pydantic" },
+    { name = "pydantic-core" },
 ]
 
 [package.optional-dependencies]
@@ -1136,8 +1164,8 @@ cloud = [
     { name = "boto3" },
 ]
 dev = [
-    { name = "aviary-gsm8k", extra = ["typing"] },
-    { name = "aviary-hotpotqa" },
+    { name = "aviary-gsm8k", extra = ["dev"] },
+    { name = "aviary-hotpotqa", extra = ["dev"] },
     { name = "aviary-labbench", extra = ["dev"] },
     { name = "aviary-lfrqa", extra = ["dev"] },
     { name = "aviary-notebook", extra = ["dev"] },
@@ -1221,9 +1249,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aviary-gsm8k", marker = "extra == 'gsm8k'", editable = "packages/gsm8k" },
-    { name = "aviary-gsm8k", extras = ["typing"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
-    { name = "aviary-hotpotqa", marker = "extra == 'dev'", editable = "packages/hotpotqa" },
+    { name = "aviary-gsm8k", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/gsm8k" },
     { name = "aviary-hotpotqa", marker = "extra == 'hotpotqa'", editable = "packages/hotpotqa" },
+    { name = "aviary-hotpotqa", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/hotpotqa" },
     { name = "aviary-labbench", marker = "extra == 'labbench'", editable = "packages/labbench" },
     { name = "aviary-labbench", extras = ["dev"], marker = "extra == 'dev'", editable = "packages/labbench" },
     { name = "aviary-lfrqa", marker = "extra == 'lfrqa'", editable = "packages/lfrqa" },
@@ -1254,6 +1282,7 @@ requires-dist = [
     { name = "prek", marker = "extra == 'dev'" },
     { name = "pydantic", specifier = "~=2.0" },
     { name = "pydantic", marker = "extra == 'dev'", specifier = "~=2.9" },
+    { name = "pydantic-core" },
     { name = "pylint", marker = "extra == 'dev'", specifier = ">=4" },
     { name = "pylint-pydantic", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9" },

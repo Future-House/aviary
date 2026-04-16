@@ -26,6 +26,7 @@ dependencies = [
     "docstring_parser>=0.16",  # Pin for description addition
     "httpx",
     "httpx-aiohttp",
+    "pydantic-core",
     "pydantic~=2.0",
 ]
 description = "Gymnasium framework for training language model agents on constructive tasks"
@@ -40,8 +41,8 @@ cloud = [
     "boto3",
 ]
 dev = [
-    "aviary.gsm8k[typing]",
-    "aviary.hotpotqa",
+    "aviary.gsm8k[dev]",
+    "aviary.hotpotqa[dev]",
     "aviary.labbench[dev]",
     "aviary.lfrqa[dev]",
     "aviary.notebook[dev]",

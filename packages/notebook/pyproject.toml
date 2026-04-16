@@ -28,6 +28,7 @@ dependencies = [
     "nbformat",
     "numpy",
     "pydantic~=2.0",
+    "typing-extensions; python_version < '3.13'",  # For TypeVar default
 ]
 description = "Jupyter notebook environment implemented with aviary"
 dynamic = ["version"]
@@ -38,6 +39,8 @@ requires-python = ">=3.11"
 [project.optional-dependencies]
 dev = [
     "matplotlib",  # Needed to run tests with plots
+    "pytest",
+    "pytest-asyncio",
 ]
 
 [tool.ruff]

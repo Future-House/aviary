@@ -33,7 +33,11 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 csv = ["pandas"]
-dev = ["aviary.lfrqa[csv]"]
+dev = [
+    "aviary.lfrqa[csv]",
+    "pytest",
+    "pytest-asyncio",
+]
 
 [tool.ruff]
 extend = "../../pyproject.toml"

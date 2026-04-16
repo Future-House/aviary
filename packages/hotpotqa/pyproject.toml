@@ -33,6 +33,12 @@ name = "aviary.hotpotqa"
 readme = "README.md"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
 [tool.ruff]
 extend = "../../pyproject.toml"
 

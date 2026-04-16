@@ -30,6 +30,11 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
+dev = [
+    "aviary.gsm8k[typing]",
+    "pytest",
+    "pytest-asyncio",
+]
 typing = [
     "pandas-stubs",
 ]
