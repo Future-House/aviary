@@ -193,17 +193,20 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 except Exception:
                     logger.exception(f"Failed to close env {env_id}")
                     return None
-                else:
-                    del self.envs[env_id]
-                    return env_id
+                return env_id
 
+            # Pop stale envs from self.envs under lock protection so no other handler
+            # can reach them mid-close
             to_close: list[tuple[str, TEnvironment]] = []
             async with self.lock:
                 for env_id, (env, last_used) in list(self.envs.items()):
                     if now - last_used > req.last_used:
                         to_close.append((env_id, env))
-
-                closed = await asyncio.gather(*list(starmap(close, to_close)))
+                for env_id, _ in to_close:
+                    del self.envs[env_id]
+            # Release the lock before awaiting env.close() so the cleanup doesn't
+            # block other endpoints.
+            closed = await asyncio.gather(*list(starmap(close, to_close)))
 
             return {
                 "closed_env_ids": [env_id for env_id in closed if env_id is not None]
