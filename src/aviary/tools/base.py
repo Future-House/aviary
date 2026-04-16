@@ -401,7 +401,7 @@ class Tool(BaseModel):
         """Hydrate this class via inspection from a free function with a docstring."""
         fxn_name = function.__name__
         # now we parse descriptions from the docstring
-        docstring = parse(function.__doc__, style=docstring_style)  # type: ignore[arg-type]  # SEE: https://github.com/rr-/docstring_parser/issues/88
+        docstring = parse(function.__doc__, style=docstring_style)
         if not docstring.description:
             raise ValueError(f"Missing docstring for function {fxn_name}.")
         # now we parse descriptions from the docstring
@@ -447,9 +447,8 @@ class Tool(BaseModel):
                 Field(**field_config),
             )
 
-        json_schema = create_model(  # type: ignore[call-overload]
-            "FieldDefinitions", **field_definitions
-        ).model_json_schema()
+        model_cls = create_model("FieldDefinitions", **field_definitions)  # type: ignore[call-overload]
+        json_schema = model_cls.model_json_schema()
         json_schema.pop("title")  # Remove the throwaway model name
         if "required" not in json_schema:
             # The API schema doesn't require this, and gpt-3.5-turbo doesn't

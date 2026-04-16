@@ -21,7 +21,7 @@ def test_availability() -> None:
 @pytest.fixture(name="mini_lfrqa", scope="module")
 def fixture_mini_lfrqa() -> list[LFRQAQuestion]:
     return [
-        LFRQAQuestion(**row)  # type: ignore[misc]
+        LFRQAQuestion(**row)  # type: ignore[arg-type]
         for row in pd.read_csv(MINI_LFRQA_CSV)[
             ["qid", "question", "answer", "gold_doc_ids"]
         ].to_dict(orient="records")
