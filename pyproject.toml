@@ -58,11 +58,10 @@ dev = [
     "pytest-asyncio",
     "pytest-recording",
     "pytest-rerunfailures",
-    "pytest-subtests",
     "pytest-sugar",
     "pytest-timer[colorama]",
     "pytest-xdist",
-    "pytest>=8",  # Pin to keep recent
+    "pytest>=9",  # For pytest-subtests upstreaming
     "refurb>=2",  # Pin to keep recent
     "tenacity",
     "typeguard",
@@ -320,10 +319,10 @@ plugins.no-duplicate-heading.siblings_only = true  # GitHub appends -X for dupli
 plugins.no-emphasis-as-heading.enabled = false
 plugins.no-inline-html.enabled = false
 
-[tool.pytest.ini_options]
+[tool.pytest]
 # Add the specified OPTS to the set of command line arguments as if they had been
 # specified by the user.
-addopts = "--typeguard-packages=aviary --doctest-modules"
+addopts = ["--doctest-modules", "--typeguard-packages=aviary"]
 # Sets a list of filters and actions that should be taken for matched warnings.
 # By default all warnings emitted during the test session will be displayed in
 # a summary at the end of the test session.

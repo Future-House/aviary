@@ -23,7 +23,6 @@ from paperqa import Docs, Settings
 from paperqa.agents import get_directory_index
 from paperqa.agents.env import PaperQAEnvironment
 from paperqa.agents.tools import GenerateAnswer
-from pytest_subtests import SubTests
 
 from aviary.envs.labbench import (
     DEFAULT_REWARD_MAPPING,
@@ -179,7 +178,7 @@ class TestPaperQATaskDataset:
 
     @pytest.mark.asyncio
     async def test_evaluation(
-        self, subtests: SubTests, agent_task_settings: Settings
+        self, subtests: pytest.Subtests, agent_task_settings: Settings
     ) -> None:
         await get_directory_index(settings=agent_task_settings)  # Build
         docs = Docs()
