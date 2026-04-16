@@ -119,7 +119,7 @@ class Message(BaseModel):
         data = handler(self)
         deserialize_content = (info.context or {}).get("deserialize_content", True)
         if deserialize_content and "content" in data:
-            data["content"] = self.serialized_content
+            data["content"] = self.deserialized_content
 
         # Handle cache_breakpoint - add cache_control to content
         # Skip when deserialize_content=False as it would convert string to list,
@@ -148,6 +148,9 @@ class Message(BaseModel):
 
         if (info.context or {}).get("include_info"):
             data["info"] = self.info
+            # content_is_json_str is exclude=True so it's dropped by handler().
+            # Persist it here so serialization round-trips (dump → validate_python)
+            # can recover multimodal status without relying on content being a list.
             if self.content_is_json_str:
                 data["content_is_json_str"] = True
         return data
@@ -172,7 +175,7 @@ class Message(BaseModel):
         )
 
     @property
-    def serialized_content(self) -> str | list | None:
+    def deserialized_content(self) -> str | list | None:
         """Content in API-ready form: list for multimodal, string otherwise."""
         if self.is_multimodal:
             return json.loads(self.content)  # type: ignore[arg-type]

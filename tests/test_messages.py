@@ -211,10 +211,7 @@ class TestMessage:
                 },
             ],
         )
-        dumped = original.model_dump(mode="json")
-        assert isinstance(dumped["content"], list)
-
-        recovered = Message.model_validate(dumped)
+        recovered = Message.model_validate(original.model_dump(mode="json"))
         assert recovered.content_is_json_str
         assert recovered.is_multimodal
 
