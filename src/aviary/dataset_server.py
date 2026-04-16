@@ -6,11 +6,11 @@ import traceback
 import uuid
 from contextlib import contextmanager
 from itertools import starmap
-from typing import Generic, TypeVar
+from typing import Any, Generic
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
-from aviary.env import Environment, TaskDataset
+from aviary.env import TaskDataset, TEnvironment
 from aviary.message import Message
 from aviary.tools import (
     MessagesAdapter,
@@ -21,7 +21,7 @@ from aviary.tools import (
 
 try:
     import uvicorn
-    from fastapi import Depends, FastAPI, HTTPException, Security
+    from fastapi import APIRouter, Depends, FastAPI, HTTPException, Security
     from fastapi.security import APIKeyHeader
 
     missing_dependencies = False
@@ -36,11 +36,33 @@ class StartRequest(BaseModel):
     task_idx: int | None = Field(
         default=None,
         description=(
-            "Index of the dataset to start. "
-            "If provided, will call TaskDataset.get_new_env_by_idx(); "
-            "otherwise, TaskDataset.get_new_env()."
+            "Optional index of the dataset to start. If provided, will call"
+            " TaskDataset.get_new_env_by_idx(); otherwise, TaskDataset.get_new_env()."
+            " Mutually exclusive with task_kwargs."
         ),
     )
+    task_kwargs: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "Optional keyword arguments passed to TaskDataset.get_new_env_by_args()."
+            " Mutually exclusive with task_idx."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _check_mutually_exclusive(self) -> "StartRequest":
+        if self.task_idx is not None and self.task_kwargs is not None:
+            raise ValueError(
+                "task_idx and task_kwargs are mutually exclusive; specify at most one."
+            )
+        return self
+
+    def make_env(self, dataset: TaskDataset[TEnvironment]) -> TEnvironment:
+        if self.task_kwargs is not None:
+            return dataset.get_new_env_by_args(**self.task_kwargs)
+        if self.task_idx is not None:
+            return dataset.get_new_env_by_idx(self.task_idx)
+        return dataset.get_new_env()
 
 
 class EnvRequest(BaseModel):
@@ -60,10 +82,6 @@ DEFAULT_SERVER_PORT = 8041
 BIND_ALL_HOST = "0.0.0.0"  # noqa: S104
 
 
-# Not sure why, but mypy complains if we use the TEnvironment in aviary.env, so redefine here
-TEnvironment = TypeVar("TEnvironment", bound=Environment)
-
-
 class TaskDatasetServer(Generic[TEnvironment]):
     def __init__(
         self,
@@ -71,6 +89,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
         host: str = BIND_ALL_HOST,
         port: int = DEFAULT_SERVER_PORT,
         api_key: str | None = None,
+        router: "APIRouter | None" = None,
     ):
         if missing_dependencies:
             raise ImportError(
@@ -83,12 +102,18 @@ class TaskDatasetServer(Generic[TEnvironment]):
         self.port = port
         self.api_key = api_key
 
-        self.app = FastAPI()
-
         # env ID -> (env, last used timestamp)
         self.envs: dict[str, tuple[TEnvironment, float]] = {}
         self.lock = asyncio.Lock()
+
+        self.router = router if router is not None else APIRouter()
         self._setup_routes()
+
+        if router is None:  # Standalone mode: build a default FastAPI app
+            self.app: FastAPI | None = FastAPI()
+            self.app.include_router(self.router)
+        else:  # Mounted mode: caller mounts self.router onto their own app
+            self.app = None
 
     def _get_env(self, env_id: str) -> TEnvironment:
         try:
@@ -123,22 +148,17 @@ class TaskDatasetServer(Generic[TEnvironment]):
                     status_code=403, detail="Invalid or missing API key"
                 )
 
-        @self.app.post("/start", dependencies=[Depends(verify_api_key)])
+        @self.router.post("/start", dependencies=[Depends(verify_api_key)])
         async def start(req: StartRequest):
             with handle_exc_as_http_exc():
-                if req.task_idx is None:
-                    env = await asyncio.to_thread(self.dataset.get_new_env)
-                else:
-                    env = await asyncio.to_thread(
-                        self.dataset.get_new_env_by_idx, req.task_idx
-                    )
+                env = await asyncio.to_thread(req.make_env, self.dataset)
 
             async with self.lock:
                 env_id = str(uuid.uuid4())
                 self.envs[env_id] = (env, time.time())
                 return {"env_id": env_id}
 
-        @self.app.post("/reset", dependencies=[Depends(verify_api_key)])
+        @self.router.post("/reset", dependencies=[Depends(verify_api_key)])
         async def reset(req: EnvRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
@@ -152,7 +172,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 ToolsAdapter.dump_python(tools, exclude_none=True, by_alias=True),
             )
 
-        @self.app.post("/step", dependencies=[Depends(verify_api_key)])
+        @self.router.post("/step", dependencies=[Depends(verify_api_key)])
         async def step(req: StepRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
@@ -166,7 +186,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
             )
             return obs_serialized, *reward_done_trunc
 
-        @self.app.post("/close", dependencies=[Depends(verify_api_key)])
+        @self.router.post("/close", dependencies=[Depends(verify_api_key)])
         async def close(req: EnvRequest):
             async with self.lock:
                 env = self._get_env(req.env_id)
@@ -179,7 +199,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
 
             return {"env_id": req.env_id}
 
-        @self.app.post("/close_old_envs", dependencies=[Depends(verify_api_key)])
+        @self.router.post("/close_old_envs", dependencies=[Depends(verify_api_key)])
         async def close_old_envs(req: FlushRequest):
             """Endpoint to close environments that have not been used in a while.
 
@@ -212,7 +232,7 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 "closed_env_ids": [env_id for env_id in closed if env_id is not None]
             }
 
-        @self.app.get("/info", dependencies=[Depends(verify_api_key)])
+        @self.router.get("/info", dependencies=[Depends(verify_api_key)])
         def info():
             try:
                 dataset_len: int | None = len(self.dataset)
@@ -223,11 +243,21 @@ class TaskDatasetServer(Generic[TEnvironment]):
                 "running_env_ids": list(self.envs.keys()),
             }
 
-    def start(self):
+    def start(self) -> None:
+        if self.app is None:
+            raise RuntimeError(
+                f"{type(self).__name__} was constructed with an external router; "
+                "mount self.router on your own FastAPI app and run uvicorn there."
+            )
         uvicorn.run(self.app, host=self.host, port=self.port, log_level="debug")
 
-    async def astart(self):
+    async def astart(self) -> None:
         """Async equivalent of start()."""
+        if self.app is None:
+            raise RuntimeError(
+                f"{type(self).__name__} was constructed with an external router; "
+                "mount self.router on your own FastAPI app and run uvicorn there."
+            )
         config = uvicorn.Config(
             self.app, host=self.host, port=self.port, log_level="debug"
         )

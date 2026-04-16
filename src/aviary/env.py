@@ -437,6 +437,16 @@ class TaskDataset(ABC, Generic[TEnvironment]):
             f'"{self.__class__.__name__}" does not implement get_new_env'
         )
 
+    def get_new_env_by_args(self, **kwargs) -> TEnvironment:
+        """Get an env from arbitrary task kwargs.
+
+        Useful when the caller drives env creation from request payloads
+        rather than a default configuration or fixed environment index.
+        """
+        raise NotImplementedError(
+            f'"{self.__class__.__name__}" does not implement get_new_env_by_args'
+        )
+
     def iter_batches(
         self, batch_size: int, shuffle: bool = False
     ) -> Iterator[list[TEnvironment]]:

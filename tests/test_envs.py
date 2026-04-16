@@ -6,14 +6,14 @@ import tempfile
 import time
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 from unittest import mock
 
 import litellm
 import numpy as np
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from httpx import ASGITransport, AsyncClient
 from pydantic import BaseModel, ValidationError
 from pytest_subtests import SubTests
@@ -682,7 +682,32 @@ async def _make_test_client(app: FastAPI) -> AsyncIterator[AsyncClient]:
 @pytest_asyncio.fixture
 async def server_async_client() -> AsyncIterator[AsyncClient]:
     server = TaskDatasetServer[DummyEnv](dataset=TaskDataset.from_name("dummy"))
-    async with _make_test_client(app=server.app) as client:
+    async with _make_test_client(app=cast(FastAPI, server.app)) as client:
+        yield client
+
+
+class StubArgsTaskDataset(TaskDataset[DummyEnv]):
+    """Stub task dataset to exercise get_new_env_by_args."""
+
+    def get_new_env_by_args(self, *, task: str) -> DummyEnv:  # type: ignore[override]
+        return DummyEnv(task=task)
+
+
+@pytest_asyncio.fixture
+async def args_async_client() -> AsyncIterator[AsyncClient]:
+    server = TaskDatasetServer[DummyEnv](dataset=StubArgsTaskDataset())
+    async with _make_test_client(app=cast(FastAPI, server.app)) as client:
+        yield client
+
+
+@pytest_asyncio.fixture
+async def mounted_async_client() -> AsyncIterator[AsyncClient]:
+    server = TaskDatasetServer[DummyEnv](
+        dataset=TaskDataset.from_name("dummy"), router=APIRouter(tags=["env"])
+    )
+    app = FastAPI()
+    app.include_router(server.router, prefix="/env")
+    async with _make_test_client(app=app) as client:
         yield client
 
 
@@ -764,7 +789,7 @@ class TestTaskDatasetServer:
         # last_used=0 guarantees it's stale for any req.last_used >= 0
         server.envs["stale"] = (stale_env, 0.0)
 
-        async with _make_test_client(app=server.app) as client:
+        async with _make_test_client(app=cast(FastAPI, server.app)) as client:
             with mock.patch.object(DummyEnv, "close", slow_close):
                 # Kick off /close_old_envs; env.close() will await release_event
                 close_task = asyncio.create_task(
@@ -843,6 +868,73 @@ class TestTaskDatasetServer:
         assert reward == 0.0
         assert not done
         assert not truncated
+
+    @pytest.mark.asyncio
+    async def test_start_raises_when_get_new_env_by_args_not_implemented(
+        self, server_async_client: AsyncClient
+    ) -> None:
+        # Dummy dataset doesn't implement get_new_env_by_args, so sending
+        # task_kwargs should surface as a 500 via handle_exc_as_http_exc
+        response = await server_async_client.post(
+            "/start", json={"task_kwargs": {"task": "anything"}}
+        )
+        assert response.status_code == 500
+        assert "get_new_env_by_args" in response.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_start_with_task_kwargs(self, args_async_client: AsyncClient) -> None:
+        start_resp = await args_async_client.post(
+            "/start", json={"task_kwargs": {"task": "five-word-story topic"}}
+        )
+        assert start_resp.status_code == 200
+        env_id = start_resp.json()["env_id"]
+
+        # Reset and confirm the task made it into the initial observation.
+        reset_resp = await args_async_client.post("/reset", json={"env_id": env_id})
+        assert reset_resp.status_code == 200
+        (obs,), tools = reset_resp.json()
+        assert "five-word-story topic" in obs["content"]
+        assert tools
+
+    @pytest.mark.asyncio
+    async def test_start_rejects_both_task_idx_and_task_kwargs(
+        self, args_async_client: AsyncClient
+    ) -> None:
+        # Specifying both is ambiguous; server should reject at request validation
+        start_resp = await args_async_client.post(
+            "/start", json={"task_idx": 42, "task_kwargs": {"task": "kwargs-won"}}
+        )
+        assert start_resp.status_code == 422
+        assert "mutually exclusive" in start_resp.text
+
+    @pytest.mark.asyncio
+    async def test_start_reset_step_through_prefix(
+        self, mounted_async_client: AsyncClient
+    ) -> None:
+        """End-to-end smoke test for the mounted-router code path."""
+        start_resp = await mounted_async_client.post("/env/start", json={})
+        assert start_resp.status_code == 200, (
+            "Mounted router did not expose /env/start — route registration"
+            " against external APIRouter is broken"
+        )
+        env_id = start_resp.json()["env_id"]
+
+        reset_resp = await mounted_async_client.post(
+            "/env/reset", json={"env_id": env_id}
+        )
+        assert reset_resp.status_code == 200, (
+            "Mounted router cannot retrieve the env it just created"
+        )
+
+        action = ToolRequestMessage(
+            tool_calls=[
+                ToolCall.from_name("print_story", story="one two three four five")
+            ]
+        )
+        step_resp = await mounted_async_client.post(
+            "/env/step", json={"env_id": env_id, "action": action.model_dump()}
+        )
+        assert step_resp.status_code == 200
 
 
 class TestDefaultNoToolCallsResponse:
