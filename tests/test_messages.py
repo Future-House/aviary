@@ -5,7 +5,9 @@ import pytest
 from lmi import LiteLLMModel
 
 from aviary.core import (
+    EnvStateMessage,
     Message,
+    MessagesAdapter,
     ToolCall,
     ToolCallFunction,
     ToolRequestMessage,
@@ -214,6 +216,28 @@ class TestMessage:
         recovered = Message.model_validate(original.model_dump(mode="json"))
         assert recovered.content_is_json_str
         assert recovered.is_multimodal
+
+    def test_env_state_message_sets_info_flag_and_warns(self) -> None:
+        with pytest.warns(DeprecationWarning, match="EnvStateMessage"):
+            msg = EnvStateMessage(content="stub")
+        assert (msg.info or {}).get("is_env_state")
+
+        with pytest.warns(DeprecationWarning, match="EnvStateMessage"):
+            msg = EnvStateMessage(content="stub", info={"foo": "bar"})
+        assert (msg.info or {}) == {"foo": "bar", "is_env_state": True}, (
+            "Custom info keys must be preserved alongside the injected flag"
+        )
+
+        with pytest.warns(DeprecationWarning, match="EnvStateMessage"):
+            msg = EnvStateMessage.model_validate({"content": "stub"})
+        assert (msg.info or {}).get("is_env_state")
+
+    def test_env_state_info_flag_roundtrips_through_messages_adapter(self) -> None:
+        original = [Message(content="stub", info={"is_env_state": True})]
+        dumped = MessagesAdapter.dump_python(original, context={"include_info": True})
+        assert dumped[0]["info"]["is_env_state"]
+        (round_trip_original,) = MessagesAdapter.validate_python(dumped)
+        assert (round_trip_original.info or {}).get("is_env_state")
 
     @pytest.mark.parametrize(
         ("images", "message_text", "expected_error", "expected_content_length"),
