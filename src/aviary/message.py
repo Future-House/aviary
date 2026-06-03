@@ -1,7 +1,8 @@
 import json
 import logging
-from collections.abc import Iterable
-from typing import TYPE_CHECKING, ClassVar, Self
+import warnings
+from collections.abc import Iterable, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Any, ClassVar, Self
 
 from pydantic import (
     BaseModel,
@@ -311,8 +312,34 @@ class MalformedMessageError(ValueError):
         return not all(x in record.msg for x in (cls.__name__, EMPTY_CONTENT_BASE_MSG))
 
 
+ENV_STATE_INFO_KEY = "is_env_state"
+
+
 class EnvStateMessage(Message):
-    """A message that contains the current state of the environment."""
+    """A message that contains the current state of the environment.
+
+    Since this subclass is erased by `aviary.tools.base.MessagesAdapter`
+    serialization and it just becomes a Message, we are deprecating this class
+    in favor of a plain Message carrying the `ENV_STATE_INFO_KEY` flag inside `info`,
+    which survives serialization.
+    """
+
+    @model_validator(mode="before")
+    @classmethod
+    def _deprecate_and_inject_env_state_marker(
+        cls, data: MutableMapping[str, Any]
+    ) -> MutableMapping[str, Any]:
+        warnings.warn(
+            f"{cls.__name__} is deprecated; use {Message.__name__}"
+            f"(info={{{ENV_STATE_INFO_KEY!r}: True}}, ...) instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        if isinstance(data, Mapping):
+            info = dict(data.get("info") or {})
+            info[ENV_STATE_INFO_KEY] = True
+            data = {**data, "info": info}
+        return data
 
 
 # Define separately so we can filter out this message type

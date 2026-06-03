@@ -11,8 +11,14 @@ from typing import Any, ClassVar, Generic, Self, TypeAlias, cast
 
 import aiodocker
 import nbformat
-from aviary.core import Environment, Message, Messages, Tool, ToolRequestMessage
-from aviary.message import EnvStateMessage
+from aviary.core import (
+    ENV_STATE_INFO_KEY,
+    Environment,
+    Message,
+    Messages,
+    Tool,
+    ToolRequestMessage,
+)
 from jupyter_client.manager import AsyncKernelManager
 from nbformat import NotebookNode
 from numpy.typing import NDArray
@@ -327,7 +333,7 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
         logger.debug("Reloading notebook from disk")
         return "Executed all cells."
 
-    def get_env_state_msg(self) -> EnvStateMessage:
+    def get_env_state_msg(self) -> Message:
         nb_path = self.state.get_container_path(self.state.nb_path)
         md_notebook, notebook_images = utils.view_notebook(
             cells=self.state.cells, language=self.language.value
@@ -335,12 +341,13 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
         # Write the markdown representation to disk
         self.state.nb_path.with_suffix(".md").write_text(md_notebook)
 
-        return EnvStateMessage.create_message(
+        return Message.create_message(
             text=(
                 "Markdown representation of notebook contents"
                 f" ({nb_path}):\n\n{md_notebook}"
             ),
             images=cast(list[NDArray[Any] | str | bytes], notebook_images),
+            info={ENV_STATE_INFO_KEY: True},
         )
 
     async def close(self):

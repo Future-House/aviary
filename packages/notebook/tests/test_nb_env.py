@@ -9,7 +9,6 @@ import tempfile
 
 import nbformat.v4 as nbf
 import pytest
-from aviary.message import EnvStateMessage
 
 from aviary.envs.notebook import NBEnvironment
 from aviary.envs.notebook.config import NB_ENVIRONMENT_DOCKER_IMAGE
@@ -121,7 +120,7 @@ class TestNBEnvironment:
             obs, tools = await env.reset()
 
             assert len(obs) == 1
-            assert isinstance(obs[0], EnvStateMessage)
+            assert (obs[0].info or {}).get("is_env_state")
             assert isinstance(obs[0].content, str)
             assert obs[0].content.count("Cell") == 0
 

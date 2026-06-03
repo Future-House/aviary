@@ -16,7 +16,13 @@ from aviary.env_client import (
     TaskEnvironmentClient,
 )
 from aviary.functional import DynamicState, fenv
-from aviary.message import EnvStateMessage, MalformedMessageError, Message, join
+from aviary.message import (
+    ENV_STATE_INFO_KEY,
+    EnvStateMessage,
+    MalformedMessageError,
+    Message,
+    join,
+)
 from aviary.render import Renderer
 from aviary.tools import (
     INVALID_TOOL_NAME,
@@ -50,6 +56,7 @@ from aviary.utils import (
 
 __all__ = [
     "DEFAULT_EVAL_MODEL_NAME",
+    "ENV_STATE_INFO_KEY",
     "INVALID_TOOL_NAME",
     "TASK_DATASET_REGISTRY",
     "DummyEnv",
