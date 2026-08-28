@@ -19,6 +19,7 @@ from typeguard import suppress_type_checks
 from aviary.core import (
     INVALID_TOOL_NAME,
     DummyEnv,
+    DummyEnvState,
     Environment,
     FunctionInfo,
     Message,
@@ -701,6 +702,106 @@ PARAMETERS:
             action = ToolRequestMessage(tool_calls=[tool_call])
             new_messages = await dummy_env.exec_tool_calls(action)
             assert new_messages[0].content == "Go for a walk"
+
+    @pytest.mark.asyncio
+    async def test_tool_call_id_injection(
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        # NOTE: tool_call_id is left out of every docstring below, to confirm
+        # from_function doesn't demand a description for an injected parameter
+        async def remember(x: int, tool_call_id: str) -> str:  # noqa: D417
+            """Remember a number.
+
+            Args:
+                x: Number to remember.
+            """
+            await asyncio.sleep(0.01)  # Force concurrent calls to overlap
+            return f"{tool_call_id}:{x}"
+
+        def remember_sync(x: int, tool_call_id: str) -> str:  # noqa: D417
+            """Remember a number.
+
+            Args:
+                x: Number to remember.
+            """
+            return f"{tool_call_id}:{x}"
+
+        def remember_in_state(  # noqa: D417
+            x: int, state: DummyEnvState, tool_call_id: str
+        ) -> str:
+            """Remember a number in the state.
+
+            Args:
+                x: Number to remember.
+            """
+            state.reward = x
+            return f"{tool_call_id}:{x}"
+
+        class Rememberer:
+            async def remember_method(self, x: int, tool_call_id: str) -> str:  # noqa: D417
+                """Remember a number.
+
+                Args:
+                    x: Number to remember.
+                """
+                return f"{tool_call_id}:{x}"
+
+        tools = {
+            fn.__name__: Tool.from_function(fn)
+            for fn in (
+                remember,
+                remember_sync,
+                remember_in_state,
+                Rememberer().remember_method,
+            )
+        }
+
+        with subtests.test("injected parameters are absent from the schema"):
+            for name, tool in tools.items():
+                params = tool.info.parameters
+                assert params is not None
+                # tool_call_id is hidden just like state, so the LLM only sees x
+                assert set(params.properties) == {"x"}, name
+                assert params.required == ["x"], name
+
+        # state is passed for every call below, exercising the filtering of it out of
+        # the signatures that don't declare it
+        await dummy_env.reset()
+        for name, tool in tools.items():
+            with subtests.test(f"injected into {name}"):
+                dummy_env.tools = [tool]
+                action = ToolRequestMessage(
+                    tool_calls=[ToolCall.from_name(name, id=f"{name}-id", x=1)]
+                )
+                (response,) = await dummy_env.exec_tool_calls(
+                    action, state=dummy_env.state
+                )
+                assert response.content == f"{name}-id:1"
+        # remember_in_state ran above, so state arrived alongside tool_call_id
+        assert dummy_env.state.reward == 1
+
+        dummy_env.tools = [tools["remember"]]
+
+        with subtests.test("concurrent calls each see their own id"):
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name("remember", id="first", x=1),
+                    ToolCall.from_name("remember", id="second", x=2),
+                ]
+            )
+            responses = await dummy_env.exec_tool_calls(action, concurrency=True)
+            assert [r.content for r in responses] == ["first:1", "second:2"]
+
+        with subtests.test("injected id beats an LLM-emitted one"):
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name(
+                        "remember", id="authoritative", x=1, tool_call_id="spoofed"
+                    )
+                ]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action)
+            assert response.content == "authoritative:1"
 
     @pytest.mark.asyncio
     async def test_tool_timing(self) -> None:
