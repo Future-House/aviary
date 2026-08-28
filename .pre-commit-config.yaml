@@ -85,3 +85,4 @@ repos:
         entry: mypy
         language: system
         types_or: [python, pyi]
+        require_serial: true # mypy's SQLite cache breaks under concurrent invocations
