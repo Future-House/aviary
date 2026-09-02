@@ -329,7 +329,7 @@ class FunctionInfo(BaseModel):
 
 
 def _strip_hidden(text: str) -> str:
-    r"""Return docstring above `\f` marker."""
+    r"""Return docstring above the literal `\f` marker."""
     before_marker, *_ = text.split("\\f", 1)
     return before_marker.strip()
 
