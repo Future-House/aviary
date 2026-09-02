@@ -130,6 +130,15 @@ def example_fxn(x: int, y: str, z: float) -> None:
     assert isinstance(z, float)
 
 
+def example_fxn_linefeed_in_param(x: int) -> None:
+    r"""A test function.
+
+    Args:
+        x: x \f I should be ignored.
+    """
+    assert isinstance(x, int)
+
+
 def state_out_of_order(state: dict, x: int = 0) -> None:
     """A test function.
 
@@ -428,6 +437,29 @@ class TestTool:
                     },
                 },
                 id="with-linefeed",
+            ),
+            pytest.param(
+                example_fxn_linefeed_in_param,
+                {},
+                {
+                    "type": "function",
+                    "info": {
+                        "name": "example_fxn_linefeed_in_param",
+                        "description": "A test function.",
+                        "parameters": {
+                            "properties": {
+                                "x": {
+                                    "description": "x",
+                                    "title": "X",
+                                    "type": "integer",
+                                },
+                            },
+                            "required": ["x"],
+                            "type": "object",
+                        },
+                    },
+                },
+                id="with-linefeed-in-param",
             ),
             pytest.param(
                 # NOTE: tenacity uses `functools.wraps`: https://github.com/jd/tenacity/blob/9.1.2/tenacity/__init__.py#L330-L333
