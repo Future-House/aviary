@@ -328,6 +328,12 @@ class FunctionInfo(BaseModel):
         return self.describe_str()
 
 
+def _strip_hidden(text: str) -> str:
+    r"""Return docstring above the literal `\f` marker."""
+    before_marker, *_ = text.split("\\f", 1)
+    return before_marker.strip()
+
+
 def _raises(exc: Exception) -> NoReturn:
     """Work around lambda not supporting raise statement."""
     raise exc
@@ -404,13 +410,6 @@ class Tool(BaseModel):
         docstring = parse(function.__doc__, style=docstring_style)
         if not docstring.description:
             raise ValueError(f"Missing docstring for function {fxn_name}.")
-        # now we parse descriptions from the docstring
-        try:
-            # Don't include anything below \f, matching FastAPI's solution for this
-            # SEE: https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
-            description_stop_index: int | None = docstring.description.index("\\f")
-        except ValueError:
-            description_stop_index = None
         field_definitions: dict[str, tuple[type, FieldInfo]] = {}
         required: dict[str, bool] = {}
         annotations = function.__annotations__
@@ -426,6 +425,7 @@ class Tool(BaseModel):
                 ),
                 "",
             )
+            d = _strip_hidden(d)
             if not d and not allow_empty_param_descriptions:
                 raise ValueError(f"Missing description for parameter {pname}.")
             required[pname] = parameter.default == inspect.Parameter.empty
@@ -459,7 +459,7 @@ class Tool(BaseModel):
             info=FunctionInfo(
                 name=fxn_name,
                 description=partial_format(
-                    docstring.description[:description_stop_index].strip(), **formats
+                    _strip_hidden(docstring.description), **formats
                 ),
                 parameters=json_schema,
             ),
