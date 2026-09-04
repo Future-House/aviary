@@ -118,7 +118,7 @@ def argref_by_name(  # noqa: PLR0915
         >>> # Equivalent to my_func(state.refs["a"], state.refs["b"])
         >>> wrapped_fxn("a", "b", state=state)  # doctest: +SKIP
     """
-    args_to_skip = (args_to_skip or set()) | {"state", "return"}
+    args_to_skip = (args_to_skip or set()) | {"state", "tool_call_id", "return"}
 
     def decorator(func):  # noqa: PLR0915
         def get_call_args(*args, **kwargs):

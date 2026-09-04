@@ -238,17 +238,25 @@ class Environment(ABC, Generic[TEnvState]):
                     f" { {t.info.name for t in self.tools} }."
                 ) from exc
 
-            # we do a special convenience to make
-            # state be optional in the function signature
+            # we do a special convenience to make state and tool_call_id be
+            # optional in the function signature: state is dropped when undeclared,
+            # tool_call_id is injected when declared. Tool.from_function keeps both
+            # out of the LLM-facing schema, and our id wins over an LLM-emitted one
+            fn_parameters = inspect.signature(tool._tool_fn).parameters
             need_to_filter = (
                 "state" in function_kwargs
-                and "state" not in inspect.signature(tool._tool_fn).parameters
+                and "state" not in fn_parameters
                 and not hasattr(tool._tool_fn, "requires_state")
             )
             filtered_kwargs = (
                 {k: v for k, v in function_kwargs.items() if k != "state"}
                 if need_to_filter
                 else function_kwargs
+            )
+            tool_call_args = tool_call.function.arguments | (
+                {"tool_call_id": tool_call.id}
+                if "tool_call_id" in fn_parameters
+                else {}
             )
 
             concurrency_context = (
@@ -262,18 +270,14 @@ class Environment(ABC, Generic[TEnvState]):
                 async with concurrency_context:
                     if is_coroutine_callable(tool._tool_fn):
                         content = await maybe_wait_for(
-                            tool._tool_fn(
-                                **tool_call.function.arguments, **filtered_kwargs
-                            ),
+                            tool._tool_fn(**tool_call_args, **filtered_kwargs),
                             exec_timeout,
                         )
                     else:
                         # If the function is synchronous, run on a thread
                         content = await maybe_wait_for(
                             asyncio.to_thread(
-                                tool._tool_fn,
-                                **tool_call.function.arguments,
-                                **filtered_kwargs,
+                                tool._tool_fn, **tool_call_args, **filtered_kwargs
                             ),
                             exec_timeout,
                         )
