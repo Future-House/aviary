@@ -414,8 +414,8 @@ class Tool(BaseModel):
         required: dict[str, bool] = {}
         annotations = function.__annotations__
         for pname, parameter in inspect.signature(function).parameters.items():
-            if pname == "state":
-                # NOTE: ToolRequestMessage passes state for us, not the LLM
+            if pname in {"state", "tool_call_id"}:
+                # NOTE: exec_tool_calls injects state and tool_call_id for us, not the LLM
                 continue
             d = next(
                 (

@@ -295,6 +295,10 @@ We will define a single tool that prints a story. Tools may optionally take a fi
 exposed to the agent as a parameter but will be injected by the environment
 (if part of the function signature).
 
+A tool may also declare a `tool_call_id: str` argument. The environment injects the ID of
+the tool call being executed, so a tool can key its work by call. Like `state`, this
+argument stays hidden from the agent.
+
 ```py
 def print_story(story: str, state: ExampleState):
     """Print a story.
