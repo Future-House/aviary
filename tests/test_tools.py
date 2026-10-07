@@ -22,6 +22,7 @@ from aviary.core import (
     DummyEnvState,
     Environment,
     FunctionInfo,
+    MalformedMessageError,
     Message,
     Tool,
     ToolCall,
@@ -1154,6 +1155,18 @@ async def test_mixed_concurrency() -> None:
     assert at_least_one_parallel, (
         "Expected at least one safe tool call to run concurrently with another."
     )
+
+
+def test_validate_tool_selection() -> None:
+    selection = ToolRequestMessage(info={"trace": "keep"})
+    choices = [([selection], "tool_calls")]
+    assert ToolSelector.validate_selection(choices) is selection
+    data = selection.model_dump(context={"include_info": True})
+    assert ToolSelector.validate_selection([([data], "tool_calls")]) == selection
+    with pytest.raises(MalformedMessageError, match="one choice"):
+        ToolSelector.validate_selection(choices * 2)
+    with pytest.raises(MalformedMessageError, match="finish reason"):
+        ToolSelector.validate_selection([([selection], "length")])
 
 
 @pytest.mark.vcr
