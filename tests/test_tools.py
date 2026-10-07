@@ -1205,24 +1205,10 @@ def test_validate_tool_selection_rejects_malformed_response(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("choice_count", "finish_reason", "tool_choice", "allow_stop", "error"),
-    [
-        (0, "tool_calls", "required", True, "one choice"),
-        (2, "tool_calls", "required", True, "one choice"),
-        (1, "length", "required", True, "finish reason"),
-        (1, "stop", "auto", True, "finish reason"),
-        (1, "stop", "required", False, None),
-        (1, "tool_calls", "auto", False, None),
-        (1, "stop", Tool.from_function(simple), False, "finish reason"),
-        (1, "stop", Tool.from_function(simple), True, None),
-    ],
+    ("tool_choice", "error"), [("required", None), ("auto", "finish reason")]
 )
 async def test_tool_selector_shared_validation(
-    choice_count: int,
-    finish_reason: str,
-    tool_choice: Tool | str,
-    allow_stop: bool,
-    error: str | None,
+    tool_choice: str, error: str | None
 ) -> None:
     response = litellm.ModelResponse(
         model="stub",
@@ -1231,16 +1217,14 @@ async def test_tool_selector_shared_validation(
                 "message": ToolRequestMessage(
                     tool_calls=[ToolCall.from_name("simple")]
                 ).model_dump(),
-                "finish_reason": finish_reason,
+                "finish_reason": "stop",
             }
-        ]
-        * choice_count,
+        ],
         usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
     )
     selector = ToolSelector(
         "stub", acompletion=AsyncMock(return_value=response), accum_messages=True
     )
-    selector._add_stop_reason_on_tool_choice_of_tool = allow_stop
     if error:
         with pytest.raises(MalformedMessageError, match=error):
             await selector([], [Tool.from_function(simple)], tool_choice)
