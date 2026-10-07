@@ -5,14 +5,14 @@ import pickle
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
 from typing import Any, cast
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import litellm
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFont
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typeguard import suppress_type_checks
 
@@ -22,6 +22,7 @@ from aviary.core import (
     DummyEnvState,
     Environment,
     FunctionInfo,
+    MalformedMessageError,
     Message,
     Tool,
     ToolCall,
@@ -1161,16 +1162,94 @@ def test_validate_tool_selection() -> None:
     selection = ToolRequestMessage(
         tool_calls=[ToolCall.from_name("lookup", query="example")], info=info
     )
-    assert ToolSelector.validate_selection(selection) is selection
+    assert ToolSelector.validate_selection([([selection], "tool_calls")]) is selection
     assert (
-        ToolSelector.validate_selection(
-            selection.model_dump(context={"include_info": True})
-        )
+        ToolSelector.validate_selection([
+            ([selection.model_dump(context={"include_info": True})], "stop")
+        ])
         == selection
     )
-    assert ToolSelector.validate_selection(
-        Message(role="assistant", content="No call.", info=info)
-    ) == ToolRequestMessage(content="No call.", info=info)
+    assert ToolSelector.validate_selection([
+        ([Message(role="assistant", content="No call.", info=info)], "stop")
+    ]) == ToolRequestMessage(content="No call.", info=info)
+    assert (
+        ToolSelector.validate_selection(
+            [([selection], None)], expected_finish_reasons=None
+        )
+        is selection
+    )
+    with pytest.raises(MalformedMessageError) as exc_info:
+        ToolSelector.validate_selection([([{"tool_calls": None}], "stop")])
+    assert isinstance(exc_info.value.__cause__, ValidationError)
+
+
+@pytest.mark.parametrize(
+    ("choice_count", "message_count", "finish_reason", "error"),
+    [
+        (0, 1, "tool_calls", "one choice"),
+        (2, 1, "tool_calls", "one choice"),
+        (1, 0, "tool_calls", "one message"),
+        (1, 2, "tool_calls", "one message"),
+        (1, 1, "length", "finish reason"),
+        (1, 1, None, "finish reason"),
+    ],
+)
+def test_validate_tool_selection_rejects_malformed_response(
+    choice_count: int, message_count: int, finish_reason: str | None, error: str
+) -> None:
+    with pytest.raises(MalformedMessageError, match=error):
+        ToolSelector.validate_selection(
+            [([ToolRequestMessage()] * message_count, finish_reason)] * choice_count
+        )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("choice_count", "finish_reason", "tool_choice", "allow_stop", "error"),
+    [
+        (0, "tool_calls", "required", True, "one choice"),
+        (2, "tool_calls", "required", True, "one choice"),
+        (1, "length", "required", True, "finish reason"),
+        (1, "stop", "auto", True, "finish reason"),
+        (1, "stop", "required", False, None),
+        (1, "tool_calls", "auto", False, None),
+        (1, "stop", Tool.from_function(simple), False, "finish reason"),
+        (1, "stop", Tool.from_function(simple), True, None),
+    ],
+)
+async def test_tool_selector_shared_validation(
+    choice_count: int,
+    finish_reason: str,
+    tool_choice: Tool | str,
+    allow_stop: bool,
+    error: str | None,
+) -> None:
+    response = litellm.ModelResponse(
+        model="stub",
+        choices=[
+            {
+                "message": ToolRequestMessage(
+                    tool_calls=[ToolCall.from_name("simple")]
+                ).model_dump(),
+                "finish_reason": finish_reason,
+            }
+        ]
+        * choice_count,
+        usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
+    )
+    selector = ToolSelector(
+        "stub", acompletion=AsyncMock(return_value=response), accum_messages=True
+    )
+    selector._add_stop_reason_on_tool_choice_of_tool = allow_stop
+    if error:
+        with pytest.raises(MalformedMessageError, match=error):
+            await selector([], [Tool.from_function(simple)], tool_choice)
+    else:
+        selection = await selector([], [Tool.from_function(simple)], tool_choice)
+        assert selection.tool_calls[0].function.name == "simple"
+        assert selection.info == {"usage": (5, 3), "model": "stub"}
+        assert selector._ledger is not None
+        assert selector._ledger.messages == [selection]
 
 
 @pytest.mark.vcr
