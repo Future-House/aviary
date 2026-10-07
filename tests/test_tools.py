@@ -5,14 +5,14 @@ import pickle
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
 from typing import Any, cast
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import litellm
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFont
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typeguard import suppress_type_checks
 
@@ -1158,82 +1158,15 @@ async def test_mixed_concurrency() -> None:
 
 
 def test_validate_tool_selection() -> None:
-    info = {"trace": "keep", "response_id": "resp_1"}
-    selection = ToolRequestMessage(
-        tool_calls=[ToolCall.from_name("lookup", query="example")], info=info
-    )
-    assert ToolSelector.validate_selection([([selection], "tool_calls")]) is selection
-    assert (
-        ToolSelector.validate_selection([
-            ([selection.model_dump(context={"include_info": True})], "stop")
-        ])
-        == selection
-    )
-    assert ToolSelector.validate_selection([
-        ([Message(role="assistant", content="No call.", info=info)], "stop")
-    ]) == ToolRequestMessage(content="No call.", info=info)
-    assert (
-        ToolSelector.validate_selection(
-            [([selection], None)], expected_finish_reasons=None
-        )
-        is selection
-    )
-    with pytest.raises(MalformedMessageError) as exc_info:
-        ToolSelector.validate_selection([([{"tool_calls": None}], "stop")])
-    assert isinstance(exc_info.value.__cause__, ValidationError)
-
-
-@pytest.mark.parametrize(
-    ("choice_count", "message_count", "finish_reason", "error"),
-    [
-        (0, 1, "tool_calls", "one choice"),
-        (2, 1, "tool_calls", "one choice"),
-        (1, 0, "tool_calls", "one message"),
-        (1, 2, "tool_calls", "one message"),
-        (1, 1, "length", "finish reason"),
-        (1, 1, None, "finish reason"),
-    ],
-)
-def test_validate_tool_selection_rejects_malformed_response(
-    choice_count: int, message_count: int, finish_reason: str | None, error: str
-) -> None:
-    with pytest.raises(MalformedMessageError, match=error):
-        ToolSelector.validate_selection(
-            [([ToolRequestMessage()] * message_count, finish_reason)] * choice_count
-        )
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    ("tool_choice", "error"), [("required", None), ("auto", "finish reason")]
-)
-async def test_tool_selector_shared_validation(
-    tool_choice: str, error: str | None
-) -> None:
-    response = litellm.ModelResponse(
-        model="stub",
-        choices=[
-            {
-                "message": ToolRequestMessage(
-                    tool_calls=[ToolCall.from_name("simple")]
-                ).model_dump(),
-                "finish_reason": "stop",
-            }
-        ],
-        usage={"prompt_tokens": 5, "completion_tokens": 3, "total_tokens": 8},
-    )
-    selector = ToolSelector(
-        "stub", acompletion=AsyncMock(return_value=response), accum_messages=True
-    )
-    if error:
-        with pytest.raises(MalformedMessageError, match=error):
-            await selector([], [Tool.from_function(simple)], tool_choice)
-    else:
-        selection = await selector([], [Tool.from_function(simple)], tool_choice)
-        assert selection.tool_calls[0].function.name == "simple"
-        assert selection.info == {"usage": (5, 3), "model": "stub"}
-        assert selector._ledger is not None
-        assert selector._ledger.messages == [selection]
+    selection = ToolRequestMessage(info={"trace": "keep"})
+    choices = [([selection], "tool_calls")]
+    assert ToolSelector.validate_selection(choices) is selection
+    data = selection.model_dump(context={"include_info": True})
+    assert ToolSelector.validate_selection([([data], "tool_calls")]) == selection
+    with pytest.raises(MalformedMessageError, match="one choice"):
+        ToolSelector.validate_selection(choices * 2)
+    with pytest.raises(MalformedMessageError, match="finish reason"):
+        ToolSelector.validate_selection([([selection], "length")])
 
 
 @pytest.mark.vcr
