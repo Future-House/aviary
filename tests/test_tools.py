@@ -1156,6 +1156,23 @@ async def test_mixed_concurrency() -> None:
     )
 
 
+def test_validate_tool_selection() -> None:
+    info = {"trace": "keep", "response_id": "resp_1"}
+    selection = ToolRequestMessage(
+        tool_calls=[ToolCall.from_name("lookup", query="example")], info=info
+    )
+    assert ToolSelector.validate_selection(selection) is selection
+    assert (
+        ToolSelector.validate_selection(
+            selection.model_dump(context={"include_info": True})
+        )
+        == selection
+    )
+    assert ToolSelector.validate_selection(
+        Message(role="assistant", content="No call.", info=info)
+    ) == ToolRequestMessage(content="No call.", info=info)
+
+
 @pytest.mark.vcr
 @pytest.mark.asyncio
 async def test_structured_tool_response() -> None:

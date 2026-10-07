@@ -1,5 +1,5 @@
 import contextlib
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
@@ -65,6 +65,23 @@ class ToolSelector:
     # > `required` means the model must call one or more tools.
     TOOL_CHOICE_REQUIRED: ClassVar[str] = "required"
 
+    @staticmethod
+    def validate_selection(message: Message | Mapping[str, Any]) -> ToolRequestMessage:
+        """Convert a message to a tool request, preserving parsed messages and metadata."""
+        if isinstance(message, ToolRequestMessage):
+            return message
+        data = (
+            message.model_dump(context={"include_info": True})
+            if isinstance(message, Message)
+            else message
+        )
+        try:
+            return ToolRequestMessage.model_validate(data)
+        except ValidationError as exc:
+            raise MalformedMessageError(
+                "Failed to convert tool selection to a tool request message."
+            ) from exc
+
     async def __call__(
         self,
         messages: list[Message],
@@ -113,26 +130,16 @@ class ToolSelector:
                 f" model response, got finish reason {choice.finish_reason!r}, full"
                 f" response was {model_response} and tool choice was {tool_choice!r}."
             )
+        selection = self.validate_selection(choice.message.model_dump())
         usage = getattr(model_response, "usage", None)
-        try:
-            selection = ToolRequestMessage(
-                **choice.message.model_dump(),
-                info={
-                    "usage": (
-                        (usage.prompt_tokens, usage.completion_tokens)
-                        if usage is not None
-                        else (0, 0)
-                    ),
-                    "model": self._model_name,
-                },
-            )
-        except ValidationError as exc:
-            raise MalformedMessageError(
-                f"Failed to convert model response's message {choice.message}"
-                f" into a tool request message."
-                f" Got finish reason {choice.finish_reason!r}, full"
-                f" response was {model_response} and tool choice was {tool_choice!r}."
-            ) from exc
+        selection.info = {
+            "usage": (
+                (usage.prompt_tokens, usage.completion_tokens)
+                if usage is not None
+                else (0, 0)
+            ),
+            "model": self._model_name,
+        }
         if self._ledger is not None:
             self._ledger.messages.append(selection)
         return selection
