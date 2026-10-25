@@ -6,7 +6,7 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
-        exclude: uv.lock
+        exclude: ^(uv\.lock|packages/labbench/tests/cassettes/.*\.yaml)$
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
@@ -47,6 +47,7 @@ repos:
     hooks:
       - id: codespell
         additional_dependencies: [".[toml]"]
+        exclude: tests/cassettes|packages/labbench/tests/cassettes
         exclude_types: [jupyter]
   - repo: https://github.com/pappasam/toml-sort
     rev: v0.24.4

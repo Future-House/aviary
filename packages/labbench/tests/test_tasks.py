@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from copy import deepcopy
 from typing import ClassVar, cast
 from unittest.mock import patch
-from uuid import UUID, uuid4
+from uuid import NAMESPACE_DNS, UUID, uuid4, uuid5
 
 import pandas as pd
 import pytest
@@ -42,12 +42,12 @@ class StubPaperQADataset(TextQATaskDataset):
     """Made up dataset of questions answerable from this repo's stub_data."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        PaperQATaskDataset.__init__(self, *args, **kwargs)
         raw_data = [
             (
                 "Politician",
                 ["Technologist", "Plumber"],
-                str(uuid4()),  # Emulate how datasets.load_dataset works, it gives a str
+                str(uuid5(NAMESPACE_DNS, "aviary.stub-labbench.bates")),
                 "Who is Frederick Bates?",
                 "bates.txt",
             ),
@@ -57,14 +57,14 @@ class StubPaperQADataset(TextQATaskDataset):
                     "Generating images of cats",
                     "Simple explanations of internet searches",
                 ],
-                str(uuid4()),
+                str(uuid5(NAMESPACE_DNS, "aviary.stub-labbench.xai")),
                 "How can you use XAI for chemical property prediction?",
                 "paper.pdf",
             ),
             (
                 "Maple Leaf",
                 ["The Stars and Stripes", "The Blue and Yellow", "The Southern Cross"],
-                str(uuid4()),
+                str(uuid5(NAMESPACE_DNS, "aviary.stub-labbench.flag")),
                 "What is the national flag of Canada?",
                 "flag_day.html",
             ),
@@ -176,6 +176,7 @@ class TestPaperQATaskDataset:
             *(ds.get_new_env_by_idx(i).validate_sources() for i in range(len(ds)))
         )
 
+    @pytest.mark.vcr(match_on=["method", "host", "path", "query", "openai_json"])
     @pytest.mark.asyncio
     async def test_evaluation(
         self, subtests: pytest.Subtests, agent_task_settings: Settings
@@ -197,9 +198,7 @@ class TestPaperQATaskDataset:
                         "deleted_dockeys",
                     }
                 ),
-                "question_kwargs": {
-                    "shuffle_seed": MultipleChoiceQuestion.SEED_USING_QUESTION
-                },
+                "question_kwargs": {"shuffle_seed": 42},
             },
         )
         # NOTE: set base_query after construction of the TaskConfig. because in
@@ -257,7 +256,7 @@ class TestPaperQATaskDataset:
             agent_task_settings.agent.tool_names = {GenerateAnswer.gen_answer.__name__}
             agent_task_settings.answer.max_answer_attempts = 2
             agent_task_settings.answer.get_evidence_if_no_contexts = False
-            dataset = TextQATaskDataset(settings=agent_task_settings)
+            dataset = StubPaperQADataset(settings=agent_task_settings)
             dataset.data = dataset.data[:2]  # Save the world: just use two questions
             storage_callback = StoreTrajectoriesCallback()
             evaluator = Evaluator(

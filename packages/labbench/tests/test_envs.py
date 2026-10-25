@@ -44,6 +44,7 @@ def test_make_discounted_returns(
 
 class TestGradablePaperQAEnvironment:
     @pytest.mark.flaky(reruns=2, only_rerun=["AssertionError"])
+    @pytest.mark.vcr(match_on=["method", "host", "path", "query", "openai_json"])
     @pytest.mark.asyncio
     async def test_deepcopy_env(
         self,
@@ -120,6 +121,7 @@ class TestGradablePaperQAEnvironment:
         assert not done
         assert not truncated
 
+    @pytest.mark.vcr(match_on=["method", "host", "path", "query", "openai_json"])
     @pytest.mark.asyncio
     async def test_unsure_answer(
         self,
