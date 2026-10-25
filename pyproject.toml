@@ -125,6 +125,7 @@ exclude = ["\\.direnv", "\\.git", "\\.venv", "setup\\.py", "venv"]
 extend_exclude = ["packages", "tutorials"]
 known_first_party = ["aviary"]
 optional_dependencies_dev_groups = ["dev", "typing"]
+package_module_name_map = {vcrpy = ["vcr"]}
 
 [tool.deptry.per_rule_ignores]
 # Work around https://github.com/osprey-oss/deptry/issues/1533

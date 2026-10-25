@@ -549,7 +549,11 @@ def _make_long_content(prefix: str, num_items: int = 1500) -> str:
     ("model_name", "require_cache_hit"),
     [
         (CILLMModelNames.ANTHROPIC.value, True),
-        ("gpt-4o-mini", False),
+        pytest.param(
+            "gpt-4o-mini",
+            False,
+            marks=pytest.mark.vcr(match_on=["method", "host", "path", "query", "body"]),
+        ),
     ],
 )
 async def test_cache_breakpoint_live(model_name: str, require_cache_hit: bool) -> None:

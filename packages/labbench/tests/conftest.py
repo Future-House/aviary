@@ -1,3 +1,5 @@
+import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -11,6 +13,46 @@ from lmi.utils import (
 from paperqa import Settings
 
 CASSETTES_DIR = Path(__file__).parent / "cassettes"
+UUID_PATTERN = re.compile(
+    r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+)
+
+
+def pytest_recording_configure(config: pytest.Config, vcr: Any) -> None:  # noqa: ARG001
+    def normalize_request(value: Any) -> Any:
+        if isinstance(value, dict):
+            return {
+                key: "<id>"
+                if key in {"id", "tool_call_id"}
+                else normalize_request(item)
+                for key, item in value.items()
+            }
+        if isinstance(value, list):
+            return [normalize_request(item) for item in value]
+        if isinstance(value, str):
+            return UUID_PATTERN.sub("<uuid>", value)
+        return value
+
+    def match_openai_json(current, recorded) -> None:
+        if current.host != recorded.host or current.path != recorded.path:
+            return
+        if current.host != "api.openai.com":
+            return
+        current_data = json.loads(current.body)
+        recorded_data = json.loads(recorded.body)
+        if current.path.endswith("/embeddings"):
+            # Parser output can vary slightly; the batch and document prefix
+            # identify the recorded embedding response.
+            if (
+                len(current_data["input"]) != len(recorded_data["input"])
+                or str(current_data["input"][0])[:64]
+                != str(recorded_data["input"][0])[:64]
+            ):
+                raise AssertionError("Embedding batches differ")
+        elif normalize_request(current_data) != normalize_request(recorded_data):
+            raise AssertionError("OpenAI request bodies differ")
+
+    vcr.register_matcher("openai_json", match_openai_json)
 
 
 @pytest.fixture(scope="session", name="stub_data_dir")
@@ -37,6 +79,7 @@ def agent_test_settings(agent_index_dir: Path, stub_data_dir: Path) -> Settings:
     settings = Settings()
     settings.agent.index.paper_directory = stub_data_dir
     settings.agent.index.index_directory = agent_index_dir
+    settings.parsing.use_doc_details = False
     settings.agent.search_count = 2
     settings.answer.answer_max_sources = 2
     settings.answer.evidence_k = 10
@@ -53,7 +96,6 @@ def fixture_agent_task_settings(agent_test_settings: Settings) -> Settings:
 def fixture_vcr_config() -> dict[str, Any]:
     return {
         "filter_headers": [OPENAI_API_KEY_HEADER, ANTHROPIC_API_KEY_HEADER, "cookie"],
-        "record_mode": "once",
         "match_on": ["method", "host", "path", "query"],
         "allow_playback_repeats": True,
         "cassette_library_dir": str(CASSETTES_DIR),
