@@ -11,7 +11,6 @@ from lmi.utils import (
     OPENAI_API_KEY_HEADER,
 )
 from paperqa import Settings
-from vcr import VCR
 
 CASSETTES_DIR = Path(__file__).parent / "cassettes"
 UUID_PATTERN = re.compile(
@@ -19,7 +18,7 @@ UUID_PATTERN = re.compile(
 )
 
 
-def pytest_recording_configure(config: pytest.Config, vcr: VCR) -> None:  # noqa: ARG001
+def pytest_recording_configure(config: pytest.Config, vcr: Any) -> None:  # noqa: ARG001
     def normalize_request(value: Any) -> Any:
         if isinstance(value, dict):
             return {

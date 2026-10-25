@@ -23,6 +23,7 @@ from paperqa import Docs, Settings
 from paperqa.agents import get_directory_index
 from paperqa.agents.env import PaperQAEnvironment
 from paperqa.agents.tools import GenerateAnswer
+from paperqa.settings import MultimodalOptions
 
 from aviary.envs.labbench import (
     DEFAULT_REWARD_MAPPING,
@@ -42,7 +43,7 @@ class StubPaperQADataset(TextQATaskDataset):
     """Made up dataset of questions answerable from this repo's stub_data."""
 
     def __init__(self, *args, **kwargs):
-        PaperQATaskDataset.__init__(self, *args, **kwargs)
+        super(TextQATaskDataset, self).__init__(*args, **kwargs)
         raw_data = [
             (
                 "Politician",
@@ -131,6 +132,10 @@ class TestPaperQATaskDataset:
         expected_length: int,
         agent_task_settings: Settings,
     ) -> None:
+        if IN_GITHUB_ACTIONS and split == TextQATaskSplit.TEST:
+            pytest.skip(
+                "CI Hugging Face token cannot access the private LitQA2 test split"
+            )
         task_dataset = TextQATaskDataset(
             settings=agent_task_settings,
             question_kwargs={"shuffle_seed": 42},
@@ -502,6 +507,14 @@ class TestTextQATaskDataset:
         first_three: list[str] | None,
     ) -> None:
         """Test we can reliably make questions from Hugging Face Hub."""
+        if (
+            IN_GITHUB_ACTIONS
+            and dataset == LABBenchDatasets.LIT_QA2
+            and split == TextQATaskSplit.TEST
+        ):
+            pytest.skip(
+                "CI Hugging Face token cannot access the private LitQA2 test split"
+            )
         try:
             task_dataset = TextQATaskDataset(
                 dataset=dataset, split=split, read_data_kwargs={"seed": 42}
@@ -560,6 +573,9 @@ class TestImageQATaskDataset:
         # Confirm we auto-opted into no-embedding settings
         assert task_dataset._settings.parsing.defer_embedding
         assert not task_dataset._settings.answer.evidence_retrieval
+        task_dataset._settings.parsing.multimodal = (
+            MultimodalOptions.ON_WITHOUT_ENRICHMENT
+        )
 
         env = task_dataset.get_new_env_by_idx(0)
         (first_obs,), tools = await env.reset()
@@ -599,6 +615,9 @@ class TestImageQATaskDataset:
         # Confirm we auto-opted into no-embedding settings
         assert task_dataset._settings.parsing.defer_embedding
         assert not task_dataset._settings.answer.evidence_retrieval
+        task_dataset._settings.parsing.multimodal = (
+            MultimodalOptions.ON_WITHOUT_ENRICHMENT
+        )
 
         env = task_dataset.get_new_env_by_idx(0)
         (first_obs,), tools = await env.reset()
