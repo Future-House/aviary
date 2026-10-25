@@ -5,12 +5,16 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import httpx_aiohttp
 import litellm.llms.custom_httpx.aiohttp_transport
 import pytest
-import vcr.stubs.httpcore_stubs
+
+try:
+    import vcr.stubs.httpx_stubs as vcr_http_stubs
+except ModuleNotFoundError:
+    import vcr.stubs.httpcore_stubs as vcr_http_stubs
 
 from . import CASSETTES_DIR
 
 if TYPE_CHECKING:
-    import vcr.request  # noqa: TC004
+    import vcr.request
 
     from aviary.core import DummyEnv
 
@@ -54,7 +58,6 @@ def fixture_vcr_config() -> dict[str, Any]:
     return {
         "filter_headers": [OPENAI_API_KEY_HEADER, ANTHROPIC_API_KEY_HEADER, "cookie"],
         "before_record_request": filter_api_keys,
-        "record_mode": "once",
         "match_on": ["method", "host", "path", "query"],
         "allow_playback_repeats": True,
         "cassette_library_dir": str(CASSETTES_DIR),
@@ -99,4 +102,4 @@ httpx_aiohttp.transport.AiohttpResponseStream = (  # type: ignore[misc]
 
 # Permanently patch vcrpy's async VCR recording functionality,
 # to work around https://github.com/kevin1024/vcrpy/issues/944
-vcr.stubs.httpcore_stubs._vcr_handle_async_request = _vcr_handle_async_request
+vcr_http_stubs._vcr_handle_async_request = _vcr_handle_async_request

@@ -132,8 +132,8 @@ jobs:
       # we download tiktoken encodings before running tests
       - name: Pre-download tiktoken encoding
         run: uv run python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
-      - run: uv run pytest -n 16 --dist=loadfile # auto only launches 8 workers in CI, despite runners have 16 cores
+      - run: uv run pytest -n 16 --dist=loadfile --record-mode=none # auto only launches 8 workers in CI, despite runners have 16 cores
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: sk-cassette-playback-only # pragma: allowlist secret
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SEMANTIC_SCHOLAR_API_KEY: ${{ secrets.SEMANTIC_SCHOLAR_API_KEY }}
