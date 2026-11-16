@@ -28,6 +28,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolSelector,
     argref_by_name,
+    fenv,
 )
 from aviary.tools.server import make_tool_server
 
@@ -1244,3 +1245,30 @@ async def test_multimodal_tool_response(model_name: str) -> None:
         f"Expected response to contain the word {secret_word!r}, instead got"
         f" {response.choices[0].message.content!r}"
     )
+
+
+@pytest.mark.asyncio
+async def test_make_tool_server_array_parameter(tmp_path) -> None:
+    @fenv.start()
+    def array_env():
+        return "Sum some values", {}
+
+    @array_env.tool()
+    def total(values: list[int]) -> str:
+        """Sum the values.
+
+        Args:
+            values: Values to sum.
+        """
+        return str(sum(values))
+
+    with suppress_type_checks():
+        server = await make_tool_server(array_env, env_path=tmp_path)
+    with TestClient(server) as client, patch.dict(os.environ, {"AUTH_TOKEN": "stub"}):
+        response = client.post(
+            "/total",
+            json={"values": [1, 2, 3]},
+            headers={"Authorization": "Bearer stub"},
+        )
+    assert response.status_code == 200, response.text
+    assert response.json()["result"] == "6"
