@@ -28,6 +28,7 @@ from aviary.core import (
     ToolRequestMessage,
     ToolSelector,
     argref_by_name,
+    fenv,
 )
 from aviary.tools.server import make_tool_server
 
@@ -1244,3 +1245,36 @@ async def test_multimodal_tool_response(model_name: str) -> None:
         f"Expected response to contain the word {secret_word!r}, instead got"
         f" {response.choices[0].message.content!r}"
     )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("default", [0, 7])
+@pytest.mark.parametrize("body", [{}, {"value": 3}])
+@pytest.mark.parametrize("describe_parameter", [False, True])
+async def test_make_tool_server_default_parameter(
+    tmp_path, default: int, body, describe_parameter: bool
+) -> None:
+    @fenv.start()
+    def default_env():
+        return "Return a value", {}
+
+    def echo(value: int = default) -> str:
+        """Return the value.
+
+        Args:
+            value: Value to return.
+        """
+        return str(value)
+
+    if not describe_parameter:
+        echo.__doc__ = "Return the value."
+    default_env.tool()(echo)
+
+    with suppress_type_checks():
+        server = await make_tool_server(default_env, env_path=tmp_path)
+    with TestClient(server) as client, patch.dict(os.environ, {"AUTH_TOKEN": "stub"}):
+        response = client.post(
+            "/echo", json=body, headers={"Authorization": "Bearer stub"}
+        )
+    assert response.status_code == 200, response.text
+    assert response.json()["result"] == str(body.get("value", default))

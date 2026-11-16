@@ -99,10 +99,12 @@ async def make_tool_server(  # noqa: PLR0915
                 elif "description" in info:
                     fields[pname] = (  # type: ignore[assignment]
                         ptype | None,  # type: ignore[operator]
-                        Field(description=info["description"], default=None),
+                        Field(
+                            description=info["description"], default=info.get("default")
+                        ),
                     )
                 else:
-                    fields[pname] = (ptype | None, None)  # type: ignore[assignment, operator]
+                    fields[pname] = (ptype | None, info.get("default"))  # type: ignore[assignment, operator]
 
         return create_model(f"{tool.info.name.capitalize()}Params", **fields)  # type: ignore[call-overload]
 
