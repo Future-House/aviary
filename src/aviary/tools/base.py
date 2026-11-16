@@ -38,7 +38,7 @@ type_map: dict[type | None, str] = {
     int: "integer",
     float: "number",
     bool: "boolean",
-    list: "list",
+    list: "array",
     dict: "object",
     None: "null",
 }
