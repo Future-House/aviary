@@ -1,5 +1,5 @@
 import contextlib
-from collections.abc import Callable
+from collections.abc import Callable, Collection, Mapping, Sequence
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
@@ -65,6 +65,60 @@ class ToolSelector:
     # > `required` means the model must call one or more tools.
     TOOL_CHOICE_REQUIRED: ClassVar[str] = "required"
 
+    @staticmethod
+    def validate_selection(
+        choices: Sequence[tuple[Sequence[Message | Mapping[str, Any]], str | None]],
+        *,
+        expected_finish_reasons: Collection[str] | None = ("tool_calls", "stop"),
+    ) -> ToolRequestMessage:
+        """Validate one completion containing one message and convert it to a tool request.
+
+        Args:
+            choices: Completion choices as (parsed messages, finish reason) pairs.
+                Pass all choices so extra results cannot be silently discarded.
+            expected_finish_reasons: Allowed finish reasons. Pass None for APIs
+                without finish reasons, such as Responses.
+
+        Returns:
+            A tool request, preserving parsed tool requests and message metadata.
+            Empty tool-call lists are allowed.
+
+        Raises:
+            MalformedMessageError: If the choice count, message count, finish
+                reason, or tool-request structure is invalid.
+        """
+        if len(choices) != 1:
+            raise MalformedMessageError(
+                f"Expected one choice in model response, got {len(choices)} choices."
+            )
+        ((messages, finish_reason),) = choices
+        if (
+            expected_finish_reasons is not None
+            and finish_reason not in expected_finish_reasons
+        ):
+            raise MalformedMessageError(
+                f"Expected a finish reason in {expected_finish_reasons},"
+                f" got finish reason {finish_reason!r}."
+            )
+        if len(messages) != 1:
+            raise MalformedMessageError(
+                f"Expected one message in model choice, got {len(messages)} messages."
+            )
+        (message,) = messages
+        if isinstance(message, ToolRequestMessage):
+            return message
+        data = (
+            message.model_dump(context={"include_info": True})
+            if isinstance(message, Message)
+            else message
+        )
+        try:
+            return ToolRequestMessage.model_validate(data)
+        except ValidationError as exc:
+            raise MalformedMessageError(
+                "Failed to convert tool selection to a tool request message."
+            ) from exc
+
     async def __call__(
         self,
         messages: list[Message],
@@ -101,38 +155,22 @@ class ToolSelector:
             **completion_kwargs,
         )
 
-        if (num_choices := len(model_response.choices)) != 1:
-            raise MalformedMessageError(
-                f"Expected one choice in model response, got {num_choices}"
-                f" choices, full response was {model_response}."
-            )
-        choice = model_response.choices[0]
-        if choice.finish_reason not in expected_finish_reason:
-            raise MalformedMessageError(
-                f"Expected a finish reason in {expected_finish_reason} in"
-                f" model response, got finish reason {choice.finish_reason!r}, full"
-                f" response was {model_response} and tool choice was {tool_choice!r}."
-            )
+        selection = self.validate_selection(
+            [
+                ([choice.message.model_dump()], choice.finish_reason)
+                for choice in model_response.choices
+            ],
+            expected_finish_reasons=expected_finish_reason,
+        )
         usage = getattr(model_response, "usage", None)
-        try:
-            selection = ToolRequestMessage(
-                **choice.message.model_dump(),
-                info={
-                    "usage": (
-                        (usage.prompt_tokens, usage.completion_tokens)
-                        if usage is not None
-                        else (0, 0)
-                    ),
-                    "model": self._model_name,
-                },
-            )
-        except ValidationError as exc:
-            raise MalformedMessageError(
-                f"Failed to convert model response's message {choice.message}"
-                f" into a tool request message."
-                f" Got finish reason {choice.finish_reason!r}, full"
-                f" response was {model_response} and tool choice was {tool_choice!r}."
-            ) from exc
+        selection.info = {
+            "usage": (
+                (usage.prompt_tokens, usage.completion_tokens)
+                if usage is not None
+                else (0, 0)
+            ),
+            "model": self._model_name,
+        }
         if self._ledger is not None:
             self._ledger.messages.append(selection)
         return selection
