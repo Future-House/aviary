@@ -1,17 +1,22 @@
 import inspect
 import json
 import logging
+import math
+import sys
+import types
 import uuid
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from functools import partial
 from itertools import starmap
 from typing import (
     Annotated,
     Any,
+    ForwardRef,
     Literal,
     NoReturn,
     Self,
     TypeAlias,
+    Union,
     get_args,
     get_origin,
     get_type_hints,
@@ -30,6 +35,10 @@ from pydantic import (
     model_validator,
 )
 from pydantic.fields import FieldInfo
+from pydantic_core import PydanticSerializationError, to_jsonable_python
+
+if sys.version_info >= (3, 12):
+    from typing import TypeAliasType
 
 from aviary.message import Message
 from aviary.utils import partial_format
@@ -62,20 +71,166 @@ INVALID_TOOL_NAME = "INVALID"
 
 def _json_default(obj: Any) -> Any:
     if isinstance(obj, BaseModel):
-        return obj.model_dump(mode="json")
-    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+        return obj.model_dump(mode="json", by_alias=True)
+    try:
+        converted = to_jsonable_python(obj, by_alias=True)
+    except PydanticSerializationError as exc:
+        raise TypeError(
+            f"Object of type {type(obj).__name__} is not JSON serializable"
+        ) from exc
+    if converted is obj:
+        raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+    return converted
 
 
-def _contains_base_model(annotation: Any) -> bool:
+def _unwrap_type_alias(annotation: Any) -> Any:
+    if sys.version_info >= (3, 12) and isinstance(annotation, TypeAliasType):
+        return annotation.__value__
+    return annotation
+
+
+def _has_unresolved_ref(annotation: Any, _seen: frozenset[int] = frozenset()) -> bool:
+    if isinstance(annotation, (str, ForwardRef)):
+        return True
+    if (ann_id := id(annotation)) in _seen:
+        return False
+    seen = _seen | {ann_id}
+    unwrapped = _unwrap_type_alias(annotation)
+    if unwrapped is not annotation:
+        return _has_unresolved_ref(unwrapped, seen)
+    return any(_has_unresolved_ref(arg, seen) for arg in get_args(annotation))
+
+
+def _resolve_single_annotation(
+    fn: Callable[..., Any], pname: str, annotation: Any
+) -> Any:
+    target = fn.func if isinstance(fn, partial) else fn
+    target = inspect.unwrap(target)
+    globalns = getattr(target, "__globals__", None)
+    unwrapped = _unwrap_type_alias(annotation)
+
+    def _stub() -> None:
+        pass
+
+    _stub.__annotations__ = {pname: unwrapped}
+    try:
+        return get_type_hints(_stub, globalns=globalns, include_extras=True).get(
+            pname, annotation
+        )
+    except Exception:
+        return annotation
+
+
+def _contains_base_model(annotation: Any, _seen: frozenset[int] = frozenset()) -> bool:
     """Return True if a type annotation is or contains a Pydantic BaseModel."""
     if isinstance(annotation, type):
         return issubclass(annotation, BaseModel)
-    origin = get_origin(annotation)
-    if origin is None:
+    if (ann_id := id(annotation)) in _seen:
         return False
+    seen = _seen | {ann_id}
+    unwrapped = _unwrap_type_alias(annotation)
+    if unwrapped is not annotation:
+        return _contains_base_model(unwrapped, seen)
+    origin = get_origin(annotation)
     if isinstance(origin, type) and issubclass(origin, BaseModel):
         return True
-    return any(_contains_base_model(arg) for arg in get_args(annotation))
+    return origin is not None and any(
+        _contains_base_model(arg, seen) for arg in get_args(annotation)
+    )
+
+
+def _contains_model_instance(value: Any) -> bool:
+    if isinstance(value, BaseModel):
+        return True
+    if isinstance(value, Mapping):
+        return any(_contains_model_instance(v) for v in value.values())
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(_contains_model_instance(item) for item in value)
+    return False
+
+
+_PAIR_ARGS = 2
+
+
+def _is_container_deserialized(
+    value: Any, origin: Any, args: tuple[Any, ...], seen: frozenset[int]
+) -> bool:
+    if origin in {list, set, frozenset}:
+        return (
+            isinstance(value, origin)
+            and bool(args)
+            and all(_is_already_deserialized(item, args[0], seen) for item in value)
+        )
+    if (
+        isinstance(origin, type)
+        and issubclass(origin, Sequence)
+        and not issubclass(origin, (str, bytes, bytearray))
+    ):
+        return (
+            isinstance(value, Sequence)
+            and not isinstance(value, (str, bytes, bytearray))
+            and bool(args)
+            and all(_is_already_deserialized(item, args[0], seen) for item in value)
+        )
+    if origin is tuple and isinstance(value, tuple):
+        if len(args) == _PAIR_ARGS and args[1] is Ellipsis:
+            return all(_is_already_deserialized(item, args[0], seen) for item in value)
+        return len(value) == len(args) and all(
+            _is_already_deserialized(item, arg, seen)
+            for item, arg in zip(value, args, strict=True)
+        )
+    if isinstance(origin, type) and issubclass(origin, Mapping):
+        expected_type = dict if origin is dict else Mapping
+        return (
+            isinstance(value, expected_type)
+            and len(args) == _PAIR_ARGS
+            and all(_is_already_deserialized(v, args[1], seen) for v in value.values())
+        )
+    return False
+
+
+def _is_leaf_deserialized(value: Any, annotation: type[Any]) -> bool:
+    if issubclass(annotation, BaseModel):
+        return isinstance(value, annotation)
+    if annotation is type(None):
+        return value is None
+    return (
+        annotation not in {dict, list, tuple, set, frozenset, object}
+        and isinstance(value, annotation)
+        and not (annotation is int and isinstance(value, bool))
+    )
+
+
+def _is_already_deserialized(
+    value: Any, annotation: Any, _seen: frozenset[int] = frozenset()
+) -> bool:
+    if (ann_id := id(annotation)) in _seen:
+        return False
+    seen = _seen | {ann_id}
+    unwrapped = _unwrap_type_alias(annotation)
+    if unwrapped is not annotation:
+        return _is_already_deserialized(value, unwrapped, seen)
+    if isinstance(annotation, type):
+        return _is_leaf_deserialized(value, annotation)
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+    if origin is Annotated and args:
+        return _is_already_deserialized(value, args[0], seen)
+    if origin in {Union, types.UnionType}:
+        return any(_is_already_deserialized(value, arg, seen) for arg in args)
+    return _is_container_deserialized(value, origin, args, seen)
+
+
+def _is_json_value(value: Any) -> bool:
+    if value is None or isinstance(value, (bool, int, str)):
+        return True
+    if isinstance(value, float):
+        return math.isfinite(value)
+    if isinstance(value, list):
+        return all(_is_json_value(item) for item in value)
+    if isinstance(value, dict):
+        return all(isinstance(k, str) and _is_json_value(v) for k, v in value.items())
+    return False
 
 
 class ToolCallFunction(BaseModel):
@@ -429,18 +584,31 @@ class Tool(BaseModel):
             annotation = fn_annotations.get(pname, inspect.Parameter.empty)
             if annotation is inspect.Parameter.empty:
                 annotation = fn_parameters[pname].annotation
-            if isinstance(annotation, str):
+            if annotation is inspect.Parameter.empty:
+                continue
+            if _has_unresolved_ref(annotation):
                 if resolved_hints is None:
                     try:
                         resolved_hints = get_type_hints(fn, include_extras=True)
                     except Exception:
                         resolved_hints = {}
-                annotation = resolved_hints.get(pname, annotation)
-            if annotation is inspect.Parameter.empty or not _contains_base_model(
-                annotation
+                candidate = resolved_hints.get(pname, annotation)
+                if _has_unresolved_ref(candidate):
+                    candidate = _resolve_single_annotation(fn, pname, candidate)
+                annotation = candidate
+            if not _contains_base_model(annotation):
+                continue
+            if _contains_model_instance(value) and _is_already_deserialized(
+                value, annotation
             ):
                 continue
-            deserialized[pname] = TypeAdapter(annotation).validate_python(value)
+            adapter = TypeAdapter(annotation)
+            if _is_json_value(value):
+                deserialized[pname] = adapter.validate_json(
+                    json.dumps(value, allow_nan=False)
+                )
+            else:
+                deserialized[pname] = adapter.validate_python(value)
         return deserialized
 
     @staticmethod

@@ -1,10 +1,13 @@
 import asyncio
+import datetime as dt
 import json
 import os
 import pickle
+import sys
+import uuid
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
-from typing import Any, cast
+from typing import Any, Optional, Self, cast
 from unittest.mock import patch
 
 import litellm
@@ -12,7 +15,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFont
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typeguard import suppress_type_checks
 
@@ -1079,6 +1082,256 @@ PARAMETERS:
                 selection, handle_tool_exc=True
             )
             assert "Encountered exception during tool call" in err_resp.content
+
+    @pytest.mark.asyncio
+    async def test_basemodel_tool_arguments_edge_cases(  # noqa: PLR0914, PLR0915
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        class AliasedArg(BaseModel):
+            value: int = Field(alias="external_value", description="Aliased int.")
+
+        class PrefixedArg(BaseModel):
+            tag: str = Field(description="Tag prefixed once during validation.")
+
+            @model_validator(mode="after")
+            def add_prefix(self) -> Self:
+                self.tag = f"prefix:{self.tag}"
+                return self
+
+        class StrictDateArg(BaseModel):
+            model_config = ConfigDict(strict=True)
+            when: dt.date = Field(description="Strict ISO date.")
+
+        def _make_fake_acompletion(
+            tool_name: str, payload: dict[str, Any]
+        ) -> Callable[..., Any]:
+            async def _fake(*_args: Any, **_kwargs: Any) -> Any:  # noqa: RUF029
+                return litellm.ModelResponse(
+                    choices=[
+                        {
+                            "finish_reason": "tool_calls",
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call99999",
+                                        "type": "function",
+                                        "function": {
+                                            "name": tool_name,
+                                            "arguments": json.dumps(payload),
+                                        },
+                                    }
+                                ],
+                            },
+                        }
+                    ]
+                )
+
+            return _fake
+
+        with subtests.test("aliased BaseModel fields roundtrip through serialization"):
+
+            def use_aliased(arg: AliasedArg) -> int:
+                """Use an aliased BaseModel argument.
+
+                Args:
+                    arg: Aliased model.
+                """
+                assert isinstance(arg, AliasedArg)
+                return arg.value
+
+            aliased_tool = Tool.from_function(use_aliased)
+            dummy_env.tools = [aliased_tool]
+            msg = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_tool(aliased_tool, arg=AliasedArg(external_value=7))
+                ]
+            )
+            dumped = MessagesAdapter.dump_python(
+                [msg], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": {"external_value": 7}
+            }
+            roundtripped = MessagesAdapter.validate_python(dumped)[0]
+            assert isinstance(roundtripped, ToolRequestMessage)
+            (response,) = await dummy_env.exec_tool_calls(roundtripped)
+            assert response.content == "7"
+
+        with subtests.test(
+            "non-model deserialized values serialize to JSON-safe forms"
+        ):
+
+            def use_model_or_uuid(arg: AliasedArg | uuid.UUID) -> str:
+                """Accept either a model or a UUID.
+
+                Args:
+                    arg: Model or UUID value.
+                """
+                return str(arg)
+
+            union_tool = Tool.from_function(use_model_or_uuid)
+            dummy_env.tools = [union_tool]
+            sample_uuid = "12345678-1234-5678-1234-567812345678"
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion(
+                    "use_model_or_uuid", {"arg": sample_uuid}
+                ),
+            )
+            selection = await selector(
+                messages=[Message(content="Call union tool")], tools=[union_tool]
+            )
+            assert isinstance(
+                selection.tool_calls[0].function.arguments["arg"], uuid.UUID
+            )
+            dumped = MessagesAdapter.dump_python(
+                [selection], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": sample_uuid
+            }
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == sample_uuid
+
+        with subtests.test("forward refs resolve even with unresolvable return hint"):
+            fwd_tool = Tool(
+                tool_fn=_fn_with_unresolvable_return,
+                info=FunctionInfo(
+                    name="_fn_with_unresolvable_return",
+                    description="Forward-ref tool.",
+                    parameters=None,
+                ),
+            )
+            dummy_env.tools = [fwd_tool]
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name(
+                        "_fn_with_unresolvable_return",
+                        arg={"value": 3},
+                        items=[{"value": 4}, {"value": 5}],
+                        opt={"value": 6},
+                    )
+                ]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action)
+            assert response.content == "3:9:6"
+
+        if sys.version_info >= (3, 12):
+            with subtests.test(
+                "PEP 695 TypeAliasType BaseModel annotations deserialize"
+            ):
+                from typing import TypeAliasType
+
+                ModelAlias = TypeAliasType("ModelAlias", _ForwardRefModel)
+
+                def use_alias(arg: Any) -> int:
+                    """Use a PEP 695 aliased model."""
+                    assert isinstance(arg, _ForwardRefModel)
+                    return arg.value
+
+                use_alias.__annotations__["arg"] = ModelAlias
+                alias_tool = Tool(
+                    tool_fn=use_alias,
+                    info=FunctionInfo(
+                        name="use_alias",
+                        description="Alias tool.",
+                        parameters=None,
+                    ),
+                )
+                dummy_env.tools = [alias_tool]
+                (response,) = await dummy_env.exec_tool_calls(
+                    ToolRequestMessage(
+                        tool_calls=[ToolCall.from_name("use_alias", arg={"value": 21})]
+                    )
+                )
+                assert response.content == "21"
+
+        with subtests.test("model validators are not run twice across select and exec"):
+
+            def use_prefixed(arg: PrefixedArg, items: list[PrefixedArg]) -> str:
+                """Use prefixed models directly and in a list.
+
+                Args:
+                    arg: Direct prefixed model.
+                    items: List of prefixed models.
+                """
+                return f"{arg.tag}|{','.join(i.tag for i in items)}"
+
+            prefixed_tool = Tool.from_function(use_prefixed)
+            dummy_env.tools = [prefixed_tool]
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion(
+                    "use_prefixed",
+                    {"arg": {"tag": "a"}, "items": [{"tag": "b"}, {"tag": "c"}]},
+                ),
+            )
+            selection = await selector(
+                messages=[Message(content="Call prefixed tool")], tools=[prefixed_tool]
+            )
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == "prefix:a|prefix:b,prefix:c"
+            assert selection.tool_calls[0].function.arguments["arg"].tag == "prefix:a"
+            assert [
+                i.tag for i in selection.tool_calls[0].function.arguments["items"]
+            ] == ["prefix:b", "prefix:c"]
+
+        with subtests.test("strict BaseModel accepts schema-valid JSON date strings"):
+
+            def use_strict_date(arg: StrictDateArg) -> str:
+                """Use a strict BaseModel with a date field.
+
+                Args:
+                    arg: Strict date model.
+                """
+                assert isinstance(arg, StrictDateArg)
+                return arg.when.isoformat()
+
+            strict_tool = Tool.from_function(use_strict_date)
+            dummy_env.tools = [strict_tool]
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion(
+                    "use_strict_date", {"arg": {"when": "2026-11-21"}}
+                ),
+            )
+            selection = await selector(
+                messages=[Message(content="Call strict tool")], tools=[strict_tool]
+            )
+            assert isinstance(
+                selection.tool_calls[0].function.arguments["arg"], StrictDateArg
+            )
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == "2026-11-21"
+            (direct_resp,) = await dummy_env.exec_tool_calls(
+                ToolRequestMessage(
+                    tool_calls=[
+                        ToolCall.from_tool(
+                            strict_tool,
+                            arg=StrictDateArg(when=dt.date(2026, 11, 22)),
+                        )
+                    ]
+                )
+            )
+            assert direct_resp.content == "2026-11-22"
+
+
+class _ForwardRefModel(BaseModel):
+    value: int = Field(description="Forward-referenced integer.")
+
+
+def _fn_with_unresolvable_return(
+    arg: "_ForwardRefModel",
+    items: list["_ForwardRefModel"],
+    opt: Optional["_ForwardRefModel"] = None,
+) -> "UnresolvableTypeCheckingReturn":  # type: ignore[name-defined]  # noqa: F821
+    """Use forward-referenced models alongside an unresolvable return hint."""
+    assert isinstance(arg, _ForwardRefModel)
+    assert all(isinstance(i, _ForwardRefModel) for i in items)
+    assert opt is None or isinstance(opt, _ForwardRefModel)
+    return f"{arg.value}:{sum(i.value for i in items)}:{opt.value if opt else 'none'}"
 
 
 def test_argref_by_name_basic_usage() -> None:
