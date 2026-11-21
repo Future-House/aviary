@@ -1,10 +1,13 @@
 import asyncio
+import datetime as dt
 import json
 import os
 import pickle
+import sys
+import uuid
 from collections.abc import Callable, Sequence
 from enum import IntEnum, auto
-from typing import Any, cast
+from typing import Any, Optional, Self, cast
 from unittest.mock import patch
 
 import litellm
@@ -12,7 +15,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFont
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typeguard import suppress_type_checks
 
@@ -23,6 +26,7 @@ from aviary.core import (
     Environment,
     FunctionInfo,
     Message,
+    MessagesAdapter,
     Tool,
     ToolCall,
     ToolRequestMessage,
@@ -858,6 +862,476 @@ PARAMETERS:
             assert resp.info["end_ts"] - resp.info["start_ts"] >= sleep_time, (
                 "Expected non-trivial time elapsed."
             )
+
+    @pytest.mark.asyncio
+    async def test_basemodel_tool_arguments(
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        class InnerArg(BaseModel):
+            value: int = Field(description="An integer value.")
+
+        class ComplexArg(BaseModel):
+            arg: int = Field(description="Some integer argument.")
+            nested: InnerArg | None = Field(default=None, description="Optional inner.")
+
+        def inspect_models(
+            arg: ComplexArg,
+            items: list[ComplexArg],
+            mapping: dict[str, ComplexArg],
+            optional_arg: ComplexArg | None = None,
+        ) -> str:
+            """Inspect deserialized BaseModel arguments.
+
+            Args:
+                arg: Primary complex argument.
+                items: Sequence of complex arguments.
+                mapping: Mapping of names to complex arguments.
+                optional_arg: Optional complex argument.
+            """
+            assert isinstance(arg, ComplexArg)
+            assert arg.nested is None or isinstance(arg.nested, InnerArg)
+            assert all(isinstance(item, ComplexArg) for item in items)
+            assert all(isinstance(val, ComplexArg) for val in mapping.values())
+            assert optional_arg is None or isinstance(optional_arg, ComplexArg)
+            return (
+                f"{arg.arg}:{arg.nested.value if arg.nested else 'none'}:"
+                f"{sum(i.arg for i in items)}:{mapping['k'].arg}:"
+                f"{optional_arg.arg if optional_arg else 'none'}"
+            )
+
+        async def async_complex_tool(arg: ComplexArg) -> int:
+            """Async tool accepting a BaseModel argument.
+
+            Args:
+                arg: Complex argument.
+            """
+            await asyncio.sleep(0)
+            assert isinstance(arg, ComplexArg)
+            return arg.arg
+
+        tool = Tool.from_function(inspect_models)
+        async_tool = Tool.from_function(async_complex_tool)
+        dummy_env.tools = [tool, async_tool]
+
+        with subtests.test("exec_tool_calls deserializes JSON string BaseModel args"):
+            raw_args = json.dumps({
+                "arg": {"arg": 4, "nested": {"value": 9}},
+                "items": [{"arg": 1}, {"arg": 2}],
+                "mapping": {"k": {"arg": 5}},
+                "optional_arg": {"arg": 7},
+            })
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall(
+                        id="call00001",
+                        function={"name": "inspect_models", "arguments": raw_args},
+                    ),
+                    ToolCall(
+                        id="call00002",
+                        function={
+                            "name": "async_complex_tool",
+                            "arguments": json.dumps({"arg": {"arg": 11}}),
+                        },
+                    ),
+                ]
+            )
+            responses = await dummy_env.exec_tool_calls(action)
+            assert responses[0].content == "4:9:3:5:7"
+            assert responses[1].content == "11"
+
+        with subtests.test("optional BaseModel accepts None"):
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name(
+                        "inspect_models",
+                        arg={"arg": 2},
+                        items=[],
+                        mapping={"k": {"arg": 3}},
+                        optional_arg=None,
+                    )
+                ]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action)
+            assert response.content == "2:none:0:3:none"
+
+        with subtests.test("BaseModel instances serialize and execute cleanly"):
+            tc = ToolCall.from_tool(async_tool, arg=ComplexArg(arg=13))
+            msg = ToolRequestMessage(tool_calls=[tc])
+            dumped = MessagesAdapter.dump_python(
+                [msg], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": {"arg": 13, "nested": None}
+            }
+            (response,) = await dummy_env.exec_tool_calls(msg)
+            assert response.content == "13"
+
+        with subtests.test("invalid BaseModel payload respects handle_tool_exc"):
+            bad_action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name("async_complex_tool", arg={"arg": "not-an-int"})
+                ]
+            )
+            with pytest.raises(ValidationError):
+                await dummy_env.exec_tool_calls(bad_action, handle_tool_exc=False)
+            (err_resp,) = await dummy_env.exec_tool_calls(
+                bad_action, handle_tool_exc=True
+            )
+            assert "Encountered exception during tool call" in err_resp.content
+
+        with subtests.test("argref_by_name string keys are not broken"):
+
+            class RefState:
+                def __init__(self) -> None:
+                    self.refs = {"my_model": ComplexArg(arg=99)}
+
+            @argref_by_name(return_direct=True)
+            def read_ref_model(arg: ComplexArg) -> int:
+                """Read a referenced BaseModel.
+
+                Args:
+                    arg: Model reference.
+                """
+                assert isinstance(arg, ComplexArg)
+                return arg.arg
+
+            ref_tool = Tool.from_function(read_ref_model)
+            dummy_env.tools = [ref_tool]
+            action = ToolRequestMessage(
+                tool_calls=[ToolCall.from_tool(ref_tool, "my_model")]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action, state=RefState())
+            assert response.content == "99"
+
+    @pytest.mark.asyncio
+    async def test_tool_selector_basemodel_arguments(
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        class ComplexArg(BaseModel):
+            arg: int = Field(description="Some integer argument.")
+
+        def some_tool(arg: ComplexArg) -> int:
+            """Do something.
+
+            Args:
+                arg: Some complex argument.
+            """
+            assert isinstance(arg, ComplexArg)
+            return arg.arg
+
+        tool = Tool.from_function(some_tool)
+        dummy_env.tools = [tool]
+
+        def _make_fake_acompletion(payload: dict[str, Any]) -> Callable[..., Any]:
+            async def _fake(*_args: Any, **_kwargs: Any) -> Any:  # noqa: RUF029
+                return litellm.ModelResponse(
+                    choices=[
+                        {
+                            "finish_reason": "tool_calls",
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call12345",
+                                        "type": "function",
+                                        "function": {
+                                            "name": "some_tool",
+                                            "arguments": json.dumps(payload),
+                                        },
+                                    }
+                                ],
+                            },
+                        }
+                    ]
+                )
+
+            return _fake
+
+        with subtests.test("ToolSelector deserializes valid BaseModel arguments"):
+            selector = ToolSelector(
+                "gpt-5-mini", acompletion=_make_fake_acompletion({"arg": {"arg": 42}})
+            )
+            selection = await selector(
+                messages=[Message(content="Call tool")], tools=[tool]
+            )
+            (tool_call,) = selection.tool_calls
+            assert isinstance(tool_call.function.arguments["arg"], ComplexArg)
+            assert tool_call.function.arguments["arg"].arg == 42
+            dumped = MessagesAdapter.dump_python(
+                [selection], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": {"arg": 42}
+            }
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == "42"
+
+        with subtests.test("ToolSelector suppresses invalid BaseModel payloads"):
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion({"arg": {"wrong": "field"}}),
+            )
+            selection = await selector(
+                messages=[Message(content="Call tool")], tools=[tool]
+            )
+            assert selection.tool_calls[0].function.arguments == {
+                "arg": {"wrong": "field"}
+            }
+            (err_resp,) = await dummy_env.exec_tool_calls(
+                selection, handle_tool_exc=True
+            )
+            assert "Encountered exception during tool call" in err_resp.content
+
+    @pytest.mark.asyncio
+    async def test_basemodel_tool_arguments_edge_cases(  # noqa: PLR0914, PLR0915
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        class AliasedArg(BaseModel):
+            value: int = Field(alias="external_value", description="Aliased int.")
+
+        class PrefixedArg(BaseModel):
+            tag: str = Field(description="Tag prefixed once during validation.")
+
+            @model_validator(mode="after")
+            def add_prefix(self) -> Self:
+                self.tag = f"prefix:{self.tag}"
+                return self
+
+        class StrictDateArg(BaseModel):
+            model_config = ConfigDict(strict=True)
+            when: dt.date = Field(description="Strict ISO date.")
+
+        def _make_fake_acompletion(
+            tool_name: str, payload: dict[str, Any]
+        ) -> Callable[..., Any]:
+            async def _fake(*_args: Any, **_kwargs: Any) -> Any:  # noqa: RUF029
+                return litellm.ModelResponse(
+                    choices=[
+                        {
+                            "finish_reason": "tool_calls",
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call99999",
+                                        "type": "function",
+                                        "function": {
+                                            "name": tool_name,
+                                            "arguments": json.dumps(payload),
+                                        },
+                                    }
+                                ],
+                            },
+                        }
+                    ]
+                )
+
+            return _fake
+
+        with subtests.test("aliased BaseModel fields roundtrip through serialization"):
+
+            def use_aliased(arg: AliasedArg) -> int:
+                """Use an aliased BaseModel argument.
+
+                Args:
+                    arg: Aliased model.
+                """
+                assert isinstance(arg, AliasedArg)
+                return arg.value
+
+            aliased_tool = Tool.from_function(use_aliased)
+            dummy_env.tools = [aliased_tool]
+            msg = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_tool(aliased_tool, arg=AliasedArg(external_value=7))
+                ]
+            )
+            dumped = MessagesAdapter.dump_python(
+                [msg], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": {"external_value": 7}
+            }
+            roundtripped = MessagesAdapter.validate_python(dumped)[0]
+            assert isinstance(roundtripped, ToolRequestMessage)
+            (response,) = await dummy_env.exec_tool_calls(roundtripped)
+            assert response.content == "7"
+
+        with subtests.test(
+            "non-model deserialized values serialize to JSON-safe forms"
+        ):
+
+            def use_model_or_uuid(arg: AliasedArg | uuid.UUID) -> str:
+                """Accept either a model or a UUID.
+
+                Args:
+                    arg: Model or UUID value.
+                """
+                return str(arg)
+
+            union_tool = Tool.from_function(use_model_or_uuid)
+            dummy_env.tools = [union_tool]
+            sample_uuid = "12345678-1234-5678-1234-567812345678"
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion(
+                    "use_model_or_uuid", {"arg": sample_uuid}
+                ),
+            )
+            selection = await selector(
+                messages=[Message(content="Call union tool")], tools=[union_tool]
+            )
+            assert isinstance(
+                selection.tool_calls[0].function.arguments["arg"], uuid.UUID
+            )
+            dumped = MessagesAdapter.dump_python(
+                [selection], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": sample_uuid
+            }
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == sample_uuid
+
+        with subtests.test("forward refs resolve even with unresolvable return hint"):
+            fwd_tool = Tool(
+                tool_fn=_fn_with_unresolvable_return,
+                info=FunctionInfo(
+                    name="_fn_with_unresolvable_return",
+                    description="Forward-ref tool.",
+                    parameters=None,
+                ),
+            )
+            dummy_env.tools = [fwd_tool]
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name(
+                        "_fn_with_unresolvable_return",
+                        arg={"value": 3},
+                        items=[{"value": 4}, {"value": 5}],
+                        opt={"value": 6},
+                    )
+                ]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action)
+            assert response.content == "3:9:6"
+
+        if sys.version_info >= (3, 12):
+            with subtests.test(
+                "PEP 695 TypeAliasType BaseModel annotations deserialize"
+            ):
+                from typing import TypeAliasType
+
+                ModelAlias = TypeAliasType("ModelAlias", _ForwardRefModel)
+
+                def use_alias(arg: Any) -> int:
+                    """Use a PEP 695 aliased model."""
+                    assert isinstance(arg, _ForwardRefModel)
+                    return arg.value
+
+                use_alias.__annotations__["arg"] = ModelAlias
+                alias_tool = Tool(
+                    tool_fn=use_alias,
+                    info=FunctionInfo(
+                        name="use_alias",
+                        description="Alias tool.",
+                        parameters=None,
+                    ),
+                )
+                dummy_env.tools = [alias_tool]
+                (response,) = await dummy_env.exec_tool_calls(
+                    ToolRequestMessage(
+                        tool_calls=[ToolCall.from_name("use_alias", arg={"value": 21})]
+                    )
+                )
+                assert response.content == "21"
+
+        with subtests.test("model validators are not run twice across select and exec"):
+
+            def use_prefixed(arg: PrefixedArg, items: list[PrefixedArg]) -> str:
+                """Use prefixed models directly and in a list.
+
+                Args:
+                    arg: Direct prefixed model.
+                    items: List of prefixed models.
+                """
+                return f"{arg.tag}|{','.join(i.tag for i in items)}"
+
+            prefixed_tool = Tool.from_function(use_prefixed)
+            dummy_env.tools = [prefixed_tool]
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion(
+                    "use_prefixed",
+                    {"arg": {"tag": "a"}, "items": [{"tag": "b"}, {"tag": "c"}]},
+                ),
+            )
+            selection = await selector(
+                messages=[Message(content="Call prefixed tool")], tools=[prefixed_tool]
+            )
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == "prefix:a|prefix:b,prefix:c"
+            assert selection.tool_calls[0].function.arguments["arg"].tag == "prefix:a"
+            assert [
+                i.tag for i in selection.tool_calls[0].function.arguments["items"]
+            ] == ["prefix:b", "prefix:c"]
+
+        with subtests.test("strict BaseModel accepts schema-valid JSON date strings"):
+
+            def use_strict_date(arg: StrictDateArg) -> str:
+                """Use a strict BaseModel with a date field.
+
+                Args:
+                    arg: Strict date model.
+                """
+                assert isinstance(arg, StrictDateArg)
+                return arg.when.isoformat()
+
+            strict_tool = Tool.from_function(use_strict_date)
+            dummy_env.tools = [strict_tool]
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion(
+                    "use_strict_date", {"arg": {"when": "2026-11-21"}}
+                ),
+            )
+            selection = await selector(
+                messages=[Message(content="Call strict tool")], tools=[strict_tool]
+            )
+            assert isinstance(
+                selection.tool_calls[0].function.arguments["arg"], StrictDateArg
+            )
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == "2026-11-21"
+            (direct_resp,) = await dummy_env.exec_tool_calls(
+                ToolRequestMessage(
+                    tool_calls=[
+                        ToolCall.from_tool(
+                            strict_tool,
+                            arg=StrictDateArg(when=dt.date(2026, 11, 22)),
+                        )
+                    ]
+                )
+            )
+            assert direct_resp.content == "2026-11-22"
+
+
+class _ForwardRefModel(BaseModel):
+    value: int = Field(description="Forward-referenced integer.")
+
+
+def _fn_with_unresolvable_return(
+    arg: "_ForwardRefModel",
+    items: list["_ForwardRefModel"],
+    opt: Optional["_ForwardRefModel"] = None,
+) -> "UnresolvableTypeCheckingReturn":  # type: ignore[name-defined]  # noqa: F821
+    """Use forward-referenced models alongside an unresolvable return hint."""
+    assert isinstance(arg, _ForwardRefModel)
+    assert all(isinstance(i, _ForwardRefModel) for i in items)
+    assert opt is None or isinstance(opt, _ForwardRefModel)
+    return f"{arg.value}:{sum(i.value for i in items)}:{opt.value if opt else 'none'}"
 
 
 def test_argref_by_name_basic_usage() -> None:

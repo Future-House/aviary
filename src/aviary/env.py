@@ -253,12 +253,6 @@ class Environment(ABC, Generic[TEnvState]):
                 if need_to_filter
                 else function_kwargs
             )
-            tool_call_args = tool_call.function.arguments | (
-                {"tool_call_id": tool_call.id}
-                if "tool_call_id" in fn_parameters
-                else {}
-            )
-
             concurrency_context = (
                 concurrency_lock.read_lock()
                 if tool.concurrency_safe
@@ -267,6 +261,13 @@ class Environment(ABC, Generic[TEnvState]):
 
             tool_exc: Exception | None = None
             try:
+                tool_call_args = tool.deserialize_arguments(
+                    tool_call.function.arguments
+                ) | (
+                    {"tool_call_id": tool_call.id}
+                    if "tool_call_id" in fn_parameters
+                    else {}
+                )
                 async with concurrency_context:
                     if is_coroutine_callable(tool._tool_fn):
                         content = await maybe_wait_for(
