@@ -133,6 +133,13 @@ class ToolSelector:
                 f" Got finish reason {choice.finish_reason!r}, full"
                 f" response was {model_response} and tool choice was {tool_choice!r}."
             ) from exc
+        tools_by_name = {tool.info.name: tool for tool in tools}
+        for tool_call in selection.tool_calls:
+            if (tool := tools_by_name.get(tool_call.function.name)) is not None:
+                with contextlib.suppress(ValidationError):
+                    tool_call.function.arguments = tool.deserialize_arguments(
+                        tool_call.function.arguments
+                    )
         if self._ledger is not None:
             self._ledger.messages.append(selection)
         return selection

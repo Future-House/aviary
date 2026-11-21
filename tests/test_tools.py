@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image, ImageDraw, ImageFont
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 from typeguard import suppress_type_checks
 
@@ -23,6 +23,7 @@ from aviary.core import (
     Environment,
     FunctionInfo,
     Message,
+    MessagesAdapter,
     Tool,
     ToolCall,
     ToolRequestMessage,
@@ -858,6 +859,226 @@ PARAMETERS:
             assert resp.info["end_ts"] - resp.info["start_ts"] >= sleep_time, (
                 "Expected non-trivial time elapsed."
             )
+
+    @pytest.mark.asyncio
+    async def test_basemodel_tool_arguments(
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        class InnerArg(BaseModel):
+            value: int = Field(description="An integer value.")
+
+        class ComplexArg(BaseModel):
+            arg: int = Field(description="Some integer argument.")
+            nested: InnerArg | None = Field(default=None, description="Optional inner.")
+
+        def inspect_models(
+            arg: ComplexArg,
+            items: list[ComplexArg],
+            mapping: dict[str, ComplexArg],
+            optional_arg: ComplexArg | None = None,
+        ) -> str:
+            """Inspect deserialized BaseModel arguments.
+
+            Args:
+                arg: Primary complex argument.
+                items: Sequence of complex arguments.
+                mapping: Mapping of names to complex arguments.
+                optional_arg: Optional complex argument.
+            """
+            assert isinstance(arg, ComplexArg)
+            assert arg.nested is None or isinstance(arg.nested, InnerArg)
+            assert all(isinstance(item, ComplexArg) for item in items)
+            assert all(isinstance(val, ComplexArg) for val in mapping.values())
+            assert optional_arg is None or isinstance(optional_arg, ComplexArg)
+            return (
+                f"{arg.arg}:{arg.nested.value if arg.nested else 'none'}:"
+                f"{sum(i.arg for i in items)}:{mapping['k'].arg}:"
+                f"{optional_arg.arg if optional_arg else 'none'}"
+            )
+
+        async def async_complex_tool(arg: ComplexArg) -> int:
+            """Async tool accepting a BaseModel argument.
+
+            Args:
+                arg: Complex argument.
+            """
+            await asyncio.sleep(0)
+            assert isinstance(arg, ComplexArg)
+            return arg.arg
+
+        tool = Tool.from_function(inspect_models)
+        async_tool = Tool.from_function(async_complex_tool)
+        dummy_env.tools = [tool, async_tool]
+
+        with subtests.test("exec_tool_calls deserializes JSON string BaseModel args"):
+            raw_args = json.dumps({
+                "arg": {"arg": 4, "nested": {"value": 9}},
+                "items": [{"arg": 1}, {"arg": 2}],
+                "mapping": {"k": {"arg": 5}},
+                "optional_arg": {"arg": 7},
+            })
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall(
+                        id="call00001",
+                        function={"name": "inspect_models", "arguments": raw_args},
+                    ),
+                    ToolCall(
+                        id="call00002",
+                        function={
+                            "name": "async_complex_tool",
+                            "arguments": json.dumps({"arg": {"arg": 11}}),
+                        },
+                    ),
+                ]
+            )
+            responses = await dummy_env.exec_tool_calls(action)
+            assert responses[0].content == "4:9:3:5:7"
+            assert responses[1].content == "11"
+
+        with subtests.test("optional BaseModel accepts None"):
+            action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name(
+                        "inspect_models",
+                        arg={"arg": 2},
+                        items=[],
+                        mapping={"k": {"arg": 3}},
+                        optional_arg=None,
+                    )
+                ]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action)
+            assert response.content == "2:none:0:3:none"
+
+        with subtests.test("BaseModel instances serialize and execute cleanly"):
+            tc = ToolCall.from_tool(async_tool, arg=ComplexArg(arg=13))
+            msg = ToolRequestMessage(tool_calls=[tc])
+            dumped = MessagesAdapter.dump_python(
+                [msg], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": {"arg": 13, "nested": None}
+            }
+            (response,) = await dummy_env.exec_tool_calls(msg)
+            assert response.content == "13"
+
+        with subtests.test("invalid BaseModel payload respects handle_tool_exc"):
+            bad_action = ToolRequestMessage(
+                tool_calls=[
+                    ToolCall.from_name("async_complex_tool", arg={"arg": "not-an-int"})
+                ]
+            )
+            with pytest.raises(ValidationError):
+                await dummy_env.exec_tool_calls(bad_action, handle_tool_exc=False)
+            (err_resp,) = await dummy_env.exec_tool_calls(
+                bad_action, handle_tool_exc=True
+            )
+            assert "Encountered exception during tool call" in err_resp.content
+
+        with subtests.test("argref_by_name string keys are not broken"):
+
+            class RefState:
+                def __init__(self) -> None:
+                    self.refs = {"my_model": ComplexArg(arg=99)}
+
+            @argref_by_name(return_direct=True)
+            def read_ref_model(arg: ComplexArg) -> int:
+                """Read a referenced BaseModel.
+
+                Args:
+                    arg: Model reference.
+                """
+                assert isinstance(arg, ComplexArg)
+                return arg.arg
+
+            ref_tool = Tool.from_function(read_ref_model)
+            dummy_env.tools = [ref_tool]
+            action = ToolRequestMessage(
+                tool_calls=[ToolCall.from_tool(ref_tool, "my_model")]
+            )
+            (response,) = await dummy_env.exec_tool_calls(action, state=RefState())
+            assert response.content == "99"
+
+    @pytest.mark.asyncio
+    async def test_tool_selector_basemodel_arguments(
+        self, dummy_env: DummyEnv, subtests: pytest.Subtests
+    ) -> None:
+        class ComplexArg(BaseModel):
+            arg: int = Field(description="Some integer argument.")
+
+        def some_tool(arg: ComplexArg) -> int:
+            """Do something.
+
+            Args:
+                arg: Some complex argument.
+            """
+            assert isinstance(arg, ComplexArg)
+            return arg.arg
+
+        tool = Tool.from_function(some_tool)
+        dummy_env.tools = [tool]
+
+        def _make_fake_acompletion(payload: dict[str, Any]) -> Callable[..., Any]:
+            async def _fake(*_args: Any, **_kwargs: Any) -> Any:  # noqa: RUF029
+                return litellm.ModelResponse(
+                    choices=[
+                        {
+                            "finish_reason": "tool_calls",
+                            "message": {
+                                "role": "assistant",
+                                "content": None,
+                                "tool_calls": [
+                                    {
+                                        "id": "call12345",
+                                        "type": "function",
+                                        "function": {
+                                            "name": "some_tool",
+                                            "arguments": json.dumps(payload),
+                                        },
+                                    }
+                                ],
+                            },
+                        }
+                    ]
+                )
+
+            return _fake
+
+        with subtests.test("ToolSelector deserializes valid BaseModel arguments"):
+            selector = ToolSelector(
+                "gpt-5-mini", acompletion=_make_fake_acompletion({"arg": {"arg": 42}})
+            )
+            selection = await selector(
+                messages=[Message(content="Call tool")], tools=[tool]
+            )
+            (tool_call,) = selection.tool_calls
+            assert isinstance(tool_call.function.arguments["arg"], ComplexArg)
+            assert tool_call.function.arguments["arg"].arg == 42
+            dumped = MessagesAdapter.dump_python(
+                [selection], exclude_none=True, by_alias=True
+            )
+            assert json.loads(dumped[0]["tool_calls"][0]["function"]["arguments"]) == {
+                "arg": {"arg": 42}
+            }
+            (response,) = await dummy_env.exec_tool_calls(selection)
+            assert response.content == "42"
+
+        with subtests.test("ToolSelector suppresses invalid BaseModel payloads"):
+            selector = ToolSelector(
+                "gpt-5-mini",
+                acompletion=_make_fake_acompletion({"arg": {"wrong": "field"}}),
+            )
+            selection = await selector(
+                messages=[Message(content="Call tool")], tools=[tool]
+            )
+            assert selection.tool_calls[0].function.arguments == {
+                "arg": {"wrong": "field"}
+            }
+            (err_resp,) = await dummy_env.exec_tool_calls(
+                selection, handle_tool_exc=True
+            )
+            assert "Encountered exception during tool call" in err_resp.content
 
 
 def test_argref_by_name_basic_usage() -> None:

@@ -5,7 +5,17 @@ import uuid
 from collections.abc import Awaitable, Callable, Iterable
 from functools import partial
 from itertools import starmap
-from typing import Annotated, Any, Literal, NoReturn, Self, TypeAlias
+from typing import (
+    Annotated,
+    Any,
+    Literal,
+    NoReturn,
+    Self,
+    TypeAlias,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from docstring_parser import DocstringParam, DocstringStyle, parse
 from pydantic import (
@@ -50,6 +60,24 @@ reverse_type_map = {v: k for k, v in type_map.items()}
 INVALID_TOOL_NAME = "INVALID"
 
 
+def _json_default(obj: Any) -> Any:
+    if isinstance(obj, BaseModel):
+        return obj.model_dump(mode="json")
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
+def _contains_base_model(annotation: Any) -> bool:
+    """Return True if a type annotation is or contains a Pydantic BaseModel."""
+    if isinstance(annotation, type):
+        return issubclass(annotation, BaseModel)
+    origin = get_origin(annotation)
+    if origin is None:
+        return False
+    if isinstance(origin, type) and issubclass(origin, BaseModel):
+        return True
+    return any(_contains_base_model(arg) for arg in get_args(annotation))
+
+
 class ToolCallFunction(BaseModel):
     arguments: dict[str, Any]
     name: str
@@ -77,7 +105,7 @@ class ToolCallFunction(BaseModel):
 
     @field_serializer("arguments")
     def serialize_arguments(self, arguments: dict[str, Any]) -> str:
-        return json.dumps(arguments)
+        return json.dumps(arguments, default=_json_default)
 
     def __str__(self) -> str:
         arg_str = ", ".join([f"{k}='{v}'" for k, v in self.arguments.items()])
@@ -387,6 +415,33 @@ class Tool(BaseModel):
         state["__dict__"] = state["__dict__"].copy()
         state["__dict__"].pop("_tool_fn", None)
         return state
+
+    def deserialize_arguments(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        """Deserialize raw arguments into BaseModel instances per the tool signature."""
+        fn = self._tool_fn
+        fn_annotations = getattr(fn, "__annotations__", {})
+        fn_parameters = inspect.signature(fn).parameters
+        resolved_hints: dict[str, Any] | None = None
+        deserialized = arguments.copy()
+        for pname, value in arguments.items():
+            if pname not in fn_parameters:
+                continue
+            annotation = fn_annotations.get(pname, inspect.Parameter.empty)
+            if annotation is inspect.Parameter.empty:
+                annotation = fn_parameters[pname].annotation
+            if isinstance(annotation, str):
+                if resolved_hints is None:
+                    try:
+                        resolved_hints = get_type_hints(fn, include_extras=True)
+                    except Exception:
+                        resolved_hints = {}
+                annotation = resolved_hints.get(pname, annotation)
+            if annotation is inspect.Parameter.empty or not _contains_base_model(
+                annotation
+            ):
+                continue
+            deserialized[pname] = TypeAdapter(annotation).validate_python(value)
+        return deserialized
 
     @staticmethod
     def _get_param_desc(param: DocstringParam, include_type: bool) -> str:
