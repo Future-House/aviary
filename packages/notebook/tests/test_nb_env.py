@@ -6,6 +6,7 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
+from unittest.mock import patch
 
 import nbformat
 import nbformat.v4 as nbf
@@ -194,6 +195,24 @@ class TestNBEnvironment:
                 )
             finally:
                 await env.close()
+
+    @pytest.mark.asyncio
+    async def test_reset_rejects_nb_path_outside_work_dir(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as work_dir,
+            tempfile.TemporaryDirectory() as other_dir,
+        ):
+            env = NBEnvironment(
+                work_dir=work_dir,
+                nb_path=pathlib.Path(other_dir) / "analysis.ipynb",
+                use_docker=False,
+            )
+            with (
+                patch("aviary.envs.notebook.env.mkdtemp") as mock_mkdtemp,
+                pytest.raises(ValueError, match=r"analysis\.ipynb"),
+            ):
+                await env.reset()
+            mock_mkdtemp.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_notebook_utils_integration(self):
