@@ -154,7 +154,7 @@ class StoreForConsensusSamplingCallback(Callback):
                 f"So far only handled {GradablePaperQAEnvironment} in this callback,"
                 f" not {type(env)}."
             )
-        if transition.done and not transition.failed:  # Only store once
+        if not (transition.done or transition.truncated):  # Only store the last step
             return
         self.stored.append(env.export_frame())
 
