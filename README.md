@@ -85,20 +85,23 @@ For local development, please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 The example below walks through defining a custom environment in Aviary.
 We define a simple environment where an agent takes actions to modify a counter.
-The example is also featured in the following [notebook][1].
+The example is also featured in the following
+[notebook](tutorials/Building%20a%20Custom%20Environment%20in%20Aviary.ipynb).
 
 ```python
-from collections import namedtuple
-from aviary.core import Environment, Message, ToolRequestMessage, Tool
+from pydantic import BaseModel
+from aviary.core import Environment, Message, Messages, ToolRequestMessage, Tool
+
 
 # State in this example is simply a counter
-CounterEnvState = namedtuple("CounterEnvState", ["count"])
+class CounterEnvState(BaseModel):
+    count: int
 
 
 class CounterEnv(Environment[CounterEnvState]):
     """A simple environment that allows an agent to modify a counter."""
 
-    async def reset(self):
+    async def reset(self) -> tuple[Messages, list[Tool]]:
         """Initialize the environment with a counter set to 0. Goal is to count to 10"""
         self.state = CounterEnvState(count=0)
 
@@ -114,22 +117,24 @@ class CounterEnv(Environment[CounterEnvState]):
         # Return an observation message with the counter and available tools
         return [Message(content=f"Count to 10. counter={self.state.count}")], self.tools
 
-    async def step(self, action: ToolRequestMessage):
+    async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
         """Executes the tool call requested by the agent."""
+        if not isinstance(action, ToolRequestMessage):
+            return self.default_no_tool_calls_response
         obs = await self.exec_tool_calls(action)
 
-        # The reward is the square of the current count
+        # The reward is 1 once the counter reaches the target
         reward = int(self.state.count == self.target)
 
         # Returns observations, reward, done, truncated
-        return obs, reward, reward == 1, False
+        return [*obs], reward, reward == 1, False
 
-    def incr(self):
+    def incr(self) -> str:
         """Increment the counter."""
         self.state.count += 1
         return f"counter={self.state.count}"
 
-    def decr(self):
+    def decr(self) -> str:
         """Decrement the counter."""
         self.state.count -= 1
         return f"counter={self.state.count}"
@@ -143,34 +148,38 @@ Aviary's sister library LDP (<https://github.com/Future-House/ldp>).
 
 ```python
 from ldp.agent import Agent
-from ldp.graph import LLMCallOp
+from ldp.graph import LLMCallOp, OpResult
 from ldp.alg import RolloutManager
+from aviary.core import Message, Tool
 
 
 class AgentState:
     """A container for maintaining agent state across interactions."""
 
-    def __init__(self, messages, tools):
+    def __init__(self, messages: list[Message], tools: list[Tool]) -> None:
         self.messages = messages
         self.tools = tools
 
 
-class SimpleAgent(Agent):
-    def __init__(self, **kwargs):
-        self._llm_call_op = LLMCallOp(**kwargs)
+class SimpleAgent(Agent[AgentState]):
+    def __init__(self, llm_config: dict) -> None:
+        self.llm_config = llm_config
+        self._llm_call_op = LLMCallOp()
 
-    async def init_state(self, tools):
+    async def init_state(self, tools: list[Tool]) -> AgentState:
         return AgentState([], tools)
 
-    async def get_asv(self, agent_state, obs):
+    async def get_asv(
+        self, agent_state: AgentState, obs: list[Message]
+    ) -> tuple[OpResult[Message], AgentState, float]:
         """Take an action, observe new state, return value"""
         action = await self._llm_call_op(
-            config={"name": "gpt-4o", "temperature": 0.1},
+            config=self.llm_config,
             msgs=agent_state.messages + obs,
             tools=agent_state.tools,
         )
         new_state = AgentState(
-            messages=agent_state.messages + obs + [action],
+            messages=agent_state.messages + obs + [action.value],
             tools=agent_state.tools,
         )
         # Return action, state, value
@@ -179,8 +188,8 @@ class SimpleAgent(Agent):
 
 # Create a simple agent and perform rollouts on the environment
 
-# Endpoint can be model identifier e.g. "claude-3-opus" depending on service
-agent = SimpleAgent(config={"model": "my_llm_endpoint"})
+# The model name can be any LiteLLM model, e.g. "claude-3-opus"
+agent = SimpleAgent(llm_config={"name": "gpt-4o", "temperature": 0.1})
 
 runner = RolloutManager(agent=agent)
 
@@ -238,13 +247,14 @@ img_array = np.array(img)
 msg = Message.create_message(role="user", text="Hello, world!", images=[img_array])
 ```
 
-In this case, `content` will be a list of dictionaries with the keys `text` and `image_url`.
+In this case, `content` will be a JSON string of a list of dictionaries,
+one per image followed by one for the text.
 
 ```py
-{
-    {"type": "text", "text": "Hello World!"},
-    {"text": "image_url", "image_url": "data:image/png;base64,{base64_image}"},
-}
+[
+    {"type": "image_url", "image_url": {"url": "data:image/png;base64,{base64_image}"}},
+    {"type": "text", "text": "Hello, world!"},
+]
 ```
 
 The role, see the table below.
@@ -300,7 +310,7 @@ the tool call being executed, so a tool can key its work by call. Like `state`, 
 argument stays hidden from the agent.
 
 ```py
-def print_story(story: str, state: ExampleState):
+def print_story(story: str, state: ExampleState) -> None:
     """Print a story.
 
     Args:
@@ -341,7 +351,7 @@ This convention was created by FastAPI ([docs][1]).
 [1]: https://fastapi.tiangolo.com/advanced/path-operation-advanced-configuration/#advanced-description-from-docstring
 
 ```python
-def print_story(story: str | bytes, state: ExampleState):
+def print_story(story: str | bytes, state: ExampleState) -> None:
     r"""Print a story.
 
     Extra information that is part of the tool description.
@@ -361,16 +371,17 @@ def print_story(story: str | bytes, state: ExampleState):
 
 ### The Environment `reset` Method
 
-Next we define the `reset` function which initializes the tools
+Next we define the `reset` function which initializes the state and tools
 and returns one or more initial observations as well as the tools.
 The `reset` function is `async` to allow for database interactions or HTTP requests.
 
 ```py
-from aviary.core import Message, Tool
+from aviary.core import Message, Messages, Tool
 
 
-async def reset(self):
-    self.tools = [Tool.from_function(ExampleEnv.print_story)]
+async def reset(self) -> tuple[Messages, list[Tool]]:
+    self.state = ExampleState()
+    self.tools = [Tool.from_function(print_story)]
     start = Message(content="Write a 5 word story and call print")
     return [start], self.tools
 ```
@@ -381,12 +392,14 @@ Next we define the `step` function which takes an action and returns
 the next observation, reward, done, and whether the episode was truncated.
 
 ```py
-from aviary.core import Message
+from aviary.core import Message, Messages, ToolRequestMessage
 
 
-async def step(self, action: Message):
+async def step(self, action: Message) -> tuple[Messages, float, bool, bool]:
+    if not isinstance(action, ToolRequestMessage):
+        return self.default_no_tool_calls_response
     msgs = await self.exec_tool_calls(action, state=self.state)
-    return msgs, self.state.reward, self.state.done, False
+    return [*msgs], self.state.reward, self.state.done, False
 ```
 
 You will probably often use this specific syntax for calling the tools - calling `exec_tool_calls` with the action.
@@ -400,7 +413,7 @@ and its state for visualization or debugging purposes.
 from aviary.core import Frame
 
 
-def export_frame(self):
+def export_frame(self) -> Frame:
     return Frame(
         state={"done": self.state.done, "reward": self.state.reward},
         info={"tool_names": [t.info.name for t in self.tools]},
@@ -452,11 +465,11 @@ Let's define an environment that requires an agent to write a story
 about a particular topic by implementing its `start` function:
 
 ```python
-from aviary.core import fenv
+from aviary.core import DynamicState, fenv
 
 
 @fenv.start()
-def my_env(topic):
+def my_env(topic: str) -> tuple[str, dict]:
     # return the first observation and starting environment state
     # (empty in this case)
     return f"Write a story about {topic}", {}
@@ -481,7 +494,7 @@ def multiply(x: float, y: float) -> float:
 
 
 @my_env.tool()
-def print_story(story: str | bytes, state) -> None:
+def print_story(story: str | bytes, state: DynamicState) -> None:
     """Print a story to the user and complete episode."""
     print(story)
     state.reward = 1
