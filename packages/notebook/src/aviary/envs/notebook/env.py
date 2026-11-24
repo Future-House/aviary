@@ -383,7 +383,7 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
                 f"Work dir {self.work_dir} does not exist, using empty tmp dir"
             )
 
-        return tmp_work_dir / self.NOTEBOOK_NAME, tmp_work_dir
+        return tmp_work_dir / self.nb_path.relative_to(self.work_dir), tmp_work_dir
 
     async def _exec_cmd(self, cmd: list[str]) -> tuple[int, str, str]:
         """Execute a command in Docker container and return exit code, stdout, and stderr."""
