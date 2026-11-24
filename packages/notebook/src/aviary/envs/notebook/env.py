@@ -374,6 +374,9 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
         if not self.use_tmp_work_dir:
             return self.nb_path, self.work_dir
 
+        # Resolve nb_path within work_dir first, so a path outside it raises
+        # before a temporary copy of the workspace is made
+        nb_rel_path = self.nb_path.relative_to(self.work_dir)
         self._cleanup_tmp_work_dir()
         tmp_work_dir = Path(mkdtemp())
         if self.work_dir.exists():
@@ -383,7 +386,7 @@ class NBEnvironment(Environment[TNBEnvState], Generic[TNBEnvState]):
                 f"Work dir {self.work_dir} does not exist, using empty tmp dir"
             )
 
-        return tmp_work_dir / self.NOTEBOOK_NAME, tmp_work_dir
+        return tmp_work_dir / nb_rel_path, tmp_work_dir
 
     async def _exec_cmd(self, cmd: list[str]) -> tuple[int, str, str]:
         """Execute a command in Docker container and return exit code, stdout, and stderr."""

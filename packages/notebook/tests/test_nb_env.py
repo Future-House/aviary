@@ -6,7 +6,9 @@ import pathlib
 import shutil
 import subprocess
 import tempfile
+from unittest.mock import patch
 
+import nbformat
 import nbformat.v4 as nbf
 import pytest
 
@@ -173,6 +175,44 @@ class TestNBEnvironment:
             assert state_message[0]["type"] == "text"
 
             await env.close()
+
+    @pytest.mark.asyncio
+    async def test_reset_uses_nb_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work_dir = pathlib.Path(tmp)
+            nb_path = work_dir / "analysis.ipynb"
+            nbformat.write(
+                nbf.new_notebook(cells=[nbf.new_code_cell(source="x = 1")]), nb_path
+            )
+
+            env = NBEnvironment(work_dir=work_dir, nb_path=nb_path, use_docker=False)
+            await env.reset()
+            try:
+                assert env.state.work_dir != work_dir, "Expected a temporary work dir"
+                assert env.state.nb_path.name == nb_path.name
+                assert [cell.source for cell in env.state.cells] == ["x = 1"], (
+                    "Expected the existing notebook at nb_path to be loaded"
+                )
+            finally:
+                await env.close()
+
+    @pytest.mark.asyncio
+    async def test_reset_rejects_nb_path_outside_work_dir(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as work_dir,
+            tempfile.TemporaryDirectory() as other_dir,
+        ):
+            env = NBEnvironment(
+                work_dir=work_dir,
+                nb_path=pathlib.Path(other_dir) / "analysis.ipynb",
+                use_docker=False,
+            )
+            with (
+                patch("aviary.envs.notebook.env.mkdtemp") as mock_mkdtemp,
+                pytest.raises(ValueError, match=r"analysis\.ipynb"),
+            ):
+                await env.reset()
+            mock_mkdtemp.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_notebook_utils_integration(self):
