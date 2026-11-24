@@ -1,5 +1,6 @@
 import os
 import re
+from unittest.mock import patch
 from uuid import UUID
 
 import pytest
@@ -117,11 +118,13 @@ async def test_tool_results() -> None:
 
 
 @pytest.mark.parametrize(
-    "evaluation_mode",
-    [EvalAnswerMode.EXACT, EvalAnswerMode.CONTAINS, EvalAnswerMode.LLM],
+    ("evaluation_mode", "superset_answer_reward"),
+    [(EvalAnswerMode.EXACT, 0), (EvalAnswerMode.CONTAINS, 1)],
 )
 @pytest.mark.asyncio
-async def test_answer_evaluation_mode(evaluation_mode: EvalAnswerMode) -> None:
+async def test_answer_evaluation_mode(
+    evaluation_mode: EvalAnswerMode, superset_answer_reward: float
+) -> None:
     correct_answer = "Golden Gate Bridge"
     incorrect_answer = "Bay Bridge"
     env = HotPotQAEnv(
@@ -133,3 +136,24 @@ async def test_answer_evaluation_mode(evaluation_mode: EvalAnswerMode) -> None:
 
     assert (await env.calculate_answer_reward(correct_answer)) == 1
     assert (await env.calculate_answer_reward(incorrect_answer)) == 0
+    # Only contains mode accepts an answer that has the correct answer inside it
+    assert (
+        await env.calculate_answer_reward("Golden Gate Bridge or Bay Bridge")
+    ) == superset_answer_reward
+
+
+@pytest.mark.asyncio
+async def test_answer_evaluation_mode_llm() -> None:
+    question = "What is the reddest bridge in San Francisco?"
+    env = HotPotQAEnv(
+        question_id=None,
+        question=question,
+        correct_answer="Golden Gate Bridge",
+        evaluation_mode=EvalAnswerMode.LLM,
+    )
+
+    with patch("aviary.utils.run_prompt", return_value="Yes") as mock_run_prompt:
+        assert (await env.calculate_answer_reward("Golden Gate Bridge")) == 1
+    mock_run_prompt.assert_awaited_once()
+    (prompt,) = mock_run_prompt.await_args_list[0].args
+    assert question in prompt, "Expected the question in the LLM grading prompt"

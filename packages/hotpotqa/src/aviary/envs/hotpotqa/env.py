@@ -239,7 +239,8 @@ class HotPotQAEnv(Environment[HotPotQAEnvState]):
                 await eval_answer(
                     normalize_answer(answer),
                     self.normalized_correct_answer,
-                    self.evaluation_mode,
+                    question=self.question,
+                    eval_mode=self.evaluation_mode,
                 )
             )
             else self.incorrect_reward
