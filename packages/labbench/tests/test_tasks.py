@@ -19,6 +19,7 @@ from aviary.core import (
 from ldp.agent import SimpleAgent
 from ldp.alg.callbacks import Callback, MeanMetricsCallback, StoreTrajectoriesCallback
 from ldp.alg.runners import Evaluator, EvaluatorConfig
+from ldp.data_structures import Transition
 from paperqa import Docs, Settings
 from paperqa.agents import get_directory_index
 from paperqa.agents.env import PaperQAEnvironment
@@ -32,6 +33,7 @@ from aviary.envs.labbench import (
     TextQATaskDataset,
     TextQATaskSplit,
 )
+from aviary.envs.labbench.task import StoreForConsensusSamplingCallback
 
 IN_GITHUB_ACTIONS: bool = os.getenv("GITHUB_ACTIONS") == "true"
 SKIP_LABBENCH2_IN_CI = pytest.mark.skipif(
@@ -308,6 +310,48 @@ class TestPaperQATaskDataset:
         mock_SearchIndex.assert_called(), "Expected failures to come from unit test"
         assert metrics_callback.eval_means["correct"] == 0.0
         assert metrics_callback.eval_means["correct_unsure"] == 0.0
+
+    @pytest.mark.asyncio
+    async def test_consensus_callback_stores_final_frame(
+        self, agent_task_settings: Settings
+    ) -> None:
+        dataset = StubPaperQADataset(settings=agent_task_settings)
+        callback = StoreForConsensusSamplingCallback()
+
+        async def store_rollout(
+            idx: int, done: bool = False, truncated: bool = False
+        ) -> None:
+            env = dataset.get_new_env_by_idx(idx)
+            await env.reset()
+            last_timestep = 2
+            for timestep in range(last_timestep + 1):
+                is_last = timestep == last_timestep
+                if is_last and done:  # As if gen_answer and complete ran
+                    env.state.session.graded_answer = cast(
+                        "MultipleChoiceQuestion", env._query
+                    ).ideal_answer
+                await callback.after_transition(
+                    traj_id=str(idx),
+                    agent=SimpleAgent(),
+                    env=env,
+                    transition=Transition(
+                        timestep=timestep,
+                        agent_state=None,
+                        next_agent_state=None,
+                        observation=[],
+                        next_observation=[],
+                        done=is_last and done,
+                        truncated=is_last and truncated,
+                    ),
+                )
+
+        await store_rollout(0, done=True)
+        assert len(callback.stored) == 1, "Expected one frame per trajectory"
+        _, accuracy = await callback.evaluate_consensus_sampling()
+        assert accuracy == 1.0, "Expected the graded answer to be stored"
+
+        await store_rollout(1, truncated=True)
+        assert len(callback.stored) == 2, "Expected the truncated trajectory's frame"
 
 
 class TestTextQATaskDataset:
